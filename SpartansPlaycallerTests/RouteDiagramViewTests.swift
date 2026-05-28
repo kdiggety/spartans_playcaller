@@ -219,6 +219,133 @@ final class RouteDiagramViewTests: XCTestCase {
             XCTAssertNotNil(view)
         }
     }
+
+    // MARK: - Route Path Position and Side Tests (Fix Verification)
+
+    func testYRouteStartsFromFinalPositionWithMotion() {
+        // Trips Left, Y After: Y should draw route from right side (final position)
+        if case .success(var playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
+            if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
+                playCall.assignments[yIndex].motion = .after
+            }
+
+            let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
+            let renderer = DiagramRenderer()
+            let positions = renderer.receiverPositions(formation: playCall.formation, config: config)
+
+            if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
+                // Y should be on left initially (Trips Left formation)
+                XCTAssertEqual(yAssignment.side, .left)
+                // Y After should flip to right
+                XCTAssertEqual(yAssignment.motionFinalSide, .right)
+
+                // Get Y's initial position (left side)
+                guard let initialPos = positions[.Y] else { return XCTFail("Y position not found") }
+
+                // Compute Y's final position (right side after motion)
+                let finalPos = renderer.yFinalPosition(
+                    initialSide: yAssignment.side,
+                    finalSide: yAssignment.motionFinalSide,
+                    formation: playCall.formation,
+                    config: config
+                )
+
+                // Final position X should be greater (moved right)
+                XCTAssertGreaterThan(finalPos.x, initialPos.x, "Y final position should be to the right of initial")
+
+                // Route path should start from final position
+                let routePath = renderer.routePath(
+                    for: yAssignment,
+                    startPosition: finalPos,
+                    side: yAssignment.motionFinalSide,
+                    config: config
+                )
+
+                guard let first = routePath.first else { return XCTFail("Route path is empty") }
+                XCTAssertEqual(first, finalPos, "Route should start from Y's final position")
+            }
+        }
+    }
+
+    func testYRouteSideInterpretationChangesWithMotion() {
+        // Trips Left, route "1", no motion: Y on left, route "1" = Quick Out (breaks left)
+        // Trips Left, route "1", Y After: Y flipped to right, route "1" = Quick Slant (breaks inward)
+        let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
+        let renderer = DiagramRenderer()
+
+        // First: No motion case
+        if case .success(let playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
+            if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
+                XCTAssertEqual(yAssignment.side, .left)
+                XCTAssertNil(yAssignment.motion)
+                XCTAssertEqual(yAssignment.motionFinalSide, .left, "No motion: final side = original side")
+
+                let positions = renderer.receiverPositions(formation: playCall.formation, config: config)
+                guard let yPos = positions[.Y] else { return XCTFail("Y position not found") }
+
+                let routePath = renderer.routePath(
+                    for: yAssignment,
+                    startPosition: yPos,
+                    side: yAssignment.motionFinalSide,
+                    config: config
+                )
+
+                // Route "1" on left should break LEFT (Quick Out)
+                // Path should have 3 points: start, stem end, break point
+                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Quick Out route should have break point")
+                if routePath.count >= 3 {
+                    let breakPoint = routePath[2]
+                    // Break point X should be less than stem (going left)
+                    let stemPoint = routePath[1]
+                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Quick Out breaks left")
+                }
+            }
+        }
+
+        // Second: Y After motion case
+        if case .success(var playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
+            if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
+                playCall.assignments[yIndex].motion = .after
+            }
+
+            if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
+                XCTAssertEqual(yAssignment.side, .left, "Original side is left")
+                XCTAssertEqual(yAssignment.motion, .after)
+                XCTAssertEqual(yAssignment.motionFinalSide, .right, "After motion: final side = right")
+
+                let positions = renderer.receiverPositions(formation: playCall.formation, config: config)
+                guard let yInitialPos = positions[.Y] else { return XCTFail("Y position not found") }
+
+                let yFinalPos = renderer.yFinalPosition(
+                    initialSide: yAssignment.side,
+                    finalSide: yAssignment.motionFinalSide,
+                    formation: playCall.formation,
+                    config: config
+                )
+
+                let routePath = renderer.routePath(
+                    for: yAssignment,
+                    startPosition: yFinalPos,
+                    side: yAssignment.motionFinalSide,
+                    config: config
+                )
+
+                // Route "1" on right should be Quick Slant (breaks inward/toward center)
+                // Path should have 3 points: start, stem end, break point
+                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Quick Slant route should have break point")
+                if routePath.count >= 3 {
+                    let breakPoint = routePath[2]
+                    let stemPoint = routePath[1]
+                    // Break point X should be less than stem X (inward/toward center from right side)
+                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Quick Slant breaks inward from right side")
+                    // But not as far left as Pure Quick Out would go
+                    // This is harder to test precisely, but we can verify the break is smaller
+                    let breakDistance = abs(breakPoint.x - stemPoint.x)
+                    XCTAssertLessThan(breakDistance, 30, "Quick Slant break is more modest than Quick Out")
+                }
+            }
+        }
+    }
 }
 
 // MARK: - SwiftUI Previews for Visual Testing

@@ -108,9 +108,28 @@ struct RouteDiagramView: View {
 
     private func drawRoutes(context: inout GraphicsContext, config: DiagramConfig, positions: [Receiver: CGPoint]) {
         for assignment in playCall.assignments {
-            guard let startPos = positions[assignment.receiver] else { continue }
+            guard let initialPos = positions[assignment.receiver] else { continue }
 
-            let pathPoints = renderer.routePath(for: assignment, startPosition: startPos, config: config)
+            // For Y receiver with motion, compute the final position; otherwise use initial position
+            let routeStartPos: CGPoint
+            if assignment.receiver == .Y, assignment.motion != nil {
+                routeStartPos = renderer.yFinalPosition(
+                    initialSide: assignment.side,
+                    finalSide: assignment.motionFinalSide,
+                    formation: playCall.formation,
+                    config: config
+                )
+            } else {
+                routeStartPos = initialPos
+            }
+
+            // Use the final side (which accounts for motion) for route interpretation
+            let pathPoints = renderer.routePath(
+                for: assignment,
+                startPosition: routeStartPos,
+                side: assignment.motionFinalSide,
+                config: config
+            )
 
             guard pathPoints.count >= 2 else { continue }
 

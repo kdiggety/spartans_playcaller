@@ -73,7 +73,12 @@ struct DiagramRenderer {
     /// - 7 ALWAYS angles top-left
     /// - 8 ALWAYS angles top-right
     /// Side-awareness only affects the route MEANING label, not the drawing direction.
-    func routePath(for assignment: RouteAssignment, startPosition: CGPoint, config: DiagramConfig) -> [CGPoint] {
+    /// - Parameters:
+    ///   - assignment: The route assignment (contains receiver, route number, and original side).
+    ///   - startPosition: The starting position for this receiver (already accounts for motion final position for Y).
+    ///   - side: The field side to use for route interpretation (use motionFinalSide for receivers with motion).
+    ///   - config: Diagram configuration.
+    func routePath(for assignment: RouteAssignment, startPosition: CGPoint, side: FieldSide, config: DiagramConfig) -> [CGPoint] {
         let stemLength = config.routeLength
         let breakLen = config.breakLength
 
@@ -90,7 +95,7 @@ struct DiagramRenderer {
             // LEFT: Quick Out (break left quickly)
             // RIGHT: Quick Slant (break inward quickly)
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            if assignment.side == .left {
+            if side == .left {
                 // Quick out breaks LEFT (toward sideline for left-side receiver)
                 let breakPoint = CGPoint(x: shortStem.x - breakLen, y: shortStem.y)
                 return [startPosition, shortStem, breakPoint]
@@ -104,7 +109,7 @@ struct DiagramRenderer {
             // LEFT: Quick Slant (break inward)
             // RIGHT: Quick Out (break right quickly)
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            if assignment.side == .left {
+            if side == .left {
                 // Quick slant breaks inward (toward center)
                 let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
                 return [startPosition, shortStem, breakPoint]
@@ -127,7 +132,7 @@ struct DiagramRenderer {
         case .five:
             // LEFT: Comeback (stem up, break back down-left)
             // RIGHT: Curl (stem up, curl back down toward center)
-            if assignment.side == .left {
+            if side == .left {
                 let breakPoint = CGPoint(x: stemEnd.x - breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
                 return [startPosition, stemEnd, breakPoint]
             } else {
@@ -138,7 +143,7 @@ struct DiagramRenderer {
         case .six:
             // LEFT: Curl (stem up, curl back down toward center)
             // RIGHT: Comeback (stem up, break back down-right)
-            if assignment.side == .left {
+            if side == .left {
                 let breakPoint = CGPoint(x: stemEnd.x + breakLen * 0.3, y: stemEnd.y + breakLen * 0.4)
                 return [startPosition, stemEnd, breakPoint]
             } else {
