@@ -2,11 +2,39 @@ import SwiftUI
 
 /// Displays the receiver assignment table showing each receiver's
 /// route number, field side, and interpreted route meaning.
+/// Also provides a motion picker for the Y receiver (Trips formations only).
 struct ReceiverAssignmentView: View {
     let assignments: [RouteAssignment]
+    @Binding var selectedMotion: ReceiverMotion?
+    let onMotionChange: (ReceiverMotion?) -> Void
+    let isMotionEnabled: Bool
 
     var body: some View {
         VStack(spacing: 0) {
+            // Motion Picker (Trips formations only)
+            if isMotionEnabled {
+                VStack(spacing: 8) {
+                    Text("Y MOTION")
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+
+                    Picker("Y Motion", selection: $selectedMotion) {
+                        Text("None").tag(nil as ReceiverMotion?)
+                        ForEach(ReceiverMotion.allCases.dropFirst()) { motion in
+                            Text(motion.rawValue).tag(Optional(motion))
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: selectedMotion) { _, newValue in
+                        onMotionChange(newValue)
+                    }
+                }
+                .padding(12)
+                .background(Color(.systemGray5))
+
+                Divider()
+            }
+
             // Header
             HStack {
                 Text("WR")
@@ -37,10 +65,19 @@ struct ReceiverAssignmentView: View {
                         .font(.system(.body, design: .monospaced))
                         .frame(width: 24, alignment: .center)
 
-                    Text(assignment.side.rawValue.capitalized)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 50, alignment: .center)
+                    // Side column with motion indicator
+                    VStack(alignment: .center, spacing: 2) {
+                        Text(assignment.side.rawValue.capitalized)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        if assignment.receiver == .Y && assignment.motion != nil && assignment.motionFinalSide != assignment.side {
+                            Text("→ \(assignment.motionFinalSide.rawValue.capitalized)")
+                                .font(.caption2)
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                    .frame(width: 50, alignment: .center)
 
                     Text(assignment.meaning.rawValue)
                         .font(.subheadline)

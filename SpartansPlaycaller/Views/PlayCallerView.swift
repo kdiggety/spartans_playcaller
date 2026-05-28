@@ -19,7 +19,7 @@ struct PlayCallerView: View {
                         errorBanner(error)
                     }
 
-                    if let playCall = viewModel.currentPlayCall {
+                    if let playCall = viewModel.currentPlayCallWithMotion ?? viewModel.currentPlayCall {
                         resultSection(playCall)
                     }
                 }
@@ -159,8 +159,13 @@ struct PlayCallerView: View {
             RouteDiagramView(playCall: playCall)
                 .frame(height: 320)
 
-            // Assignment table
-            ReceiverAssignmentView(assignments: playCall.assignments)
+            // Assignment table with motion picker
+            ReceiverAssignmentView(
+                assignments: playCall.assignments,
+                selectedMotion: $viewModel.yMotion,
+                onMotionChange: viewModel.setYMotion,
+                isMotionEnabled: viewModel.selectedFormation.canApplyMotion()
+            )
         }
     }
 }
