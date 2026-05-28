@@ -121,6 +121,12 @@ struct PlayCallerView: View {
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 160)
+                    .onChange(of: viewModel.routeDigitInput) { _, newValue in
+                        let filtered = newValue.filter { $0.isNumber }
+                        if filtered != newValue {
+                            viewModel.routeDigitInput = filtered
+                        }
+                    }
 
                 Text("X  Y  Z  A  H")
                     .font(.system(.caption, design: .monospaced))
@@ -130,28 +136,23 @@ struct PlayCallerView: View {
     }
 
     private var actionButtons: some View {
-        HStack(spacing: 12) {
-            Button(action: viewModel.generateFromConcept) {
-                Label("Generate", systemImage: "wand.and.stars")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.blue)
-            .disabled({
-                if viewModel.selectedFormation == .twins {
-                    return viewModel.selectedLeftConcept == nil || viewModel.selectedRightConcept == nil
-                }
-                return viewModel.selectedConcept == nil
-            }())
-
-            Button(action: viewModel.parseRouteDigits) {
-                Label("Parse", systemImage: "arrow.right.circle.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
-            .disabled(viewModel.routeDigitInput.isEmpty)
+        Button(action: viewModel.unifiedTranslate) {
+            Label("Translate", systemImage: "arrow.left.arrow.right")
+                .frame(maxWidth: .infinity)
         }
+        .buttonStyle(.borderedProminent)
+        .disabled({
+            let hasDigits = !viewModel.routeDigitInput.isEmpty
+            let hasLeftConcept = viewModel.selectedFormation == .twins && viewModel.selectedLeftConcept != nil
+            let hasRightConcept = viewModel.selectedFormation == .twins && viewModel.selectedRightConcept != nil
+            let hasTwinsConcepts = hasLeftConcept && hasRightConcept
+            let hasTripsConceptSingle = viewModel.selectedFormation != .twins && viewModel.selectedConcept != nil
+
+            let hasValidConcepts = (viewModel.selectedFormation == .twins && hasTwinsConcepts)
+                                || (viewModel.selectedFormation != .twins && hasTripsConceptSingle)
+
+            return !(hasDigits || hasValidConcepts)
+        }())
     }
 
     private func errorBanner(_ message: String) -> some View {
