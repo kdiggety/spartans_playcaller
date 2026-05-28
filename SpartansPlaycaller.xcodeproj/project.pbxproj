@@ -28,6 +28,7 @@
 		A10000019 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000019; };
 		A10000020 /* ReceiverMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020; };
 		A10000021 /* RouteAssignmentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000021; };
+		A10000022 /* ConceptBadgeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000022; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +53,7 @@
 		A20000019 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000020 /* ReceiverMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverMotion.swift; sourceTree = "<group>"; };
 		A20000021 /* RouteAssignmentError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAssignmentError.swift; sourceTree = "<group>"; };
+		A20000022 /* ConceptBadgeRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptBadgeRow.swift; sourceTree = "<group>"; };
 		A30000001 /* SpartansPlaycaller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpartansPlaycaller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -130,6 +132,7 @@
 				A20000002 /* PlayCallerView.swift */,
 				A20000003 /* RouteDiagramView.swift */,
 				A20000004 /* ReceiverAssignmentView.swift */,
+				A20000022 /* ConceptBadgeRow.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -231,6 +234,7 @@
 				A10000018 /* DiagramRenderer.swift in Sources */,
 				A10000020 /* ReceiverMotion.swift in Sources */,
 				A10000021 /* RouteAssignmentError.swift in Sources */,
+				A10000022 /* ConceptBadgeRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
