@@ -11,30 +11,6 @@ struct ReceiverAssignmentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Motion Picker (Trips formations only)
-            if isMotionEnabled {
-                VStack(spacing: 8) {
-                    Text("Y MOTION")
-                        .font(.caption.bold())
-                        .foregroundStyle(.secondary)
-
-                    Picker("Y Motion", selection: $selectedMotion) {
-                        Text("None").tag(nil as ReceiverMotion?)
-                        ForEach(ReceiverMotion.allCases.dropFirst()) { motion in
-                            Text(motion.rawValue).tag(Optional(motion))
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .onChange(of: selectedMotion) { _, newValue in
-                        onMotionChange(newValue)
-                    }
-                }
-                .padding(12)
-                .background(Color(.systemGray5))
-
-                Divider()
-            }
-
             // Header
             HStack {
                 Text("WR")
@@ -55,36 +31,59 @@ struct ReceiverAssignmentView: View {
 
             // Rows
             ForEach(assignments) { assignment in
-                HStack {
-                    Text(assignment.receiver.rawValue)
-                        .font(.system(.body, design: .monospaced, weight: .bold))
-                        .foregroundColor(receiverColor(assignment.receiver))
-                        .frame(width: 36, alignment: .leading)
+                VStack(spacing: 0) {
+                    HStack {
+                        Text(assignment.receiver.rawValue)
+                            .font(.system(.body, design: .monospaced, weight: .bold))
+                            .foregroundColor(receiverColor(assignment.receiver))
+                            .frame(width: 36, alignment: .leading)
 
-                    Text("\(assignment.routeNumber.rawValue)")
-                        .font(.system(.body, design: .monospaced))
-                        .frame(width: 24, alignment: .center)
+                        Text("\(assignment.routeNumber.rawValue)")
+                            .font(.system(.body, design: .monospaced))
+                            .frame(width: 24, alignment: .center)
 
-                    // Side column with motion indicator
-                    VStack(alignment: .center, spacing: 2) {
-                        Text(assignment.side.rawValue.capitalized)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        // Side column with motion indicator
+                        VStack(alignment: .center, spacing: 2) {
+                            Text(assignment.side.rawValue.capitalized)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
 
-                        if assignment.receiver == .Y && assignment.motion != nil && assignment.motionFinalSide != assignment.side {
-                            Text("→ \(assignment.motionFinalSide.rawValue.capitalized)")
-                                .font(.caption2)
-                                .foregroundStyle(.orange)
+                            if assignment.receiver == .Y && assignment.motion != nil && assignment.motionFinalSide != assignment.side {
+                                Text("→ \(assignment.motionFinalSide.rawValue.capitalized)")
+                                    .font(.caption2)
+                                    .foregroundStyle(.orange)
+                            }
                         }
-                    }
-                    .frame(width: 50, alignment: .center)
+                        .frame(width: 50, alignment: .center)
 
-                    Text(assignment.meaning.rawValue)
-                        .font(.subheadline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Text(assignment.meaning.rawValue)
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+
+                    // Motion picker for Y receiver (Trips formations only)
+                    if assignment.receiver == .Y && isMotionEnabled {
+                        Divider().padding(.leading, 12)
+
+                        VStack(spacing: 8) {
+                            Picker("Y Motion", selection: $selectedMotion) {
+                                Text("None").tag(nil as ReceiverMotion?)
+                                ForEach(ReceiverMotion.allCases.dropFirst()) { motion in
+                                    Text(motion.rawValue).tag(Optional(motion))
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .onChange(of: selectedMotion) { _, newValue in
+                                onMotionChange(newValue)
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(.systemGray5))
+                    }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
 
                 if assignment.id != assignments.last?.id {
                     Divider().padding(.leading, 12)
