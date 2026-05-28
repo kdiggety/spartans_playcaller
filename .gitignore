@@ -1,0 +1,10 @@
+# Local overrides (do not commit secrets)
+.claude/settings.local.json
+CLAUDE.local.md
+*.local.md
+context/local.md
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

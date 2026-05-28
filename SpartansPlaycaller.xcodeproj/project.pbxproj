@@ -1,0 +1,434 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000001 /* SpartansPlaycallerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000001; };
+		A10000002 /* PlayCallerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000002; };
+		A10000003 /* RouteDiagramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000003; };
+		A10000004 /* ReceiverAssignmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000004; };
+		A10000005 /* PlayCallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000005; };
+		A10000006 /* Receiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000006; };
+		A10000007 /* Formation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000007; };
+		A10000008 /* RouteNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000008; };
+		A10000009 /* RouteMeaning.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009; };
+		A10000010 /* RouteAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010; };
+		A10000011 /* PlayCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000011; };
+		A10000012 /* RouteConcept.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000012; };
+		A10000013 /* ConceptTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000013; };
+		A10000014 /* PlayCallParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000014; };
+		A10000015 /* ConceptLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000015; };
+		A10000016 /* ConceptMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000016; };
+		A10000017 /* RouteInterpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000017; };
+		A10000018 /* DiagramRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000018; };
+		A10000019 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000019; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000001 /* SpartansPlaycallerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpartansPlaycallerApp.swift; sourceTree = "<group>"; };
+		A20000002 /* PlayCallerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCallerView.swift; sourceTree = "<group>"; };
+		A20000003 /* RouteDiagramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDiagramView.swift; sourceTree = "<group>"; };
+		A20000004 /* ReceiverAssignmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverAssignmentView.swift; sourceTree = "<group>"; };
+		A20000005 /* PlayCallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCallerViewModel.swift; sourceTree = "<group>"; };
+		A20000006 /* Receiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Receiver.swift; sourceTree = "<group>"; };
+		A20000007 /* Formation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formation.swift; sourceTree = "<group>"; };
+		A20000008 /* RouteNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteNumber.swift; sourceTree = "<group>"; };
+		A20000009 /* RouteMeaning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMeaning.swift; sourceTree = "<group>"; };
+		A20000010 /* RouteAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAssignment.swift; sourceTree = "<group>"; };
+		A20000011 /* PlayCall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCall.swift; sourceTree = "<group>"; };
+		A20000012 /* RouteConcept.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteConcept.swift; sourceTree = "<group>"; };
+		A20000013 /* ConceptTemplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptTemplate.swift; sourceTree = "<group>"; };
+		A20000014 /* PlayCallParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCallParser.swift; sourceTree = "<group>"; };
+		A20000015 /* ConceptLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptLibrary.swift; sourceTree = "<group>"; };
+		A20000016 /* ConceptMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptMatcher.swift; sourceTree = "<group>"; };
+		A20000017 /* RouteInterpreter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInterpreter.swift; sourceTree = "<group>"; };
+		A20000018 /* DiagramRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagramRenderer.swift; sourceTree = "<group>"; };
+		A20000019 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A30000001 /* SpartansPlaycaller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpartansPlaycaller.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A40000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A50000001 = {
+			isa = PBXGroup;
+			children = (
+				A50000002 /* SpartansPlaycaller */,
+				A50000007 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A50000002 /* SpartansPlaycaller */ = {
+			isa = PBXGroup;
+			children = (
+				A20000001 /* SpartansPlaycallerApp.swift */,
+				A50000003 /* Models */,
+				A50000004 /* Services */,
+				A50000005 /* ViewModels */,
+				A50000006 /* Views */,
+				A20000019 /* Assets.xcassets */,
+			);
+			path = SpartansPlaycaller;
+			sourceTree = "<group>";
+		};
+		A50000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000006 /* Receiver.swift */,
+				A20000007 /* Formation.swift */,
+				A20000008 /* RouteNumber.swift */,
+				A20000009 /* RouteMeaning.swift */,
+				A20000010 /* RouteAssignment.swift */,
+				A20000011 /* PlayCall.swift */,
+				A20000012 /* RouteConcept.swift */,
+				A20000013 /* ConceptTemplate.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A50000004 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A20000014 /* PlayCallParser.swift */,
+				A20000015 /* ConceptLibrary.swift */,
+				A20000016 /* ConceptMatcher.swift */,
+				A20000017 /* RouteInterpreter.swift */,
+				A20000018 /* DiagramRenderer.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A50000005 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A20000005 /* PlayCallerViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		A50000006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A20000002 /* PlayCallerView.swift */,
+				A20000003 /* RouteDiagramView.swift */,
+				A20000004 /* ReceiverAssignmentView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A50000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A30000001 /* SpartansPlaycaller.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A60000001 /* SpartansPlaycaller */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A80000003 /* Build configuration list for PBXNativeTarget "SpartansPlaycaller" */;
+			buildPhases = (
+				A70000001 /* Sources */,
+				A40000001 /* Frameworks */,
+				A70000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SpartansPlaycaller;
+			productName = SpartansPlaycaller;
+			productReference = A30000001 /* SpartansPlaycaller.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A60000002 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					A60000001 = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = A80000001 /* Build configuration list for PBXProject "SpartansPlaycaller" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A50000001;
+			productRefGroup = A50000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A60000001 /* SpartansPlaycaller */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A70000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000019 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A70000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000001 /* SpartansPlaycallerApp.swift in Sources */,
+				A10000002 /* PlayCallerView.swift in Sources */,
+				A10000003 /* RouteDiagramView.swift in Sources */,
+				A10000004 /* ReceiverAssignmentView.swift in Sources */,
+				A10000005 /* PlayCallerViewModel.swift in Sources */,
+				A10000006 /* Receiver.swift in Sources */,
+				A10000007 /* Formation.swift in Sources */,
+				A10000008 /* RouteNumber.swift in Sources */,
+				A10000009 /* RouteMeaning.swift in Sources */,
+				A10000010 /* RouteAssignment.swift in Sources */,
+				A10000011 /* PlayCall.swift in Sources */,
+				A10000012 /* RouteConcept.swift in Sources */,
+				A10000013 /* ConceptTemplate.swift in Sources */,
+				A10000014 /* PlayCallParser.swift in Sources */,
+				A10000015 /* ConceptLibrary.swift in Sources */,
+				A10000016 /* ConceptMatcher.swift in Sources */,
+				A10000017 /* RouteInterpreter.swift in Sources */,
+				A10000018 /* DiagramRenderer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A80000004 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A80000005 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A80000006 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spartans.playcaller;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A80000007 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spartans.playcaller;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A80000001 /* Build configuration list for PBXProject "SpartansPlaycaller" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000004 /* Debug */,
+				A80000005 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A80000003 /* Build configuration list for PBXNativeTarget "SpartansPlaycaller" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000006 /* Debug */,
+				A80000007 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = A60000002 /* Project object */;
+}
