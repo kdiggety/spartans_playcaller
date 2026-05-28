@@ -70,6 +70,29 @@ struct ConceptMatcher {
         return digits.joined()
     }
 
+    /// Merge left-side and right-side concept templates into a single digit string.
+    /// Used for Twins formation to support independent concept selection per side.
+    func generateTwinsDigits(
+        leftConcept: RouteConcept,
+        rightConcept: RouteConcept,
+        fillRoute: RouteNumber = .nine
+    ) -> String? {
+        guard
+            let leftTemplate = library.templates.first(where: {
+                $0.concept == leftConcept && $0.formationContext == .twinsLeft
+            }),
+            let rightTemplate = library.templates.first(where: {
+                $0.concept == rightConcept && $0.formationContext == .twinsRight
+            })
+        else { return nil }
+
+        var merged = leftTemplate.receiverRoutes
+        rightTemplate.receiverRoutes.forEach { merged[$0.key] = $0.value }
+
+        let receivers: [Receiver] = [.X, .Y, .Z, .A]
+        return receivers.map { "\((merged[$0] ?? fillRoute).rawValue)" }.joined()
+    }
+
     /// Identify a concept for a specific field side from assignments after motion is applied.
     /// This filters assignments by the requested side and matches against templates that
     /// apply to that side in the given formation.

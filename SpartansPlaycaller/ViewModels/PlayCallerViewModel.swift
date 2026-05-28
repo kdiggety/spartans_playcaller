@@ -8,6 +8,8 @@ final class PlayCallerViewModel: ObservableObject {
 
     @Published var selectedFormation: Formation = .twins
     @Published var selectedConcept: RouteConcept?
+    @Published var selectedLeftConcept: RouteConcept?
+    @Published var selectedRightConcept: RouteConcept?
     @Published var routeDigitInput: String = ""
     @Published var yMotion: ReceiverMotion? = nil
 
@@ -33,22 +35,39 @@ final class PlayCallerViewModel: ObservableObject {
 
     // MARK: - Actions
 
-    /// Generate a play call from the selected concept
+    /// Generate a play call from the selected concept(s)
     func generateFromConcept() {
         errorMessage = nil
 
-        guard let concept = selectedConcept else {
-            errorMessage = "Select a concept to generate"
-            return
-        }
-
-        if let playCall = interpreter.generate(concept: concept, formation: selectedFormation) {
-            currentPlayCall = playCall
-            routeDigitInput = playCall.routeDigits
-            yMotion = nil  // Reset motion when generating new play
-            applyMotion()
+        if selectedFormation == .twins {
+            guard let left = selectedLeftConcept, let right = selectedRightConcept else {
+                errorMessage = "Select a concept for each side"
+                return
+            }
+            guard let digits = interpreter.generateTwinsDigits(leftConcept: left, rightConcept: right) else {
+                errorMessage = "Cannot generate from \(left.rawValue) / \(right.rawValue)"
+                return
+            }
+            if case .success(let playCall) = interpreter.interpret(digits: digits, formation: selectedFormation) {
+                currentPlayCall = playCall
+                routeDigitInput = digits
+                yMotion = nil
+                applyMotion()
+            }
         } else {
-            errorMessage = "\(concept.rawValue) is not available in \(selectedFormation.rawValue)"
+            guard let concept = selectedConcept else {
+                errorMessage = "Select a concept to generate"
+                return
+            }
+
+            if let playCall = interpreter.generate(concept: concept, formation: selectedFormation) {
+                currentPlayCall = playCall
+                routeDigitInput = playCall.routeDigits
+                yMotion = nil
+                applyMotion()
+            } else {
+                errorMessage = "\(concept.rawValue) is not available in \(selectedFormation.rawValue)"
+            }
         }
     }
 
@@ -67,9 +86,20 @@ final class PlayCallerViewModel: ObservableObject {
         switch result {
         case .success(let playCall):
             currentPlayCall = playCall
-            // Sync concept picker if a concept was identified
-            selectedConcept = playCall.concept
             yMotion = nil  // Reset motion when parsing new digits
+
+            if selectedFormation == .twins {
+                // Identify each side and sync to chip selections
+                let leftAssignments = playCall.assignments.filter { $0.side == .left }
+                let rightAssignments = playCall.assignments.filter { $0.side == .right }
+                selectedLeftConcept = interpreter.identifyForSide(.left, assignments: leftAssignments, formation: .twins)
+                selectedRightConcept = interpreter.identifyForSide(.right, assignments: rightAssignments, formation: .twins)
+                leftSideConcept = selectedLeftConcept
+                rightSideConcept = selectedRightConcept
+            } else {
+                selectedConcept = playCall.concept
+            }
+
             applyMotion()
 
         case .failure(let error):
@@ -95,6 +125,8 @@ final class PlayCallerViewModel: ObservableObject {
         currentPlayCall = nil
         errorMessage = nil
         selectedConcept = nil
+        selectedLeftConcept = nil
+        selectedRightConcept = nil
         yMotion = nil
         currentPlayCallWithMotion = nil
         leftSideConcept = nil
@@ -165,6 +197,9 @@ final class PlayCallerViewModel: ObservableObject {
     /// Called when formation changes
     func formationChanged() {
         updateAvailableConcepts()
+        // Clear dual concept selections when formation changes
+        selectedLeftConcept = nil
+        selectedRightConcept = nil
         // Reset motion when formation changes (motion only valid in Trips formations)
         if !selectedFormation.canApplyMotion() {
             yMotion = nil

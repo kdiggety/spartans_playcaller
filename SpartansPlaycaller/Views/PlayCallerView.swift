@@ -61,20 +61,47 @@ struct PlayCallerView: View {
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
 
-            if viewModel.availableConcepts.isEmpty {
-                Text("No concepts available for this formation")
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
+            if viewModel.selectedFormation == .twins {
+                VStack(alignment: .leading, spacing: 12) {
+                    sideConceptRow(label: "Left", selection: $viewModel.selectedLeftConcept)
+                    sideConceptRow(label: "Right", selection: $viewModel.selectedRightConcept)
+                }
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(viewModel.availableConcepts) { concept in
-                            ConceptChip(
-                                concept: concept,
-                                isSelected: viewModel.selectedConcept == concept
-                            ) {
-                                viewModel.selectedConcept = concept
+                if viewModel.availableConcepts.isEmpty {
+                    Text("No concepts available for this formation")
+                        .font(.subheadline)
+                        .foregroundStyle(.tertiary)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(viewModel.availableConcepts) { concept in
+                                ConceptChip(
+                                    concept: concept,
+                                    isSelected: viewModel.selectedConcept == concept
+                                ) {
+                                    viewModel.selectedConcept = concept
+                                }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func sideConceptRow(label: String, selection: Binding<RouteConcept?>) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(viewModel.availableConcepts) { concept in
+                        ConceptChip(
+                            concept: concept,
+                            isSelected: selection.wrappedValue == concept
+                        ) {
+                            selection.wrappedValue = selection.wrappedValue == concept ? nil : concept
                         }
                     }
                 }
@@ -110,7 +137,12 @@ struct PlayCallerView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.blue)
-            .disabled(viewModel.selectedConcept == nil)
+            .disabled({
+                if viewModel.selectedFormation == .twins {
+                    return viewModel.selectedLeftConcept == nil || viewModel.selectedRightConcept == nil
+                }
+                return viewModel.selectedConcept == nil
+            }())
 
             Button(action: viewModel.parseRouteDigits) {
                 Label("Parse", systemImage: "arrow.right.circle.fill")
@@ -142,8 +174,10 @@ struct PlayCallerView: View {
                 Text(playCall.displayName)
                     .font(.title2.bold())
 
-                if viewModel.yMotion != nil && viewModel.selectedFormation.canApplyMotion() {
-                    // Side-specific concept display when motion is active
+                let showSideBadges = (viewModel.yMotion != nil && viewModel.selectedFormation.canApplyMotion())
+                                   || viewModel.selectedFormation == .twins
+
+                if showSideBadges {
                     let hasAnySideConcept = viewModel.leftSideConcept != nil || viewModel.rightSideConcept != nil
                     if hasAnySideConcept {
                         SideConceptBadges(

@@ -45,6 +45,12 @@ struct RouteInterpreter {
         return nil
     }
 
+    /// Generate route digits by merging left-side and right-side Twins concepts.
+    /// Used when the user selects independent concepts for each side in Twins formation.
+    func generateTwinsDigits(leftConcept: RouteConcept, rightConcept: RouteConcept) -> String? {
+        return matcher.generateTwinsDigits(leftConcept: leftConcept, rightConcept: rightConcept)
+    }
+
     /// Identify concept for a specific field side from assignments after motion is applied.
     /// This is used for side-aware concept matching when motion changes receiver groupings.
     func identifyForSide(_ side: FieldSide, assignments: [RouteAssignment], formation: Formation) -> RouteConcept? {
