@@ -70,9 +70,7 @@ struct ReceiverAssignmentView: View {
                         VStack(spacing: 8) {
                             Picker("Y Motion", selection: $selectedMotion) {
                                 Text("None").tag(Optional<ReceiverMotion>.none)
-                                ForEach(ReceiverMotion.allCases) { motion in
-                                    Text(motion.rawValue).tag(Optional<ReceiverMotion>.some(motion))
-                                }
+                                Text("Y After/Go").tag(Optional<ReceiverMotion>.some(.after))
                             }
                             .pickerStyle(.segmented)
                             .onChange(of: selectedMotion) { _, newValue in

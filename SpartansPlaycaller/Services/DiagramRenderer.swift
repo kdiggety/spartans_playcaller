@@ -205,18 +205,11 @@ struct DiagramRenderer {
 
         let baseDistance = abs(yBasePos.x - centerX)
 
-        switch motion {
-        case .stop:
-            // Y Stop: stays on same side (should not reach here, but failsafe)
-            return yBasePos
-
-        case .after:
-            // Y After: moves dramatically past tackle on opposite side
-            // Double the distance for dramatic effect
-            let dramaticDistance = baseDistance * 2.5
-            let finalX = (finalSide == .right) ? centerX + dramaticDistance : centerX - dramaticDistance
-            return CGPoint(x: finalX, y: losY)
-        }
+        // Y After/Go: moves dramatically past tackle on opposite side
+        // Double the distance for dramatic effect
+        let dramaticDistance = baseDistance * 2.5
+        let finalX = (finalSide == .right) ? centerX + dramaticDistance : centerX - dramaticDistance
+        return CGPoint(x: finalX, y: losY)
     }
 
     /// Compute a smooth arc path from initial to final position for motion visualization.
@@ -240,19 +233,10 @@ struct DiagramRenderer {
         let arcDepth = distance * 0.25
 
         let centerX = config.fieldWidth / 2
-        let controlPoint: CGPoint
 
-        switch motion {
-        case .stop:
-            // Curve inward (toward field center) — Y stays same side
-            let inwardDir = (midX > centerX) ? -1.0 : 1.0
-            controlPoint = CGPoint(x: midX + inwardDir * arcDepth, y: midY - arcDepth * 0.5)
-
-        case .after:
-            // Curve outward (away from field center) — Y moves to opposite side
-            let outwardDir = (midX > centerX) ? 1.0 : -1.0
-            controlPoint = CGPoint(x: midX + outwardDir * arcDepth, y: midY - arcDepth * 0.5)
-        }
+        // Curve outward (away from field center) — Y moves to opposite side
+        let outwardDir = (midX > centerX) ? 1.0 : -1.0
+        let controlPoint = CGPoint(x: midX + outwardDir * arcDepth, y: midY - arcDepth * 0.5)
 
         // Sample points along quadratic Bézier curve
         var pathPoints: [CGPoint] = []
