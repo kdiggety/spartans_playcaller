@@ -33,7 +33,7 @@ struct RouteAssignment: Identifiable {
     /// - Returns: Success if motion is valid for this receiver in the formation, or an error describing the conflict.
     static func validateMotionForFormation(_ motion: ReceiverMotion?, formation: Formation) -> Result<Void, RouteAssignmentError> {
         // No motion always validates
-        guard let motion = motion else {
+        guard motion != nil else {
             return .success(())
         }
 

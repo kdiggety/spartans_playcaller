@@ -194,7 +194,7 @@ struct DiagramRenderer {
         to: CGPoint,
         config: DiagramConfig
     ) -> [CGPoint] {
-        guard let motion = motion, motion != nil else { return [] }
+        guard let motion = motion else { return [] }
         guard from != to else { return [] }
 
         // Compute control point for arc curvature
@@ -216,9 +216,6 @@ struct DiagramRenderer {
             // Curve outward (away from field center) — Y moves to opposite side
             let outwardDir = (midX > centerX) ? 1.0 : -1.0
             controlPoint = CGPoint(x: midX + outwardDir * arcDepth, y: midY - arcDepth * 0.5)
-
-        case .none:
-            return []
         }
 
         // Sample points along quadratic Bézier curve
