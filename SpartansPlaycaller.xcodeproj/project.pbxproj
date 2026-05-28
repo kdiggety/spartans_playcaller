@@ -29,6 +29,11 @@
 		A10000020 /* ReceiverMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020; };
 		A10000021 /* RouteAssignmentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000021; };
 		A10000022 /* ConceptBadgeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000022; };
+		A10000023 /* PlayCallerViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000023; };
+		A10000024 /* ConceptMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000024; };
+		A10000025 /* RouteInterpreterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000025; };
+		A10000026 /* RouteDiagramViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000026; };
+		A10000027 /* ReceiverMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000027; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,11 +59,24 @@
 		A20000020 /* ReceiverMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverMotion.swift; sourceTree = "<group>"; };
 		A20000021 /* RouteAssignmentError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAssignmentError.swift; sourceTree = "<group>"; };
 		A20000022 /* ConceptBadgeRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptBadgeRow.swift; sourceTree = "<group>"; };
+		A20000023 /* PlayCallerViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCallerViewModelTests.swift; sourceTree = "<group>"; };
+		A20000024 /* ConceptMatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptMatcherTests.swift; sourceTree = "<group>"; };
+		A20000025 /* RouteInterpreterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInterpreterTests.swift; sourceTree = "<group>"; };
+		A20000026 /* RouteDiagramViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDiagramViewTests.swift; sourceTree = "<group>"; };
+		A20000027 /* ReceiverMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverMotionTests.swift; sourceTree = "<group>"; };
 		A30000001 /* SpartansPlaycaller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpartansPlaycaller.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A30000002 /* SpartansPlaycallerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpartansPlaycallerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A40000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A40000002 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -72,6 +90,7 @@
 			isa = PBXGroup;
 			children = (
 				A50000002 /* SpartansPlaycaller */,
+				A50000008 /* SpartansPlaycallerTests */,
 				A50000007 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -141,8 +160,21 @@
 			isa = PBXGroup;
 			children = (
 				A30000001 /* SpartansPlaycaller.app */,
+				A30000002 /* SpartansPlaycallerTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A50000008 /* SpartansPlaycallerTests */ = {
+			isa = PBXGroup;
+			children = (
+				A20000023 /* PlayCallerViewModelTests.swift */,
+				A20000024 /* ConceptMatcherTests.swift */,
+				A20000025 /* RouteInterpreterTests.swift */,
+				A20000026 /* RouteDiagramViewTests.swift */,
+				A20000027 /* ReceiverMotionTests.swift */,
+			);
+			path = SpartansPlaycallerTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -165,6 +197,23 @@
 			productReference = A30000001 /* SpartansPlaycaller.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A60000003 /* SpartansPlaycallerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A80000008 /* Build configuration list for PBXNativeTarget "SpartansPlaycallerTests" */;
+			buildPhases = (
+				A70000003 /* Sources */,
+				A40000002 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A90000001 /* PBXTargetDependency */,
+			);
+			name = SpartansPlaycallerTests;
+			productName = SpartansPlaycallerTests;
+			productReference = A30000002 /* SpartansPlaycallerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -175,6 +224,9 @@
 				LastSwiftUpdateCheck = 1540;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
+					A60000003 = {
+						CreatedOnToolsVersion = 15.4;
+					};
 					A60000001 = {
 						CreatedOnToolsVersion = 15.4;
 					};
@@ -194,6 +246,7 @@
 			projectRoot = "";
 			targets = (
 				A60000001 /* SpartansPlaycaller */,
+				A60000003 /* SpartansPlaycallerTests */,
 			);
 		};
 /* End PBXProject section */
@@ -208,6 +261,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A90000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A60000001 /* SpartansPlaycaller */;
+			targetProxy = A90000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		A90000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A60000002 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A60000001;
+			remoteInfo = SpartansPlaycaller;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A70000001 /* Sources */ = {
@@ -235,6 +306,18 @@
 				A10000020 /* ReceiverMotion.swift in Sources */,
 				A10000021 /* RouteAssignmentError.swift in Sources */,
 				A10000022 /* ConceptBadgeRow.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A70000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000023 /* PlayCallerViewModelTests.swift in Sources */,
+				A10000024 /* ConceptMatcherTests.swift in Sources */,
+				A10000025 /* RouteInterpreterTests.swift in Sources */,
+				A10000026 /* RouteDiagramViewTests.swift in Sources */,
+				A10000027 /* ReceiverMotionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,6 +501,56 @@
 			};
 			name = Release;
 		};
+		A80000009 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spartans.playcallerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SpartansPlaycaller.app/SpartansPlaycaller";
+			};
+			name = Debug;
+		};
+		A80000010 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.spartans.playcallerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SpartansPlaycaller.app/SpartansPlaycaller";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -435,6 +568,15 @@
 			buildConfigurations = (
 				A80000006 /* Debug */,
 				A80000007 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A80000008 /* Build configuration list for PBXNativeTarget "SpartansPlaycallerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000009 /* Debug */,
+				A80000010 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
