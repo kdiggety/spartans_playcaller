@@ -69,9 +69,9 @@ struct ReceiverAssignmentView: View {
 
                         VStack(spacing: 8) {
                             Picker("Y Motion", selection: $selectedMotion) {
-                                Text("None").tag(nil as ReceiverMotion?)
+                                Text("None").tag(Optional<ReceiverMotion>.none)
                                 ForEach(ReceiverMotion.allCases.dropFirst()) { motion in
-                                    Text(motion.rawValue).tag(Optional(motion))
+                                    Text(motion.rawValue).tag(Optional<ReceiverMotion>.some(motion))
                                 }
                             }
                             .pickerStyle(.segmented)
@@ -81,7 +81,7 @@ struct ReceiverAssignmentView: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color(.systemGray5))
+                        .background(Color(UIColor.systemGray5))
                     }
                 }
 
@@ -90,7 +90,7 @@ struct ReceiverAssignmentView: View {
                 }
             }
         }
-        .background(Color(.systemGray6))
+        .background(Color(UIColor.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
