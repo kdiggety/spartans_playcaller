@@ -70,7 +70,7 @@ struct ReceiverAssignmentView: View {
                         VStack(spacing: 8) {
                             Picker("Y Motion", selection: $selectedMotion) {
                                 Text("None").tag(Optional<ReceiverMotion>.none)
-                                ForEach(ReceiverMotion.allCases.dropFirst()) { motion in
+                                ForEach(ReceiverMotion.allCases) { motion in
                                     Text(motion.rawValue).tag(Optional<ReceiverMotion>.some(motion))
                                 }
                             }

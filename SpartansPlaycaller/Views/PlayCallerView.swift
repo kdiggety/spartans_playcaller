@@ -167,8 +167,10 @@ struct PlayCallerView: View {
             )
 
             // Assignment table with motion picker
+            // Use assignments with motion applied (currentPlayCallWithMotion) if available
+            let displayAssignments = viewModel.currentPlayCallWithMotion?.assignments ?? playCall.assignments
             ReceiverAssignmentView(
-                assignments: playCall.assignments,
+                assignments: displayAssignments,
                 selectedMotion: $viewModel.yMotion,
                 onMotionChange: viewModel.setYMotion,
                 isMotionEnabled: viewModel.selectedFormation.canApplyMotion()
