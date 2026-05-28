@@ -15,6 +15,7 @@ struct RouteDiagramView: View {
 
                 drawField(context: &context, config: config, size: size)
                 drawFootball(context: &context, config: config)
+                drawMotion(context: &context, config: config, positions: positions)
                 drawRoutes(context: &context, config: config, positions: positions)
                 drawReceivers(context: &context, config: config, positions: positions)
             }
@@ -24,6 +25,52 @@ struct RouteDiagramView: View {
     }
 
     // MARK: - Drawing Methods
+
+    private func drawMotion(context: inout GraphicsContext, config: DiagramConfig, positions: [Receiver: CGPoint]) {
+        for assignment in playCall.assignments {
+            guard assignment.receiver == .Y else { continue }
+            guard let motion = assignment.motion, motion != nil else { continue }
+            guard let initialPos = positions[.Y] else { continue }
+
+            // Compute Y's final position after motion
+            let finalPos = renderer.yFinalPosition(
+                initialSide: assignment.side,
+                finalSide: assignment.motionFinalSide,
+                formation: playCall.formation,
+                config: config
+            )
+
+            // Get motion arc
+            let arcPoints = renderer.motionPath(
+                for: .Y,
+                motion: motion,
+                from: initialPos,
+                to: finalPos,
+                config: config
+            )
+
+            guard arcPoints.count >= 2 else { continue }
+
+            // Draw dashed arc
+            let motionPath = Path { path in
+                path.move(to: arcPoints[0])
+                for i in 1..<arcPoints.count {
+                    path.addLine(to: arcPoints[i])
+                }
+            }
+
+            context.stroke(
+                motionPath,
+                with: .color(.yellow.opacity(0.4)),
+                style: StrokeStyle(
+                    lineWidth: 2.5,
+                    lineCap: .round,
+                    lineJoin: .round,
+                    dash: [4, 4]
+                )
+            )
+        }
+    }
 
     private func drawField(context: inout GraphicsContext, config: DiagramConfig, size: CGSize) {
         // Line of scrimmage

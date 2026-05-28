@@ -162,4 +162,82 @@ struct DiagramRenderer {
             return [startPosition, deep]
         }
     }
+
+    /// Compute Y's final position after motion is applied.
+    /// Y's final position depends on final side but stays at the same Y coordinate (line of scrimmage).
+    func yFinalPosition(initialSide: FieldSide, finalSide: FieldSide, formation: Formation, config: DiagramConfig) -> CGPoint {
+        let centerX = config.fieldWidth / 2
+        let losY = config.lineOfScrimmageY
+        let basePositions = receiverPositions(formation: formation, config: config)
+
+        guard let yBasePos = basePositions[.Y] else { return CGPoint(x: centerX, y: losY) }
+
+        // If final side is the same as initial, return base position
+        if initialSide == finalSide {
+            return yBasePos
+        }
+
+        // If final side differs, mirror Y's position to the opposite side
+        let distance = abs(yBasePos.x - centerX)
+        let finalX = (finalSide == .right) ? centerX + distance : centerX - distance
+        return CGPoint(x: finalX, y: losY)
+    }
+
+    /// Compute a smooth arc path from initial to final position for motion visualization.
+    /// Arc geometry depends on motion type:
+    /// - Y Stop: Arc curves inward (convex toward field center) — Y stays same side
+    /// - Y After/Go: Arc curves outward (convex away from field center) — Y moves to opposite side
+    func motionPath(
+        for receiver: Receiver,
+        motion: ReceiverMotion?,
+        from: CGPoint,
+        to: CGPoint,
+        config: DiagramConfig
+    ) -> [CGPoint] {
+        guard let motion = motion, motion != nil else { return [] }
+        guard from != to else { return [] }
+
+        // Compute control point for arc curvature
+        let midX = (from.x + to.x) / 2
+        let midY = (from.y + to.y) / 2
+        let distance = hypot(to.x - from.x, to.y - from.y)
+        let arcDepth = distance * 0.25
+
+        let centerX = config.fieldWidth / 2
+        let controlPoint: CGPoint
+
+        switch motion {
+        case .stop:
+            // Curve inward (toward field center) — Y stays same side
+            let inwardDir = (midX > centerX) ? -1.0 : 1.0
+            controlPoint = CGPoint(x: midX + inwardDir * arcDepth, y: midY - arcDepth * 0.5)
+
+        case .after, .go:
+            // Curve outward (away from field center) — Y moves to opposite side
+            let outwardDir = (midX > centerX) ? 1.0 : -1.0
+            controlPoint = CGPoint(x: midX + outwardDir * arcDepth, y: midY - arcDepth * 0.5)
+
+        case .none:
+            return []
+        }
+
+        // Sample points along quadratic Bézier curve
+        var pathPoints: [CGPoint] = []
+        for t in stride(from: CGFloat(0), through: CGFloat(1), by: 0.05) {
+            let point = quadraticBezier(p0: from, control: controlPoint, p1: to, t: t)
+            pathPoints.append(point)
+        }
+        return pathPoints
+    }
+
+    /// Quadratic Bézier curve interpolation.
+    private func quadraticBezier(p0: CGPoint, control: CGPoint, p1: CGPoint, t: CGFloat) -> CGPoint {
+        let mt = 1 - t
+        let mt2 = mt * mt
+        let t2 = t * t
+        return CGPoint(
+            x: mt2 * p0.x + 2 * mt * t * control.x + t2 * p1.x,
+            y: mt2 * p0.y + 2 * mt * t * control.y + t2 * p1.y
+        )
+    }
 }
