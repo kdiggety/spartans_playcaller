@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Displays the receiver assignment table showing each receiver's
 /// route number, field side, and interpreted route meaning.
