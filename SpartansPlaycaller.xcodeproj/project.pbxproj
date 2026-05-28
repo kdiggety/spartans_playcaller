@@ -26,6 +26,8 @@
 		A10000017 /* RouteInterpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000017; };
 		A10000018 /* DiagramRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000018; };
 		A10000019 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000019; };
+		A10000020 /* ReceiverMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020; };
+		A10000021 /* RouteAssignmentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000021; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +50,8 @@
 		A20000017 /* RouteInterpreter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInterpreter.swift; sourceTree = "<group>"; };
 		A20000018 /* DiagramRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagramRenderer.swift; sourceTree = "<group>"; };
 		A20000019 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A20000020 /* ReceiverMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverMotion.swift; sourceTree = "<group>"; };
+		A20000021 /* RouteAssignmentError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAssignmentError.swift; sourceTree = "<group>"; };
 		A30000001 /* SpartansPlaycaller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpartansPlaycaller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -91,6 +95,8 @@
 				A20000008 /* RouteNumber.swift */,
 				A20000009 /* RouteMeaning.swift */,
 				A20000010 /* RouteAssignment.swift */,
+				A20000020 /* ReceiverMotion.swift */,
+				A20000021 /* RouteAssignmentError.swift */,
 				A20000011 /* PlayCall.swift */,
 				A20000012 /* RouteConcept.swift */,
 				A20000013 /* ConceptTemplate.swift */,
@@ -223,6 +229,8 @@
 				A10000016 /* ConceptMatcher.swift in Sources */,
 				A10000017 /* RouteInterpreter.swift in Sources */,
 				A10000018 /* DiagramRenderer.swift in Sources */,
+				A10000020 /* ReceiverMotion.swift in Sources */,
+				A10000021 /* RouteAssignmentError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
