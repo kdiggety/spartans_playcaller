@@ -93,7 +93,7 @@ final class RouteInterpreterTests: XCTestCase {
         if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
                 var stoppedY = yAssignment
-                stoppedY.motion = .stop
+                stoppedY.motion = .after
 
                 // Y should remain on original side
                 XCTAssertEqual(stoppedY.motionFinalSide, .left)
@@ -284,7 +284,7 @@ final class RouteInterpreterTests: XCTestCase {
             // Test motion with H receiver
             var assignments = playCall.assignments
             if let hIndex = assignments.firstIndex(where: { $0.receiver == .H }) {
-                assignments[hIndex].motion = .stop
+                assignments[hIndex].motion = .after
 
                 // H's final side should remain center
                 XCTAssertEqual(assignments[hIndex].motionFinalSide, .center)

@@ -42,8 +42,8 @@ final class PlayCallerViewModelTests: XCTestCase {
 
         XCTAssertNotNil(viewModel.currentPlayCall)
 
-        viewModel.setYMotion(.stop)
-        XCTAssertEqual(viewModel.yMotion, .stop)
+        viewModel.setYMotion(.after)
+        XCTAssertEqual(viewModel.yMotion, .after)
         XCTAssertNil(viewModel.errorMessage)
     }
 
@@ -66,7 +66,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
         XCTAssertNotNil(viewModel.currentPlayCall)
 
-        viewModel.setYMotion(.stop)
+        viewModel.setYMotion(.after)
         XCTAssertNil(viewModel.yMotion)
         XCTAssertNotNil(viewModel.errorMessage)
         XCTAssertTrue(viewModel.errorMessage?.contains("Motion only available in Trips formations") ?? false)
@@ -83,14 +83,14 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNotNil(playCallBefore)
         XCTAssertNil(viewModel.currentPlayCallWithMotion?.assignments.first(where: { $0.receiver == .Y })?.motion)
 
-        viewModel.setYMotion(.stop)
+        viewModel.setYMotion(.after)
 
         let playCallAfter = viewModel.currentPlayCallWithMotion
         XCTAssertNotNil(playCallAfter)
 
         // Y should have motion applied in currentPlayCallWithMotion
         if let yAssignmentAfter = playCallAfter?.assignments.first(where: { $0.receiver == .Y }) {
-            XCTAssertEqual(yAssignmentAfter.motion, .stop)
+            XCTAssertEqual(yAssignmentAfter.motion, .after)
         }
     }
 
@@ -125,7 +125,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         let conceptBefore = viewModel.currentPlayCall?.concept
         XCTAssertNotNil(conceptBefore)
 
-        viewModel.setYMotion(.stop)
+        viewModel.setYMotion(.after)
 
         // After motion, left and right side concepts should be identified
         // This tests that re-identification happened (they may or may not exist)
@@ -138,7 +138,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
 
-        viewModel.setYMotion(.stop)
+        viewModel.setYMotion(.after)
 
         // Verify that leftSideConcept was computed (may be nil if no match)
         // The fact that it's published and computable is the test
@@ -163,8 +163,8 @@ final class PlayCallerViewModelTests: XCTestCase {
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
 
-        viewModel.setYMotion(.stop)
-        XCTAssertEqual(viewModel.yMotion, .stop)
+        viewModel.setYMotion(.after)
+        XCTAssertEqual(viewModel.yMotion, .after)
 
         viewModel.selectedFormation = .twins
         viewModel.formationChanged()
@@ -177,8 +177,8 @@ final class PlayCallerViewModelTests: XCTestCase {
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
 
-        viewModel.setYMotion(.stop)
-        XCTAssertEqual(viewModel.yMotion, .stop)
+        viewModel.setYMotion(.after)
+        XCTAssertEqual(viewModel.yMotion, .after)
 
         // Switch to another Trips formation
         viewModel.selectedFormation = .tripsRight
@@ -225,8 +225,8 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.yMotion) // Starts reset
 
         // Now apply motion
-        viewModel.setYMotion(.stop)
-        XCTAssertEqual(viewModel.yMotion, .stop)
+        viewModel.setYMotion(.after)
+        XCTAssertEqual(viewModel.yMotion, .after)
     }
 
     // MARK: - Route Digit Parsing Tests
@@ -273,10 +273,10 @@ final class PlayCallerViewModelTests: XCTestCase {
         viewModel.routeDigitInput = "6794"
         viewModel.selectedConcept = .smash
         viewModel.generateFromConcept()
-        viewModel.setYMotion(.stop)
+        viewModel.setYMotion(.after)
 
         XCTAssertNotNil(viewModel.currentPlayCall)
-        XCTAssertEqual(viewModel.yMotion, .stop)
+        XCTAssertEqual(viewModel.yMotion, .after)
 
         viewModel.reset()
 
@@ -326,8 +326,8 @@ final class PlayCallerViewModelTests: XCTestCase {
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
 
-        viewModel.setYMotion(.stop)
-        XCTAssertEqual(viewModel.yMotion, .stop)
+        viewModel.setYMotion(.after)
+        XCTAssertEqual(viewModel.yMotion, .after)
 
         viewModel.setYMotion(nil)
         XCTAssertNil(viewModel.yMotion)
@@ -339,7 +339,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
         // Calling setYMotion when no playCall exists
         viewModel.selectedFormation = .tripsLeft
-        viewModel.setYMotion(.stop)
+        viewModel.setYMotion(.after)
 
         XCTAssertNil(viewModel.currentPlayCallWithMotion)
         XCTAssertNil(viewModel.leftSideConcept)
@@ -351,8 +351,8 @@ final class PlayCallerViewModelTests: XCTestCase {
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
 
-        viewModel.setYMotion(.stop)
-        XCTAssertEqual(viewModel.yMotion, .stop)
+        viewModel.setYMotion(.after)
+        XCTAssertEqual(viewModel.yMotion, .after)
 
         viewModel.setYMotion(.after)
         XCTAssertEqual(viewModel.yMotion, .after)

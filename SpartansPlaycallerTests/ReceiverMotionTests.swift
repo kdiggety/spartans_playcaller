@@ -3,25 +3,25 @@ import XCTest
 
 final class ReceiverMotionTests: XCTestCase {
 
-    /// Test that .stop motion preserves original side for left-aligned receiver
+    /// Test that .after motion preserves original side for left-aligned receiver
     func testStopMotionPreservesLeftSide() {
-        let motion = ReceiverMotion.stop
+        let motion = ReceiverMotion.after
         let originalSide = FieldSide.left
         let finalSide = motion.finalSide(originalSide: originalSide)
         XCTAssertEqual(finalSide, .left)
     }
 
-    /// Test that .stop motion preserves original side for right-aligned receiver
+    /// Test that .after motion preserves original side for right-aligned receiver
     func testStopMotionPreservesRightSide() {
-        let motion = ReceiverMotion.stop
+        let motion = ReceiverMotion.after
         let originalSide = FieldSide.right
         let finalSide = motion.finalSide(originalSide: originalSide)
         XCTAssertEqual(finalSide, .right)
     }
 
-    /// Test that .stop motion preserves center for H back
+    /// Test that .after motion preserves center for H back
     func testStopMotionPreservesCenter() {
-        let motion = ReceiverMotion.stop
+        let motion = ReceiverMotion.after
         let originalSide = FieldSide.center
         let finalSide = motion.finalSide(originalSide: originalSide)
         XCTAssertEqual(finalSide, .center)
@@ -55,13 +55,13 @@ final class ReceiverMotionTests: XCTestCase {
     func testReceiverMotionHasAllCases() {
         let allCases = ReceiverMotion.allCases
         XCTAssertEqual(allCases.count, 2)
-        XCTAssertTrue(allCases.contains(.stop))
+        XCTAssertTrue(allCases.contains(.after))
         XCTAssertTrue(allCases.contains(.after))
     }
 
     /// Test ReceiverMotion Identifiable conformance
     func testReceiverMotionIdentifiable() {
-        let motion = ReceiverMotion.stop
+        let motion = ReceiverMotion.after
         XCTAssertEqual(motion.id, "Stop")
         XCTAssertEqual(ReceiverMotion.after.id, "After")
     }

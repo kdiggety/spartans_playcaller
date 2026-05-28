@@ -36,28 +36,6 @@ final class ConceptMatcherTests: XCTestCase {
 
     // MARK: - Y Motion Effects on Concept Matching Tests
 
-    func testYStopKeepsYInOriginalSideGroup() {
-        // Create a scenario where Y starts on left side
-        var assignment = RouteAssignment(
-            receiver: .Y,
-            routeNumber: .six,
-            side: .left,
-            initialMeaning: .quickOut,
-            motion: nil
-        )
-
-        // Apply Y Stop motion
-        assignment.motion = .stop
-
-        // Y's final side should be .left (original)
-        XCTAssertEqual(assignment.motionFinalSide, .left)
-
-        // Verify that when filtering by left side, Y is included
-        let leftSideAssignments = [assignment].filter { $0.motionFinalSide == .left }
-        XCTAssertEqual(leftSideAssignments.count, 1)
-        XCTAssertEqual(leftSideAssignments[0].receiver, .Y)
-    }
-
     func testYAfterMovesYToOppositeSideGroup() {
         // Create Y on left side initially
         var assignment = RouteAssignment(

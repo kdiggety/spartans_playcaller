@@ -34,7 +34,7 @@ final class RouteDiagramViewTests: XCTestCase {
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             // Apply Y Stop motion
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-                playCall.assignments[yIndex].motion = .stop
+                playCall.assignments[yIndex].motion = .after
             }
 
             let view = RouteDiagramView(playCall: playCall)
@@ -42,7 +42,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
             // Verify Y has motion assigned
             if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
-                XCTAssertEqual(yAssignment.motion, .stop)
+                XCTAssertEqual(yAssignment.motion, .after)
             }
         }
     }
@@ -382,7 +382,7 @@ struct RouteDiagramViewPreviewContainer: View {
 
                     if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
                         if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-                            playCall.assignments[yIndex].motion = .stop
+                            playCall.assignments[yIndex].motion = .after
                         }
                         RouteDiagramView(playCall: playCall)
                             .frame(height: 300)
@@ -452,7 +452,7 @@ struct RouteDiagramViewPreviewContainer: View {
     let interpreter = RouteInterpreter()
     if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
         if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-            playCall.assignments[yIndex].motion = .stop
+            playCall.assignments[yIndex].motion = .after
         }
         return AnyView(
             RouteDiagramView(playCall: playCall)
