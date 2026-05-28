@@ -142,17 +142,19 @@ struct PlayCallerView: View {
                 Text(playCall.displayName)
                     .font(.title2.bold())
 
-                if let concept = playCall.concept {
+                if viewModel.yMotion != nil && viewModel.selectedFormation.canApplyMotion() {
+                    // Side-specific concept display when motion is active
+                    let hasAnySideConcept = viewModel.leftSideConcept != nil || viewModel.rightSideConcept != nil
+                    if hasAnySideConcept {
+                        SideConceptBadges(
+                            left: viewModel.leftSideConcept,
+                            right: viewModel.rightSideConcept
+                        )
+                    }
+                } else if let concept = playCall.concept {
                     ConceptBadge(concept: concept)
-                } else {
-                    Text("Unknown / Custom Concept")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color(.systemGray5))
-                        .clipShape(Capsule())
                 }
+                // else: show nothing when concept doesn't match and no motion
             }
 
             // Route diagram
@@ -206,6 +208,45 @@ struct ConceptBadge: View {
         .padding(.vertical, 4)
         .background(Color.green.opacity(0.1))
         .clipShape(Capsule())
+    }
+}
+
+struct SideConceptBadges: View {
+    let left: RouteConcept?
+    let right: RouteConcept?
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if let left {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.left")
+                        .font(.caption2)
+                    Text(left.rawValue)
+                        .font(.subheadline.bold())
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(Color.green.opacity(0.1))
+                .clipShape(Capsule())
+            }
+            if left != nil && right != nil {
+                Text("|")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            if let right {
+                HStack(spacing: 4) {
+                    Text(right.rawValue)
+                        .font(.subheadline.bold())
+                    Image(systemName: "arrow.right")
+                        .font(.caption2)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(Color.green.opacity(0.1))
+                .clipShape(Capsule())
+            }
+        }
     }
 }
 
