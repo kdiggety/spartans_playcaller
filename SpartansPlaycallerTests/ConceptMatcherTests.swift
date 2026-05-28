@@ -94,8 +94,8 @@ final class ConceptMatcherTests: XCTestCase {
             motion: nil
         )
 
-        // Apply Y Go motion
-        assignment.motion = .go
+        // Apply Y After motion
+        assignment.motion = .after
 
         // Y's final side should be .left (flipped)
         XCTAssertEqual(assignment.motionFinalSide, .left)
@@ -212,7 +212,7 @@ final class ConceptMatcherTests: XCTestCase {
             routeNumber: .six,
             side: .left,
             initialMeaning: .quickOut,
-            motion: .go
+            motion: .after
         )
 
         // Filtering should use motionFinalSide

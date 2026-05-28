@@ -196,7 +196,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
 
-        viewModel.setYMotion(.go)
+        viewModel.setYMotion(.after)
 
         XCTAssertNotNil(viewModel.errorMessage)
         XCTAssertEqual(viewModel.errorMessage, "Motion only available in Trips formations")
@@ -357,12 +357,9 @@ final class PlayCallerViewModelTests: XCTestCase {
         viewModel.setYMotion(.after)
         XCTAssertEqual(viewModel.yMotion, .after)
 
-        viewModel.setYMotion(.go)
-        XCTAssertEqual(viewModel.yMotion, .go)
-
-        // Verify the last motion is applied
+        // Verify the motion is applied
         if let yAssignment = viewModel.currentPlayCallWithMotion?.assignments.first(where: { $0.receiver == .Y }) {
-            XCTAssertEqual(yAssignment.motion, .go)
+            XCTAssertEqual(yAssignment.motion, .after)
         }
     }
 }

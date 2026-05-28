@@ -171,7 +171,7 @@ struct DiagramRenderer {
     /// Compute Y's final position after motion is applied.
     /// Y's final position depends on motion type and final side:
     /// - **stop**: Y stays close to its original position (same side, minor offset toward tackle)
-    /// - **after/go**: Y moves dramatically to opposite side, well past the tackle
+    /// - **after**: Y moves dramatically to opposite side, well past the tackle
     ///
     /// - Parameters:
     ///   - initialSide: The side Y aligns on in the formation
@@ -210,8 +210,8 @@ struct DiagramRenderer {
             // Y Stop: stays on same side (should not reach here, but failsafe)
             return yBasePos
 
-        case .after, .go:
-            // Y After/Go: moves dramatically past tackle on opposite side
+        case .after:
+            // Y After: moves dramatically past tackle on opposite side
             // Double the distance for dramatic effect
             let dramaticDistance = baseDistance * 2.5
             let finalX = (finalSide == .right) ? centerX + dramaticDistance : centerX - dramaticDistance
@@ -222,7 +222,7 @@ struct DiagramRenderer {
     /// Compute a smooth arc path from initial to final position for motion visualization.
     /// Arc geometry depends on motion type:
     /// - Y Stop: Arc curves inward (convex toward field center) — Y stays same side
-    /// - Y After/Go: Arc curves outward (convex away from field center) — Y moves to opposite side
+    /// - Y After: Arc curves outward (convex away from field center) — Y moves to opposite side
     func motionPath(
         for receiver: Receiver,
         motion: ReceiverMotion?,
@@ -248,7 +248,7 @@ struct DiagramRenderer {
             let inwardDir = (midX > centerX) ? -1.0 : 1.0
             controlPoint = CGPoint(x: midX + inwardDir * arcDepth, y: midY - arcDepth * 0.5)
 
-        case .after, .go:
+        case .after:
             // Curve outward (away from field center) — Y moves to opposite side
             let outwardDir = (midX > centerX) ? 1.0 : -1.0
             controlPoint = CGPoint(x: midX + outwardDir * arcDepth, y: midY - arcDepth * 0.5)

@@ -65,11 +65,11 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testMotionArcRendersForYGo() {
+    func testMotionArcRendersForYAfter() {
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
-            // Apply Y Go motion
+            // Apply Y After motion
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-                playCall.assignments[yIndex].motion = .go
+                playCall.assignments[yIndex].motion = .after
             }
 
             let view = RouteDiagramView(playCall: playCall)
@@ -77,7 +77,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
             // Y should have flipped sides
             if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
-                XCTAssertEqual(yAssignment.motion, .go)
+                XCTAssertEqual(yAssignment.motion, .after)
                 XCTAssertEqual(yAssignment.motionFinalSide, .left)
             }
         }
@@ -107,7 +107,7 @@ final class RouteDiagramViewTests: XCTestCase {
         // Motion should draw first, routes second, receivers last
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-                playCall.assignments[yIndex].motion = .go
+                playCall.assignments[yIndex].motion = .after
             }
 
             let view = RouteDiagramView(playCall: playCall)
@@ -407,16 +407,16 @@ struct RouteDiagramViewPreviewContainer: View {
                     }
                 }
 
-                // Y Go motion in Trips Right
+                // Y After motion in Trips Right
                 Group {
-                    Text("Trips Right - Y Go (Flips Left)")
+                    Text("Trips Right - Y After (Flips Left)")
                         .font(.headline)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
 
                     if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
                         if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-                            playCall.assignments[yIndex].motion = .go
+                            playCall.assignments[yIndex].motion = .after
                         }
                         RouteDiagramView(playCall: playCall)
                             .frame(height: 300)
@@ -478,11 +478,11 @@ struct RouteDiagramViewPreviewContainer: View {
     return AnyView(Text("Failed to create play call"))
 }
 
-#Preview("Trips Right - Y Go", traits: .sizeThatFitsLayout) {
+#Preview("Trips Right - Y After", traits: .sizeThatFitsLayout) {
     let interpreter = RouteInterpreter()
     if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
         if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-            playCall.assignments[yIndex].motion = .go
+            playCall.assignments[yIndex].motion = .after
         }
         return AnyView(
             RouteDiagramView(playCall: playCall)

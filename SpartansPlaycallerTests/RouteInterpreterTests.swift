@@ -113,11 +113,11 @@ final class RouteInterpreterTests: XCTestCase {
         }
     }
 
-    func testMotionGoFlipsSide() {
+    func testMotionAfterFlipsSide() {
         if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
                 var movedY = yAssignment
-                movedY.motion = .go
+                movedY.motion = .after
 
                 // Y should flip from left to right
                 XCTAssertEqual(movedY.motionFinalSide, .right)
@@ -241,7 +241,7 @@ final class RouteInterpreterTests: XCTestCase {
             // Apply motion to Y
             var assignments = playCall.assignments
             if let yIndex = assignments.firstIndex(where: { $0.receiver == .Y }) {
-                assignments[yIndex].motion = .go
+                assignments[yIndex].motion = .after
             }
 
             // Verify motionFinalSide is computed correctly

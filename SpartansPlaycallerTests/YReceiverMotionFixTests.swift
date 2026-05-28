@@ -94,12 +94,12 @@ final class YReceiverMotionFixTests: XCTestCase {
                 return XCTFail("Y receiver not found")
             }
 
-            playCall.assignments[yIndex].motion = .go
+            playCall.assignments[yIndex].motion = .after
             let yAssignment = playCall.assignments[yIndex]
 
-            // Y Go should flip to left side
+            // Y After should flip to left side
             XCTAssertEqual(yAssignment.side, .right, "Y starts on right in Trips Right")
-            XCTAssertEqual(yAssignment.motionFinalSide, .left, "Y Go should flip to left side")
+            XCTAssertEqual(yAssignment.motionFinalSide, .left, "Y After should flip to left side")
 
             // Get positions
             let positions = renderer.receiverPositions(formation: playCall.formation, config: config)
@@ -177,17 +177,17 @@ final class YReceiverMotionFixTests: XCTestCase {
         }
     }
 
-    /// Route meaning should change when Y flips sides with Go
-    func testRouteMeaningChangesWhenYFlipsWithGo() {
+    /// Route meaning should change when Y flips sides with After motion
+    func testRouteMeaningChangesWhenYFlipsWithAfter() {
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
             guard let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) else {
                 return XCTFail("Y receiver not found")
             }
 
-            playCall.assignments[yIndex].motion = .go
+            playCall.assignments[yIndex].motion = .after
             let yAssignment = playCall.assignments[yIndex]
 
-            // Y starts on right, but Go motion flips to left
+            // Y starts on right, but After motion flips to left
             XCTAssertEqual(yAssignment.side, .right)
             XCTAssertEqual(yAssignment.motionFinalSide, .left)
 
@@ -322,7 +322,7 @@ final class YReceiverMotionFixTests: XCTestCase {
     /// - Y Go flips to right
     /// - Route meaning changes from Out (left) to Post (right) when Y flips to route 9 (absolute Post)
     /// - Arc moves dramatically to right
-    func testCompleteSailTripsLeftYGoScenario() {
+    func testCompleteSailTripsLeftYAfterScenario() {
         let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
 
         if case .success(var playCall) = interpreter.interpret(digits: "9391", formation: .tripsLeft) {
@@ -330,7 +330,7 @@ final class YReceiverMotionFixTests: XCTestCase {
                 return XCTFail("Y receiver not found")
             }
 
-            playCall.assignments[yIndex].motion = .go
+            playCall.assignments[yIndex].motion = .after
             let yAssignment = playCall.assignments[yIndex]
 
             // Verify Y flips from left to right
@@ -364,14 +364,14 @@ final class YReceiverMotionFixTests: XCTestCase {
 
     /// Verification for Trips Left with custom route "6", Y Go
     /// - Y starts on left, route "6" = Curl (left side meaning)
-    /// - Y Go flips to right, route "6" should recompute to Comeback (right side meaning)
-    func testCustomRouteTripsLeftYGoChangesMeaning() {
+    /// - Y After flips to right, route "6" should recompute to Comeback (right side meaning)
+    func testCustomRouteTripsLeftYAfterChangesMeaning() {
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             guard let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) else {
                 return XCTFail("Y receiver not found")
             }
 
-            playCall.assignments[yIndex].motion = .go
+            playCall.assignments[yIndex].motion = .after
             let yAssignment = playCall.assignments[yIndex]
 
             // Route is "6"
@@ -382,7 +382,7 @@ final class YReceiverMotionFixTests: XCTestCase {
             let leftMeaning = RouteNumber.six.meaning(on: .left)
             XCTAssertEqual(leftMeaning, .curl)
 
-            // After Y Go motion, final side is right: route "6" = Comeback
+            // After Y After motion, final side is right: route "6" = Comeback
             XCTAssertEqual(yAssignment.motionFinalSide, .right)
             let rightMeaning = RouteNumber.six.meaning(on: .right)
             XCTAssertEqual(rightMeaning, .comeback)
