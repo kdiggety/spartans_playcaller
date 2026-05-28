@@ -9,7 +9,7 @@ struct RouteAssignment: Identifiable {
     let routeNumber: RouteNumber
     let side: FieldSide
     let meaning: RouteMeaning
-    let motion: ReceiverMotion?
+    var motion: ReceiverMotion?
 
     /// The field side where this receiver executes their route after motion is applied.
     /// If no motion is assigned, this equals the original formation side.

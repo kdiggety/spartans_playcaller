@@ -44,4 +44,10 @@ struct RouteInterpreter {
         }
         return nil
     }
+
+    /// Identify concept for a specific field side from assignments after motion is applied.
+    /// This is used for side-aware concept matching when motion changes receiver groupings.
+    func identifyForSide(_ side: FieldSide, assignments: [RouteAssignment], formation: Formation) -> RouteConcept? {
+        return matcher.identifyForSide(side, assignments: assignments, formation: formation)
+    }
 }

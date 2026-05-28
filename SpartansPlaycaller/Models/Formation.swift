@@ -55,6 +55,17 @@ enum Formation: String, CaseIterable, Identifiable {
             return (left: [.X], right: [.Y, .Z, .A])
         }
     }
+
+    /// Check if motion is allowed in this formation.
+    /// Motion is only valid in Trips formations.
+    func canApplyMotion() -> Bool {
+        switch self {
+        case .tripsLeft, .tripsRight:
+            return true
+        case .twins:
+            return false
+        }
+    }
 }
 
 /// The side of the ball a receiver aligns on.
