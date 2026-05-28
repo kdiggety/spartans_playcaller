@@ -159,6 +159,13 @@ struct PlayCallerView: View {
             RouteDiagramView(playCall: playCall)
                 .frame(height: 320)
 
+            // Concept badges by side (after motion)
+            ConceptBadgeRow(
+                leftConcept: viewModel.leftSideConcept,
+                rightConcept: viewModel.rightSideConcept,
+                hasMotion: viewModel.yMotion != nil
+            )
+
             // Assignment table with motion picker
             ReceiverAssignmentView(
                 assignments: playCall.assignments,
