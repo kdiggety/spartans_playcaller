@@ -133,12 +133,19 @@ final class PlayCallerViewModel: ObservableObject {
             return assignment
         }
 
-        // Create derived PlayCall (concept re-evaluated below)
+        // For Trips formations with motion applied, the original concept is invalidated
+        // since receiver groupings change. Set concept to nil to show "Unknown / Custom Concept".
+        var conceptAfterMotion = playCall.concept
+        if selectedFormation.canApplyMotion() && yMotion != nil {
+            conceptAfterMotion = nil
+        }
+
+        // Create derived PlayCall with motion-aware concept
         currentPlayCallWithMotion = PlayCall(
             formation: playCall.formation,
             routeDigits: playCall.routeDigits,
             assignments: updatedAssignments,
-            concept: playCall.concept
+            concept: conceptAfterMotion
         )
 
         // Re-match concepts for left and right sides independently
