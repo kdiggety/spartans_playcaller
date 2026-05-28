@@ -1,73 +1,81 @@
-# Claude Code subagents kit
+# Spartans Playcaller
 
-Portable **`CLAUDE.md`** plus **`.claude/agents/`** discipline subagents (YAML frontmatter + prompts) for [Claude Code](https://code.claude.com/docs) — usable as **its own git repo** for proof-of-concept, or **copied into** an application repository.
+A native iOS app for generating football play calls, rendering route diagrams, and identifying route concepts using a custom nomenclature system.
 
-## Contents
+## What It Does
 
-| Path | Purpose |
-|------|---------|
-| [`CLAUDE.md`](./CLAUDE.md) | Orchestration: role map, defaults, governance, conflict rules |
-| [`.claude/agents/*.md`](./.claude/agents/) | Subagent definitions (`name`, `description`, `tools`, body) |
-| [`.claude/agents/README.md`](./.claude/agents/README.md) | Agent index, **orchestration checklist** (Agent tool, SDK `setting_sources`) |
-| [`.claude/rules/personas/README.md`](./.claude/rules/personas/README.md) | Stub: personas live as agents, not bulk rules |
-| [`examples/smoke-prompts.md`](./examples/smoke-prompts.md) | prompts to **prove** subagent delegation |
-| [`catalog/`](./catalog/) | Optional specialized agents (copy into `.claude/agents/` when needed) |
-| [`PROJECT_CONTEXT.example.md`](./PROJECT_CONTEXT.example.md) | Optional template for `PROJECT_CONTEXT.md` |
+- **Play Call Generator** — Select a formation and concept, get the route digits, receiver assignments, and a visual diagram
+- **Play Call Parser** — Enter route digits manually, see each receiver's interpreted route with side-aware meaning
+- **Concept Identification** — Automatically matches digit patterns against known concept templates
 
-## Prerequisites
+## The Nomenclature System
 
-1) [Claude Code](https://code.claude.com/docs) installed and authenticated (`claude` CLI works).
+This app implements a **non-standard** route numbering system where:
 
-2) Subagent delegation requires the **`Agent`** tool to be available to the session ([docs](https://code.claude.com/docs/en/agent-sdk/subagents)). If delegation never happens, allow **`Agent`** and/or **name the subagent** in your prompt (see **`.claude/agents/README.md`** → **Orchestration**).
+1. Route numbers (0-9) are **static** — they don't change
+2. The **meaning** of each number changes based on which side of the ball the receiver is aligned on
+3. Some routes have **absolute directions** (3 always breaks left, 4 always breaks right) regardless of side
 
-3) **Cursor / other IDEs** may not implement the same discovery path; **`@`-mention** agent files as a fallback ([`CLAUDE.md`](./CLAUDE.md)).
+This distinction is the core logic of the application.
 
-## Setup path A — Prove subagents in this repo (recommended)
+### Route Tree
 
-Use this folder as the **git repository root** while you validate behavior.
+| # | Left Side | Right Side |
+|---|-----------|------------|
+| 0 | Hitch | Hitch |
+| 1 | Quick Out | Quick Slant |
+| 2 | Quick Slant | Quick Out |
+| 3 | Out (breaks LEFT) | Out (breaks LEFT) |
+| 4 | Dig/In (breaks RIGHT) | Dig/In (breaks RIGHT) |
+| 5 | Comeback | Curl |
+| 6 | Curl | Comeback |
+| 7 | Corner (angles top-left) | Corner (angles top-left) |
+| 8 | Post (angles top-right) | Post (angles top-right) |
+| 9 | Go/Fade | Go/Fade |
 
-1) From this directory:
+### Formations
 
-```bash
-cd /path/to/claude-subagents-kit
-git init
-git add CLAUDE.md .claude examples PROJECT_CONTEXT.example.md README.md .gitignore
-git commit -m "Add Claude Code subagents kit"
+| Formation | Left Side | Right Side |
+|-----------|-----------|------------|
+| Twins | X, Y | Z, A |
+| Trips Left | A, X, Y | Z |
+| Trips Right | X | Y, Z, A |
+
+### Digit Sequence
+
+Always: **X, Y, Z, A** (4 digits) or **X, Y, Z, A, H** (5 digits)
+
+Example: `6794` in Twins = X runs Curl, Y runs Corner, Z runs Go, A runs Dig
+
+## Requirements
+
+- iOS 17.0+
+- Xcode 15.4+
+- Swift 5.9+
+
+## Building
+
+Open `SpartansPlaycaller.xcodeproj` in Xcode and build (Cmd+B). No external dependencies.
+
+## Architecture
+
+MVVM with clear separation of concerns:
+
+```
+SpartansPlaycaller/
+├── Models/          # Formation, Receiver, RouteNumber, RouteMeaning, PlayCall, etc.
+├── Services/        # PlayCallParser, ConceptLibrary, ConceptMatcher, RouteInterpreter, DiagramRenderer
+├── ViewModels/      # PlayCallerViewModel
+└── Views/           # PlayCallerView, RouteDiagramView, ReceiverAssignmentView
 ```
 
-2) Start Claude Code **from this same directory** so project `CLAUDE.md` and `.claude/` resolve correctly:
+## Concepts Supported
 
-```bash
-claude
-```
-
-3) Optional: copy `PROJECT_CONTEXT.example.md` → `PROJECT_CONTEXT.md` and customize (ignored by `.gitignore` if you name it `PROJECT_CONTEXT.md` — remove from `.gitignore` if you want it committed).
-
-4) Run prompts from [`examples/smoke-prompts.md`](./examples/smoke-prompts.md) and confirm delegation or document what blocked it.
-
-## Setup path B — Adopt inside another project
-
-1) Copy **`CLAUDE.md`** and the **`.claude/`** directory into the **target project repository root** (merge carefully if that project already has `.claude/`).
-
-2) Resolve duplicates (e.g. merge `settings.json`, combine agent folders).
-
-3) Commit and open Claude Code from the **target** repo root. If Claude Code was already running during the copy, **exit the session and re-launch** — custom agents in `.claude/agents/` are discovered at session start and will not be available until restart.
-
-4) Run smoke prompts adapted to that codebase.
-
-## Maintaining this kit (workstation_setup users)
-
-This directory is a **snapshot package** under `workstation_setup/claude-subagents-kit/`. Authoritative edits may continue under [`../CLAUDE.md`](../CLAUDE.md) and [`../.claude/`](../.claude/) in the parent workspace; **re-copy** into `claude-subagents-kit/` before publishing a new kit revision:
-
-```bash
-# From workstation_setup
-cp CLAUDE.md claude-subagents-kit/CLAUDE.md
-rm -rf claude-subagents-kit/.claude
-cp -R .claude claude-subagents-kit/.claude
-```
-
-## References
-
-- [Custom subagents](https://code.claude.com/docs/en/sub-agents)
-- [Agent SDK subagents](https://code.claude.com/docs/en/agent-sdk/subagents)
-- Orchestration checklist: [`.claude/agents/README.md`](./.claude/agents/README.md)
+| Concept | Twins Left | Twins Right | Trips Left | Trips Right |
+|---------|-----------|-------------|------------|-------------|
+| Smash | X=6, Y=7 | Z=5, A=8 | X=6, Y=7, A=4 | Z=5, Y=8, A=1 |
+| Dagger | X=4, Y=9 | Z=3, A=9 | — | Z=3, Y=9, A=2 |
+| Verts | X=9, Y=9 | Z=9, A=9 | — | — |
+| Scissors | X=8, Y=7 | Z=7, A=8 | — | Z=7, Y=8, A=5 |
+| Sail | X=9, Y=3 | Z=9, A=4 | X=9, Y=3, A=1 | Z=9, Y=4, A=1 |
+| China | — | — | X=6, Y=7, A=6 | Z=5, Y=8, A=5 |

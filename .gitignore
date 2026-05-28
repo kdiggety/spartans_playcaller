@@ -8,3 +8,20 @@ context/local.md
 .DS_Store
 .idea/
 .vscode/
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+
+# Swift Package Manager
+.build/
+Packages/
+
+# CocoaPods (if added later)
+Pods/
+
+# Project context (optional — remove this line to track)
+# PROJECT_CONTEXT.md
