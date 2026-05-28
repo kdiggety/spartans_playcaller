@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 /// Displays the receiver assignment table showing each receiver's
 /// route number, field side, and interpreted route meaning.
@@ -82,7 +81,7 @@ struct ReceiverAssignmentView: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color(UIColor.systemGray5))
+                        .background(Color(.systemGray5))
                     }
                 }
 
@@ -91,7 +90,7 @@ struct ReceiverAssignmentView: View {
                 }
             }
         }
-        .background(Color(UIColor.systemGray6))
+        .background(Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
