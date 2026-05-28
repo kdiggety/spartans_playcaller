@@ -11,8 +11,8 @@ final class ConceptMatcherTests: XCTestCase {
     func testIdentifyForSideWithLeftSideAssignments() {
         // Create assignments for left side
         let leftAssignments: [RouteAssignment] = [
-            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, meaning: .quickOut, motion: nil),
-            RouteAssignment(receiver: .Y, routeNumber: .seven, side: .left, meaning: .digIn, motion: nil),
+            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, initialMeaning: .quickOut, motion: nil),
+            RouteAssignment(receiver: .Y, routeNumber: .seven, side: .left, initialMeaning: .digIn, motion: nil),
         ]
 
         let concept = matcher.identifyForSide(.left, assignments: leftAssignments, formation: .twins)
@@ -24,8 +24,8 @@ final class ConceptMatcherTests: XCTestCase {
     func testIdentifyForSideWithRightSideAssignments() {
         // Create assignments for right side
         let rightAssignments: [RouteAssignment] = [
-            RouteAssignment(receiver: .Z, routeNumber: .six, side: .right, meaning: .quickSlant, motion: nil),
-            RouteAssignment(receiver: .A, routeNumber: .nine, side: .right, meaning: .goFade, motion: nil),
+            RouteAssignment(receiver: .Z, routeNumber: .six, side: .right, initialMeaning: .quickSlant, motion: nil),
+            RouteAssignment(receiver: .A, routeNumber: .nine, side: .right, initialMeaning: .goFade, motion: nil),
         ]
 
         let concept = matcher.identifyForSide(.right, assignments: rightAssignments, formation: .twins)
@@ -42,7 +42,7 @@ final class ConceptMatcherTests: XCTestCase {
             receiver: .Y,
             routeNumber: .six,
             side: .left,
-            meaning: .quickOut,
+            initialMeaning: .quickOut,
             motion: nil
         )
 
@@ -64,7 +64,7 @@ final class ConceptMatcherTests: XCTestCase {
             receiver: .Y,
             routeNumber: .six,
             side: .left,
-            meaning: .quickOut,
+            initialMeaning: .quickOut,
             motion: nil
         )
 
@@ -90,7 +90,7 @@ final class ConceptMatcherTests: XCTestCase {
             receiver: .Y,
             routeNumber: .six,
             side: .right,
-            meaning: .quickSlant,
+            initialMeaning: .quickSlant,
             motion: nil
         )
 
@@ -110,7 +110,7 @@ final class ConceptMatcherTests: XCTestCase {
             receiver: .X,
             routeNumber: .six,
             side: .left,
-            meaning: .quickOut,
+            initialMeaning: .quickOut,
             motion: nil
         )
 
@@ -126,14 +126,14 @@ final class ConceptMatcherTests: XCTestCase {
             receiver: .Y,
             routeNumber: .six,
             side: .left,
-            meaning: .quickOut,
+            initialMeaning: .quickOut,
             motion: .after // Moves Y to right
         )
         let zAssignment = RouteAssignment(
             receiver: .Z,
             routeNumber: .nine,
             side: .right,
-            meaning: .goFade,
+            initialMeaning: .goFade,
             motion: nil
         )
 
@@ -151,10 +151,10 @@ final class ConceptMatcherTests: XCTestCase {
     func testLeftAndRightSidesMatchedIndependently() {
         // Simulate Trips Left formation: X, Y, A on left; Z on right
         let tripsLeftAssignments: [RouteAssignment] = [
-            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, meaning: .quickOut, motion: nil),
-            RouteAssignment(receiver: .Y, routeNumber: .seven, side: .left, meaning: .digIn, motion: nil),
-            RouteAssignment(receiver: .Z, routeNumber: .nine, side: .right, meaning: .goFade, motion: nil),
-            RouteAssignment(receiver: .A, routeNumber: .six, side: .left, meaning: .quickOut, motion: nil),
+            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, initialMeaning: .quickOut, motion: nil),
+            RouteAssignment(receiver: .Y, routeNumber: .seven, side: .left, initialMeaning: .digIn, motion: nil),
+            RouteAssignment(receiver: .Z, routeNumber: .nine, side: .right, initialMeaning: .goFade, motion: nil),
+            RouteAssignment(receiver: .A, routeNumber: .six, side: .left, initialMeaning: .quickOut, motion: nil),
         ]
 
         // Identify concept for left side
@@ -171,7 +171,7 @@ final class ConceptMatcherTests: XCTestCase {
 
     func testIdentifyForSideRespectsFormationContext() {
         let assignments: [RouteAssignment] = [
-            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, meaning: .quickOut, motion: nil),
+            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, initialMeaning: .quickOut, motion: nil),
         ]
 
         // Same assignments, different formations
@@ -184,9 +184,9 @@ final class ConceptMatcherTests: XCTestCase {
 
     func testIdentifyForSideWithTripsFormations() {
         let leftAssignments: [RouteAssignment] = [
-            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, meaning: .quickOut, motion: nil),
-            RouteAssignment(receiver: .Y, routeNumber: .seven, side: .left, meaning: .digIn, motion: nil),
-            RouteAssignment(receiver: .A, routeNumber: .six, side: .left, meaning: .quickOut, motion: nil),
+            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, initialMeaning: .quickOut, motion: nil),
+            RouteAssignment(receiver: .Y, routeNumber: .seven, side: .left, initialMeaning: .digIn, motion: nil),
+            RouteAssignment(receiver: .A, routeNumber: .six, side: .left, initialMeaning: .quickOut, motion: nil),
         ]
 
         let concept = matcher.identifyForSide(.left, assignments: leftAssignments, formation: .tripsLeft)
@@ -211,7 +211,7 @@ final class ConceptMatcherTests: XCTestCase {
             receiver: .Y,
             routeNumber: .six,
             side: .left,
-            meaning: .quickOut,
+            initialMeaning: .quickOut,
             motion: .go
         )
 
@@ -231,7 +231,7 @@ final class ConceptMatcherTests: XCTestCase {
             receiver: .Y,
             routeNumber: .six,
             side: .left,
-            meaning: .quickOut,
+            initialMeaning: .quickOut,
             motion: .after
         )
 
@@ -244,7 +244,7 @@ final class ConceptMatcherTests: XCTestCase {
             receiver: .Y,
             routeNumber: .six,
             side: .left,
-            meaning: .quickOut,
+            initialMeaning: .quickOut,
             motion: nil
         )
 

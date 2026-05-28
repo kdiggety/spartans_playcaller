@@ -169,23 +169,54 @@ struct DiagramRenderer {
     }
 
     /// Compute Y's final position after motion is applied.
-    /// Y's final position depends on final side but stays at the same Y coordinate (line of scrimmage).
-    func yFinalPosition(initialSide: FieldSide, finalSide: FieldSide, formation: Formation, config: DiagramConfig) -> CGPoint {
+    /// Y's final position depends on motion type and final side:
+    /// - **stop**: Y stays close to its original position (same side, minor offset toward tackle)
+    /// - **after/go**: Y moves dramatically to opposite side, well past the tackle
+    ///
+    /// - Parameters:
+    ///   - initialSide: The side Y aligns on in the formation
+    ///   - finalSide: The side Y ends up on after motion (from motion.finalSide logic)
+    ///   - motion: The motion type (determines endpoint distance)
+    ///   - formation: The formation context (affects tackle position)
+    ///   - config: Diagram configuration
+    /// - Returns: The final X position for Y at the line of scrimmage
+    func yFinalPosition(
+        initialSide: FieldSide,
+        finalSide: FieldSide,
+        motion: ReceiverMotion?,
+        formation: Formation,
+        config: DiagramConfig
+    ) -> CGPoint {
         let centerX = config.fieldWidth / 2
         let losY = config.lineOfScrimmageY
         let basePositions = receiverPositions(formation: formation, config: config)
 
         guard let yBasePos = basePositions[.Y] else { return CGPoint(x: centerX, y: losY) }
 
-        // If final side is the same as initial, return base position
-        if initialSide == finalSide {
+        // If no motion or final side is the same as initial, return base position
+        if motion == nil || initialSide == finalSide {
             return yBasePos
         }
 
-        // If final side differs, mirror Y's position to the opposite side
-        let distance = abs(yBasePos.x - centerX)
-        let finalX = (finalSide == .right) ? centerX + distance : centerX - distance
-        return CGPoint(x: finalX, y: losY)
+        // Motion-based endpoint calculation for side changes
+        guard let motion = motion, initialSide != finalSide else {
+            return yBasePos
+        }
+
+        let baseDistance = abs(yBasePos.x - centerX)
+
+        switch motion {
+        case .stop:
+            // Y Stop: stays on same side (should not reach here, but failsafe)
+            return yBasePos
+
+        case .after, .go:
+            // Y After/Go: moves dramatically past tackle on opposite side
+            // Double the distance for dramatic effect
+            let dramaticDistance = baseDistance * 2.5
+            let finalX = (finalSide == .right) ? centerX + dramaticDistance : centerX - dramaticDistance
+            return CGPoint(x: finalX, y: losY)
+        }
     }
 
     /// Compute a smooth arc path from initial to final position for motion visualization.

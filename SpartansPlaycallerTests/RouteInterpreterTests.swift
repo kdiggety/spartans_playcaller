@@ -165,8 +165,8 @@ final class RouteInterpreterTests: XCTestCase {
     func testIdentifyForLeftSideWithLeftAssignments() {
         // Create left-side assignments
         let leftAssignments: [RouteAssignment] = [
-            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, meaning: .quickOut, motion: nil),
-            RouteAssignment(receiver: .Y, routeNumber: .seven, side: .left, meaning: .digIn, motion: nil),
+            RouteAssignment(receiver: .X, routeNumber: .six, side: .left, initialMeaning: .quickOut, motion: nil),
+            RouteAssignment(receiver: .Y, routeNumber: .seven, side: .left, initialMeaning: .digIn, motion: nil),
         ]
 
         let concept = interpreter.identifyForSide(.left, assignments: leftAssignments, formation: .twins)
@@ -178,8 +178,8 @@ final class RouteInterpreterTests: XCTestCase {
     func testIdentifyForRightSideWithRightAssignments() {
         // Create right-side assignments
         let rightAssignments: [RouteAssignment] = [
-            RouteAssignment(receiver: .Z, routeNumber: .six, side: .right, meaning: .quickSlant, motion: nil),
-            RouteAssignment(receiver: .A, routeNumber: .nine, side: .right, meaning: .goFade, motion: nil),
+            RouteAssignment(receiver: .Z, routeNumber: .six, side: .right, initialMeaning: .quickSlant, motion: nil),
+            RouteAssignment(receiver: .A, routeNumber: .nine, side: .right, initialMeaning: .goFade, motion: nil),
         ]
 
         let concept = interpreter.identifyForSide(.right, assignments: rightAssignments, formation: .twins)

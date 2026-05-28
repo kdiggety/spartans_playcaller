@@ -246,6 +246,7 @@ final class RouteDiagramViewTests: XCTestCase {
                 let finalPos = renderer.yFinalPosition(
                     initialSide: yAssignment.side,
                     finalSide: yAssignment.motionFinalSide,
+                    motion: yAssignment.motion,
                     formation: playCall.formation,
                     config: config
                 )
@@ -319,6 +320,7 @@ final class RouteDiagramViewTests: XCTestCase {
                 let yFinalPos = renderer.yFinalPosition(
                     initialSide: yAssignment.side,
                     finalSide: yAssignment.motionFinalSide,
+                    motion: yAssignment.motion,
                     formation: playCall.formation,
                     config: config
                 )

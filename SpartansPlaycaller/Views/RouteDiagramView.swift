@@ -36,6 +36,7 @@ struct RouteDiagramView: View {
             let finalPos = renderer.yFinalPosition(
                 initialSide: assignment.side,
                 finalSide: assignment.motionFinalSide,
+                motion: motion,
                 formation: playCall.formation,
                 config: config
             )
@@ -116,6 +117,7 @@ struct RouteDiagramView: View {
                 routeStartPos = renderer.yFinalPosition(
                     initialSide: assignment.side,
                     finalSide: assignment.motionFinalSide,
+                    motion: assignment.motion,
                     formation: playCall.formation,
                     config: config
                 )

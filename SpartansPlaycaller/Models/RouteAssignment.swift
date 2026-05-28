@@ -8,7 +8,7 @@ struct RouteAssignment: Identifiable {
     let receiver: Receiver
     let routeNumber: RouteNumber
     let side: FieldSide
-    let meaning: RouteMeaning
+    let initialMeaning: RouteMeaning
     var motion: ReceiverMotion?
 
     /// The field side where this receiver executes their route after motion is applied.
@@ -19,6 +19,13 @@ struct RouteAssignment: Identifiable {
             return motion.finalSide(originalSide: side)
         }
         return side
+    }
+
+    /// The route meaning for this assignment, computed based on the final side after motion.
+    /// When motion is present (and changes the side), this recomputes the meaning using the final side.
+    /// Otherwise, uses the initial meaning from parse time.
+    var meaning: RouteMeaning {
+        routeNumber.meaning(on: motionFinalSide)
     }
 
     var label: String {
