@@ -70,7 +70,7 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .dagger,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .three, .A: .nine]
+            receiverRoutes: [.Z: .nine, .A: .three]
         ))
 
         templates.append(ConceptTemplate(
