@@ -6,6 +6,7 @@ import UIKit
 /// the route diagram and assignment table.
 struct PlayCallerView: View {
     @StateObject private var viewModel = PlayCallerViewModel()
+    @FocusState private var digitFieldFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -142,7 +143,9 @@ struct PlayCallerView: View {
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 160)
+                    .focused($digitFieldFocused)
                     .onChange(of: viewModel.routeDigitInput) { _, newValue in
+                        guard digitFieldFocused else { return }
                         let filtered = newValue.filter { $0.isNumber }
                         if filtered != newValue {
                             viewModel.routeDigitInput = filtered
