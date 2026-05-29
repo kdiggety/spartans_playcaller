@@ -153,6 +153,62 @@ struct ConceptLibrary {
             receiverRoutes: [.Z: .nine, .Y: .four, .A: .one]
         ))
 
+        // ──────────────────────────────────────────────
+        // PRO LEFT (X and Y on left; Z isolated right)
+        // ──────────────────────────────────────────────
+
+        templates.append(ConceptTemplate(
+            concept: .smash,
+            formationContext: .proLeft,
+            receiverRoutes: [.X: .six, .Y: .seven]
+        ))
+
+        templates.append(ConceptTemplate(
+            concept: .dagger,
+            formationContext: .proLeft,
+            receiverRoutes: [.X: .four, .Y: .nine]
+        ))
+
+        templates.append(ConceptTemplate(
+            concept: .scissors,
+            formationContext: .proLeft,
+            receiverRoutes: [.X: .eight, .Y: .seven]
+        ))
+
+        templates.append(ConceptTemplate(
+            concept: .sail,
+            formationContext: .proLeft,
+            receiverRoutes: [.X: .nine, .Y: .three]
+        ))
+
+        // ──────────────────────────────────────────────
+        // PRO RIGHT (X isolated left; Y slot and Z on right)
+        // ──────────────────────────────────────────────
+
+        templates.append(ConceptTemplate(
+            concept: .smash,
+            formationContext: .proRight,
+            receiverRoutes: [.Y: .eight, .Z: .five]
+        ))
+
+        templates.append(ConceptTemplate(
+            concept: .dagger,
+            formationContext: .proRight,
+            receiverRoutes: [.Y: .nine, .Z: .three]
+        ))
+
+        templates.append(ConceptTemplate(
+            concept: .scissors,
+            formationContext: .proRight,
+            receiverRoutes: [.Y: .eight, .Z: .seven]
+        ))
+
+        templates.append(ConceptTemplate(
+            concept: .sail,
+            formationContext: .proRight,
+            receiverRoutes: [.Y: .four, .Z: .nine]
+        ))
+
         return templates
     }
 }
