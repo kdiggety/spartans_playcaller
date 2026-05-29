@@ -6,6 +6,7 @@ import SwiftUI
 struct ReceiverAssignmentView: View {
     let assignments: [RouteAssignment]
     @Binding var selectedMotion: ReceiverMotion?
+    @Binding var yWheelEnabled: Bool
     let onMotionChange: (ReceiverMotion?) -> Void
     let isMotionEnabled: Bool
 
@@ -78,6 +79,8 @@ struct ReceiverAssignmentView: View {
                             .onChange(of: selectedMotion) { _, newValue in
                                 onMotionChange(newValue)
                             }
+
+                            Toggle("Y Wheel", isOn: $yWheelEnabled)
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)

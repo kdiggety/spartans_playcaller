@@ -219,6 +219,7 @@ struct PlayCallerView: View {
             ReceiverAssignmentView(
                 assignments: displayAssignments,
                 selectedMotion: $viewModel.yMotion,
+                yWheelEnabled: $viewModel.yWheelEnabled,
                 onMotionChange: viewModel.setYMotion,
                 isMotionEnabled: viewModel.selectedFormation.canApplyMotion()
             )
