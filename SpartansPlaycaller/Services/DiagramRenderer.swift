@@ -269,4 +269,75 @@ struct DiagramRenderer {
             y: mt2 * p0.y + 2 * mt * t * control.y + t2 * p1.y
         )
     }
+
+    /// Compute Y wheel arc path: semi-circular motion behind formation, same-side exit.
+    /// Y wheel is a semi-circle arc that goes:
+    /// 1. Back (away from LOS) half the field width
+    /// 2. Down the sideline (away from center)
+    /// 3. Arc curves behind X/A receivers
+    ///
+    /// - Parameters:
+    ///   - playCall: The play call containing formation and route assignments
+    ///   - config: Diagram configuration
+    /// - Returns: A tuple of (path, color) where path is a SwiftUI Path and color is the stroke color (yellow)
+    func yWheelArcPath(for playCall: PlayCall, config: DiagramConfig) -> (Path, Color) {
+        let positions = receiverPositions(formation: playCall.formation, config: config)
+        guard let yPosition = positions[.Y] else {
+            // Y not in formation (shouldn't happen, but handle gracefully)
+            return (Path(), .yellow)
+        }
+
+        let yAssignment = playCall.assignments.first { $0.receiver == .Y }
+        let side = yAssignment?.side ?? playCall.formation.side(for: .Y)
+
+        var path = Path()
+        path.move(to: yPosition)
+
+        // Calculate arc control points
+        let backwardDistance = config.fieldWidth * 0.2  // 20% back
+        let sidewayDistance = config.fieldHeight * 0.3  // 30% down sideline
+
+        let controlPoint1: CGPoint
+        let controlPoint2: CGPoint
+        let endPoint: CGPoint
+
+        if side == .left {
+            // Left-side Y wheel: arc goes to the left and down
+            controlPoint1 = CGPoint(
+                x: yPosition.x - backwardDistance,
+                y: yPosition.y + sidewayDistance * 0.5
+            )
+            controlPoint2 = CGPoint(
+                x: yPosition.x - backwardDistance * 0.5,
+                y: yPosition.y + sidewayDistance
+            )
+            endPoint = CGPoint(
+                x: yPosition.x,
+                y: yPosition.y + sidewayDistance
+            )
+        } else {
+            // Right-side Y wheel: arc goes to the right and down
+            controlPoint1 = CGPoint(
+                x: yPosition.x + backwardDistance,
+                y: yPosition.y + sidewayDistance * 0.5
+            )
+            controlPoint2 = CGPoint(
+                x: yPosition.x + backwardDistance * 0.5,
+                y: yPosition.y + sidewayDistance
+            )
+            endPoint = CGPoint(
+                x: yPosition.x,
+                y: yPosition.y + sidewayDistance
+            )
+        }
+
+        // Draw cubic Bézier curve for smooth arc
+        path.addCurve(
+            to: endPoint,
+            control1: controlPoint1,
+            control2: controlPoint2
+        )
+
+        return (path, .yellow) // Yellow dashed line like Y After/Go
+    }
 }

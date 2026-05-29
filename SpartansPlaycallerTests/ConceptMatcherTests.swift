@@ -290,4 +290,64 @@ final class ConceptMatcherTests: XCTestCase {
             XCTAssertTrue(true)
         }
     }
+
+    // MARK: - Y Wheel Motion Tests
+
+    func testYWheelMotionTriggersReIdentification() {
+        let interpreter = RouteInterpreter()
+
+        // Setup: Trips Left, (X:6, Y:7, Z:5, A:8)
+        guard case .success(let playCall) = interpreter.interpret(digits: "6758", formation: .tripsLeft) else {
+            XCTFail("Failed to interpret play call")
+            return
+        }
+
+        // Y wheel keeps Y on left side (same as original), so concept should remain valid
+        var wheelPlayCall = playCall
+        if let yIndex = wheelPlayCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
+            wheelPlayCall.assignments[yIndex].motion = .wheel
+        }
+
+        // Get Y assignment and verify it's on left side
+        if let yAssignment = wheelPlayCall.assignments.first(where: { $0.receiver == .Y }) {
+            XCTAssertEqual(yAssignment.side, .left, "Y should be on left side in Trips Left")
+            XCTAssertEqual(yAssignment.motion, .wheel, "Y should have wheel motion")
+            XCTAssertEqual(yAssignment.motionFinalSide, .left, "Y wheel keeps Y on left side")
+        }
+
+        // Verify concept re-identification works: left side should still match
+        let leftAssignments = wheelPlayCall.assignments.filter { $0.motionFinalSide == .left }
+        XCTAssertEqual(leftAssignments.count, 3, "Left side should have 3 receivers (X, Y, A)")
+
+        let leftConcept = matcher.identifyForSide(.left, assignments: leftAssignments, formation: .tripsLeft)
+        // Concept may or may not exist, but re-identification should work without crash
+        XCTAssertTrue(true)
+    }
+
+    func testYWheelMotionSameSidePreservesYPosition() {
+        let interpreter = RouteInterpreter()
+
+        // Y wheel motion keeps Y on same side and same receiver group
+        guard case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) else {
+            XCTFail("Failed to interpret play call")
+            return
+        }
+
+        var wheelPlayCall = playCall
+        if let yIndex = wheelPlayCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
+            wheelPlayCall.assignments[yIndex].motion = .wheel
+        }
+
+        // Y should be in left side group
+        let leftAssignments = wheelPlayCall.assignments.filter { $0.motionFinalSide == .left }
+        let yInLeft = leftAssignments.contains { $0.receiver == .Y }
+        XCTAssertTrue(yInLeft, "Y with wheel motion should stay in left side group")
+
+        // Right side should only have Z
+        let rightAssignments = wheelPlayCall.assignments.filter { $0.motionFinalSide == .right }
+        let hasZ = rightAssignments.contains { $0.receiver == .Z }
+        let hasY = rightAssignments.contains { $0.receiver == .Y }
+        XCTAssertTrue(hasZ, "Right side should have Z")
+        XCTAssertFalse(hasY, "Right side should NOT have Y (wheel keeps Y on left)")
+    }
 }

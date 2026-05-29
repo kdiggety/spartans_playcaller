@@ -16,57 +16,63 @@ enum RouteNumber: Int, CaseIterable, Identifiable {
 
     var id: Int { rawValue }
 
+    /// Semantic provider for this route. Each route uses a semantic type
+    /// (SideAware, AbsoluteDirection, Bubble) to define how meaning
+    /// varies (or stays constant) based on field side.
+    var semanticProvider: RouteSemanticProvider {
+        switch self {
+        case .zero:
+            return BubbleRouteSemantics(meaning: .hitch)
+
+        case .one:
+            return SideAwareRouteSemantics(
+                leftMeaning: .quickOut,
+                rightMeaning: .quickSlant
+            )
+
+        case .two:
+            return SideAwareRouteSemantics(
+                leftMeaning: .quickSlant,
+                rightMeaning: .quickOut
+            )
+
+        case .three:
+            return AbsoluteDirectionRouteSemantics(meaning: .out)
+
+        case .four:
+            return AbsoluteDirectionRouteSemantics(meaning: .digIn)
+
+        case .five:
+            return SideAwareRouteSemantics(
+                leftMeaning: .comeback,
+                rightMeaning: .curl
+            )
+
+        case .six:
+            return SideAwareRouteSemantics(
+                leftMeaning: .curl,
+                rightMeaning: .comeback
+            )
+
+        case .seven:
+            return AbsoluteDirectionRouteSemantics(meaning: .corner)
+
+        case .eight:
+            return AbsoluteDirectionRouteSemantics(meaning: .post)
+
+        case .nine:
+            return SideAwareRouteSemantics(
+                leftMeaning: .goFade,
+                rightMeaning: .goFade
+            )
+        }
+    }
+
     /// Interpret this route number based on field side.
     /// This is the CORE logic: same number means different routes
     /// depending on left vs right alignment.
     func meaning(on side: FieldSide) -> RouteMeaning {
-        switch (self, side) {
-        // 0: Hitch on both sides
-        case (.zero, _): return .hitch
-
-        // 1: Quick Out (left), Quick Slant (right)
-        case (.one, .left): return .quickOut
-        case (.one, .right): return .quickSlant
-        case (.one, .center): return .quickSlant
-
-        // 2: Quick Slant (left), Quick Out (right)
-        case (.two, .left): return .quickSlant
-        case (.two, .right): return .quickOut
-        case (.two, .center): return .quickOut
-
-        // 3: Out (left), Dig (right)
-        case (.three, .left): return .out
-        case (.three, .right): return .digIn
-        case (.three, .center): return .digIn
-
-        // 4: Dig (left), Out (right)
-        case (.four, .left): return .digIn
-        case (.four, .right): return .out
-        case (.four, .center): return .out
-
-        // 5: Comeback (left), Curl (right)
-        case (.five, .left): return .comeback
-        case (.five, .right): return .curl
-        case (.five, .center): return .curl
-
-        // 6: Curl (left), Comeback (right)
-        case (.six, .left): return .curl
-        case (.six, .right): return .comeback
-        case (.six, .center): return .comeback
-
-        // 7: Corner (left), Post (right)
-        case (.seven, .left): return .corner
-        case (.seven, .right): return .post
-        case (.seven, .center): return .post
-
-        // 8: Post (left), Corner (right)
-        case (.eight, .left): return .post
-        case (.eight, .right): return .corner
-        case (.eight, .center): return .corner
-
-        // 9: Straight vertical Go/Fade
-        case (.nine, _): return .goFade
-        }
+        return semanticProvider.meaning(on: side)
     }
 
     /// Parse a single character to a RouteNumber
