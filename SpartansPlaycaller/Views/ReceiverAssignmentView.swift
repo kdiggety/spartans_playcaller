@@ -63,14 +63,17 @@ struct ReceiverAssignmentView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
 
-                    // Motion picker for Y receiver (Trips formations only)
+                    // Motion picker for Y receiver (Trips/Pro formations only)
                     if assignment.receiver == .Y && isMotionEnabled {
                         Divider().padding(.leading, 12)
 
                         VStack(spacing: 8) {
                             Picker("Y Motion", selection: $selectedMotion) {
                                 Text("None").tag(Optional<ReceiverMotion>.none)
-                                Text("Y After/Go").tag(Optional<ReceiverMotion>.some(.after))
+                                Text("Stop").tag(Optional<ReceiverMotion>.some(.stop))
+                                Text("After").tag(Optional<ReceiverMotion>.some(.after))
+                                Text("Go").tag(Optional<ReceiverMotion>.some(.go))
+                                Text("Wheel").tag(Optional<ReceiverMotion>.some(.wheel))
                             }
                             .pickerStyle(.segmented)
                             .onChange(of: selectedMotion) { _, newValue in
