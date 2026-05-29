@@ -13,22 +13,20 @@ enum ReceiverMotion: String, CaseIterable, Identifiable {
     /// Motion to opposite side (direct/faster) with immediate route flip.
     case go = "Y Go"
 
-    /// Semi-circular arc motion behind formation, stays on original side.
-    case wheel = "Y Wheel"
-
     var id: String { rawValue }
+
+    var description: String { rawValue }
 
     /// Compute the final field side after motion is applied.
     /// - **stop**: Receiver stays on original side, no flip.
     /// - **after**: Receiver flips to opposite side and runs route from that side.
     /// - **go**: Receiver flips to opposite side and runs route from that side.
-    /// - **wheel**: Receiver stays on original side (semi-circle arc), no flip.
     ///
     /// - Parameter originalSide: The side the receiver aligns on in the formation.
     /// - Returns: The side where the receiver will execute their route.
     func finalSide(originalSide: FieldSide) -> FieldSide {
         switch self {
-        case .stop, .wheel:
+        case .stop:
             return originalSide
         case .after, .go:
             switch originalSide {

@@ -73,7 +73,6 @@ struct ReceiverAssignmentView: View {
                                 Text("Stop").tag(Optional<ReceiverMotion>.some(.stop))
                                 Text("After").tag(Optional<ReceiverMotion>.some(.after))
                                 Text("Go").tag(Optional<ReceiverMotion>.some(.go))
-                                Text("Wheel").tag(Optional<ReceiverMotion>.some(.wheel))
                             }
                             .pickerStyle(.segmented)
                             .onChange(of: selectedMotion) { _, newValue in

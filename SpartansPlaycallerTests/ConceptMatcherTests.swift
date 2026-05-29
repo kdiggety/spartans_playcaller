@@ -293,7 +293,7 @@ final class ConceptMatcherTests: XCTestCase {
 
     // MARK: - Y Wheel Motion Tests
 
-    func testYWheelMotionTriggersReIdentification() {
+    func testYStopMotionKeepsSidePreservesYPosition() {
         let interpreter = RouteInterpreter()
 
         // Setup: Trips Left, (X:6, Y:7, Z:5, A:8)
@@ -302,21 +302,21 @@ final class ConceptMatcherTests: XCTestCase {
             return
         }
 
-        // Y wheel keeps Y on left side (same as original), so concept should remain valid
-        var wheelPlayCall = playCall
-        if let yIndex = wheelPlayCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-            wheelPlayCall.assignments[yIndex].motion = .wheel
+        // Y stop keeps Y on left side (same as original), so concept should remain valid
+        var stopPlayCall = playCall
+        if let yIndex = stopPlayCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
+            stopPlayCall.assignments[yIndex].motion = .stop
         }
 
         // Get Y assignment and verify it's on left side
-        if let yAssignment = wheelPlayCall.assignments.first(where: { $0.receiver == .Y }) {
+        if let yAssignment = stopPlayCall.assignments.first(where: { $0.receiver == .Y }) {
             XCTAssertEqual(yAssignment.side, .left, "Y should be on left side in Trips Left")
-            XCTAssertEqual(yAssignment.motion, .wheel, "Y should have wheel motion")
-            XCTAssertEqual(yAssignment.motionFinalSide, .left, "Y wheel keeps Y on left side")
+            XCTAssertEqual(yAssignment.motion, .stop, "Y should have stop motion")
+            XCTAssertEqual(yAssignment.motionFinalSide, .left, "Y stop keeps Y on left side")
         }
 
         // Verify concept re-identification works: left side should still match
-        let leftAssignments = wheelPlayCall.assignments.filter { $0.motionFinalSide == .left }
+        let leftAssignments = stopPlayCall.assignments.filter { $0.motionFinalSide == .left }
         XCTAssertEqual(leftAssignments.count, 3, "Left side should have 3 receivers (X, Y, A)")
 
         let leftConcept = matcher.identifyForSide(.left, assignments: leftAssignments, formation: .tripsLeft)
@@ -324,30 +324,30 @@ final class ConceptMatcherTests: XCTestCase {
         XCTAssertTrue(true)
     }
 
-    func testYWheelMotionSameSidePreservesYPosition() {
+    func testYAfterMotionFlipsSidePreservesRightAssignments() {
         let interpreter = RouteInterpreter()
 
-        // Y wheel motion keeps Y on same side and same receiver group
+        // Y after motion flips Y to opposite side and same receiver group
         guard case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) else {
             XCTFail("Failed to interpret play call")
             return
         }
 
-        var wheelPlayCall = playCall
-        if let yIndex = wheelPlayCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-            wheelPlayCall.assignments[yIndex].motion = .wheel
+        var afterPlayCall = playCall
+        if let yIndex = afterPlayCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
+            afterPlayCall.assignments[yIndex].motion = .after
         }
 
-        // Y should be in left side group
-        let leftAssignments = wheelPlayCall.assignments.filter { $0.motionFinalSide == .left }
-        let yInLeft = leftAssignments.contains { $0.receiver == .Y }
-        XCTAssertTrue(yInLeft, "Y with wheel motion should stay in left side group")
+        // Y should now be in right side group (flipped by after motion)
+        let rightAssignments = afterPlayCall.assignments.filter { $0.motionFinalSide == .right }
+        let yInRight = rightAssignments.contains { $0.receiver == .Y }
+        XCTAssertTrue(yInRight, "Y with after motion should move to right side group")
 
-        // Right side should only have Z
-        let rightAssignments = wheelPlayCall.assignments.filter { $0.motionFinalSide == .right }
-        let hasZ = rightAssignments.contains { $0.receiver == .Z }
-        let hasY = rightAssignments.contains { $0.receiver == .Y }
-        XCTAssertTrue(hasZ, "Right side should have Z")
-        XCTAssertFalse(hasY, "Right side should NOT have Y (wheel keeps Y on left)")
+        // Left side should only have X and A
+        let leftAssignments = afterPlayCall.assignments.filter { $0.motionFinalSide == .left }
+        let hasZ = leftAssignments.contains { $0.receiver == .Z }
+        let hasY = leftAssignments.contains { $0.receiver == .Y }
+        XCTAssertFalse(hasZ, "Left side should NOT have Z")
+        XCTAssertFalse(hasY, "Left side should NOT have Y (after flips Y to right)")
     }
 }
