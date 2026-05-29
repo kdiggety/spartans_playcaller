@@ -20,7 +20,7 @@ struct DiagramConfig {
             fieldHeight: height,
             lineOfScrimmageY: height * 0.75,
             routeLength: height * 0.25,
-            breakLength: height * 0.22,
+            breakLength: height * 0.15,
             receiverRadius: 12,
             footballSize: 10,
             receiverSpacing: width * 0.12,
