@@ -270,6 +270,24 @@ struct DiagramRenderer {
         )
     }
 
+    /// Dispatch to appropriate motion rendering based on yWheelEnabled and motion state.
+    /// If wheel is enabled, always render wheel arc.
+    /// Otherwise, render base motion arc if motion is selected.
+    ///
+    /// - Parameters:
+    ///   - playCall: The play call containing formation, motion, and wheel state
+    ///   - config: Diagram configuration
+    /// - Returns: A tuple of (path, color) or nil if no motion/wheel to render
+    func motionPathForPlayCall(for playCall: PlayCall, config: DiagramConfig) -> (Path, Color)? {
+        // If wheel is enabled, always render wheel arc
+        if playCall.yWheelEnabled {
+            return yWheelArcPath(for: playCall, config: config)
+        }
+
+        // Otherwise, no motion/wheel to render (the receiver motion arcs are drawn separately in the view)
+        return nil
+    }
+
     /// Compute Y wheel arc path: semi-circular motion behind formation, same-side exit.
     /// Y wheel is a semi-circle arc that goes:
     /// 1. Back (away from LOS) half the field width
