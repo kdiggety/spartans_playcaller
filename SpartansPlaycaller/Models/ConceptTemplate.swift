@@ -30,6 +30,8 @@ enum FormationContext {
     case twinsRight
     case tripsLeft
     case tripsRight
+    case proLeft
+    case proRight
 
     func matches(formation: Formation) -> Bool {
         switch self {
@@ -38,13 +40,15 @@ enum FormationContext {
         case .twinsRight: return formation == .twins
         case .tripsLeft: return formation == .tripsLeft
         case .tripsRight: return formation == .tripsRight
+        case .proLeft: return formation == .proLeft
+        case .proRight: return formation == .proRight
         }
     }
 
     var conceptSide: FieldSide {
         switch self {
-        case .twinsLeft, .tripsLeft: return .left
-        case .twinsRight, .tripsRight: return .right
+        case .twinsLeft, .tripsLeft, .proLeft: return .left
+        case .twinsRight, .tripsRight, .proRight: return .right
         case .specific: return .center
         }
     }

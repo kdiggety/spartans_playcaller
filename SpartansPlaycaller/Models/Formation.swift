@@ -5,6 +5,7 @@ import Foundation
 enum FormationFamily: String, CaseIterable, Identifiable {
     case twins = "Twins"
     case trips = "Trips"
+    case pro = "Pro"
 
     var id: String { rawValue }
 
@@ -13,7 +14,7 @@ enum FormationFamily: String, CaseIterable, Identifiable {
     var supportsSideSelection: Bool {
         switch self {
         case .twins: return false
-        case .trips: return true
+        case .trips, .pro: return true
         }
     }
 
@@ -25,6 +26,8 @@ enum FormationFamily: String, CaseIterable, Identifiable {
             return .twins
         case .trips:
             return side == .left ? .tripsLeft : .tripsRight
+        case .pro:
+            return side == .left ? .proLeft : .proRight
         }
     }
 }
@@ -35,6 +38,8 @@ enum Formation: String, CaseIterable, Identifiable {
     case twins = "Twins"
     case tripsLeft = "Trips Left"
     case tripsRight = "Trips Right"
+    case proLeft = "Pro Left"
+    case proRight = "Pro Right"
 
     var id: String { rawValue }
 
@@ -65,6 +70,22 @@ enum Formation: String, CaseIterable, Identifiable {
             case .Y, .Z, .A: return .right
             case .H: return .center
             }
+
+        case .proLeft:
+            // X far left, Y slot left; Z far right — no A receiver
+            switch receiver {
+            case .X, .Y: return .left
+            case .Z: return .right
+            case .A, .H: return .center
+            }
+
+        case .proRight:
+            // X far left; Y slot right, Z far right — no A receiver
+            switch receiver {
+            case .X: return .left
+            case .Y, .Z: return .right
+            case .A, .H: return .center
+            }
         }
     }
 
@@ -82,6 +103,14 @@ enum Formation: String, CaseIterable, Identifiable {
         case .tripsRight:
             // X isolated left; Y inside Z, Z, A outside Z
             return (left: [.X], right: [.Y, .Z, .A])
+
+        case .proLeft:
+            // X far left, Y slot left; Z far right
+            return (left: [.X, .Y], right: [.Z])
+
+        case .proRight:
+            // X far left; Y slot right, Z far right
+            return (left: [.X], right: [.Y, .Z])
         }
     }
 
@@ -89,7 +118,7 @@ enum Formation: String, CaseIterable, Identifiable {
     /// Motion is only valid in Trips formations.
     func canApplyMotion() -> Bool {
         switch self {
-        case .tripsLeft, .tripsRight:
+        case .tripsLeft, .tripsRight, .proLeft, .proRight:
             return true
         case .twins:
             return false
@@ -111,6 +140,8 @@ extension Formation {
             return .twins
         case .tripsLeft, .tripsRight:
             return .trips
+        case .proLeft, .proRight:
+            return .pro
         }
     }
 
@@ -122,6 +153,10 @@ extension Formation {
         case .tripsLeft:
             return .left
         case .tripsRight:
+            return .right
+        case .proLeft:
+            return .left
+        case .proRight:
             return .right
         }
     }

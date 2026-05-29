@@ -123,6 +123,8 @@ extension FormationContext: Equatable {
         case (.twinsRight, .twinsRight): return true
         case (.tripsLeft, .tripsLeft): return true
         case (.tripsRight, .tripsRight): return true
+        case (.proLeft, .proLeft): return true
+        case (.proRight, .proRight): return true
         default: return false
         }
     }

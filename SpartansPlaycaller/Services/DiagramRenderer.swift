@@ -61,6 +61,18 @@ struct DiagramRenderer {
             positions[.Y] = CGPoint(x: centerX + config.receiverSpacing * 0.5, y: losY)
             positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 1.5, y: losY)
             positions[.A] = CGPoint(x: centerX + config.receiverSpacing * 2.5, y: losY)
+
+        case .proLeft:
+            // X far left, Y slot left, Z far right — wider spread than Trips
+            positions[.X] = CGPoint(x: centerX - config.receiverSpacing * 2.8, y: losY)
+            positions[.Y] = CGPoint(x: centerX - config.receiverSpacing * 0.75, y: losY)
+            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 2.8, y: losY)
+
+        case .proRight:
+            // X far left, Z far right, Y slot right — wider spread than Trips
+            positions[.X] = CGPoint(x: centerX - config.receiverSpacing * 2.8, y: losY)
+            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 2.8, y: losY)
+            positions[.Y] = CGPoint(x: centerX + config.receiverSpacing * 0.75, y: losY)
         }
 
         return positions

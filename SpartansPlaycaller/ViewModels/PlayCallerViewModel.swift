@@ -147,7 +147,7 @@ final class PlayCallerViewModel: ObservableObject {
     func setYMotion(_ motion: ReceiverMotion?) {
         // Only allow motion in Trips formations
         guard selectedFormation.canApplyMotion() else {
-            errorMessage = "Motion only available in Trips formations"
+            errorMessage = "Motion only available in Trips and Pro formations"
             yMotion = nil
             return
         }
