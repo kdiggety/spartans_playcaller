@@ -211,6 +211,12 @@ final class PlayCallerViewModel: ObservableObject {
     func formationChanged(isFamilyChange: Bool = true) {
         updateAvailableConcepts()
 
+        // Preserve concepts and motion during side toggle (within same family)
+        let savedConcept = !isFamilyChange ? selectedConcept : nil
+        let savedLeftConcept = !isFamilyChange ? selectedLeftConcept : nil
+        let savedRightConcept = !isFamilyChange ? selectedRightConcept : nil
+        let savedMotion = !isFamilyChange ? yMotion : nil
+
         // Clear concept selections only on family change
         if isFamilyChange {
             selectedLeftConcept = nil
@@ -223,16 +229,18 @@ final class PlayCallerViewModel: ObservableObject {
             yMotion = nil
         }
 
-        // Preserve Y motion during side toggle (within same family)
-        let savedMotion = !isFamilyChange ? yMotion : nil
-
         // Re-parse if there are digits entered (needed for both family change and side toggle)
         if !routeDigitInput.isEmpty {
             parseRouteDigits()
-            // Restore motion after re-parsing if we're toggling sides and motion is still valid
-            if !isFamilyChange && selectedFormation.canApplyMotion() {
-                yMotion = savedMotion
-                applyMotion()
+            // Restore concepts and motion after re-parsing if we're toggling sides
+            if !isFamilyChange {
+                selectedConcept = savedConcept
+                selectedLeftConcept = savedLeftConcept
+                selectedRightConcept = savedRightConcept
+                if selectedFormation.canApplyMotion() {
+                    yMotion = savedMotion
+                    applyMotion()
+                }
             }
         } else {
             currentPlayCall = nil
