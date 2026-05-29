@@ -255,7 +255,12 @@ final class PlayCallerViewModel: ObservableObject {
             currentPlayCall = nil
             // When toggling sides with concepts selected, regenerate the play call
             if !isFamilyChange && (selectedConcept != nil || selectedLeftConcept != nil || selectedRightConcept != nil) {
+                let motionBeforeRegenerate = savedMotion
                 generateFromConcept()
+                yMotion = motionBeforeRegenerate
+                if yMotion != nil {
+                    applyMotion()
+                }
             } else {
                 applyMotion()
             }
