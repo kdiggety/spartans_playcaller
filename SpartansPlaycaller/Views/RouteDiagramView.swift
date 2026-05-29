@@ -29,7 +29,7 @@ struct RouteDiagramView: View {
     private func drawMotion(context: inout GraphicsContext, config: DiagramConfig, positions: [Receiver: CGPoint]) {
         for assignment in playCall.assignments {
             guard assignment.receiver == .Y else { continue }
-            guard let motion = assignment.motion, motion != nil else { continue }
+            guard let motion = assignment.motion else { continue }
             guard let initialPos = positions[.Y] else { continue }
 
             // Compute Y's final position after motion

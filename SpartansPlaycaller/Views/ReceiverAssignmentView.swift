@@ -72,8 +72,7 @@ struct ReceiverAssignmentView: View {
                             Picker("Y Motion", selection: $selectedMotion) {
                                 Text("None").tag(Optional<ReceiverMotion>.none)
                                 Text("Stop").tag(Optional<ReceiverMotion>.some(.stop))
-                                Text("After").tag(Optional<ReceiverMotion>.some(.after))
-                                Text("Go").tag(Optional<ReceiverMotion>.some(.go))
+                                Text("After/Go").tag(Optional<ReceiverMotion>.some(.after))
                             }
                             .pickerStyle(.segmented)
                             .onChange(of: selectedMotion) { _, newValue in
