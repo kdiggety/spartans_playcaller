@@ -1,8 +1,8 @@
 # Spartans Playcaller — Field Test Notes (Week of 2026-06-02)
 
 ## Build Version
-- Version: 1.2.0
-- Build: 2
+- Version: 1.2.1
+- Build: 3
 - Date: 2026-05-29
 
 ## Changes in This Build
@@ -14,21 +14,25 @@
   - Verify Route 0 is displayed as a backward/lateral route in the receiver assignment table
   - Diagram should show the route going backward, not upfield
 
-### 2. Y Wheel Motion (NEW)
+### 2. Y Wheel Motion (REVISED)
 - **What:** Y receiver can now execute a **Y Wheel motion** — a semi-circular arc behind the formation (X/A or Z/A) and down the sideline
-- **Key difference from Y After/Go:**
-  - Y Wheel stays on the **same side** (unlike Y After/Go which flips sides)
-  - Route interpretation applies from Y's original side
-  - Diagram shows a curved motion arc (yellow dashed line)
+- **Key behavior:**
+  - Y Wheel is a **toggle** that works WITH Stop/After/Go motions
+  - Y Stop + Y Wheel = Y stops on same side WITH wheel arc
+  - Y After + Y Wheel = Y flips sides WITH wheel arc
+  - Y Wheel alone (no motion selected) = wheel arc only
 - **How to test:**
   - Select Trips Left or Trips Right formation
   - Generate or parse a play (e.g., Smash = "6758")
-  - Tap the motion picker
-  - Select **"Y Wheel"** (should appear as a 4th option alongside Stop, After, Go)
+  - Motion picker shows: None | Stop | After | Go (3 options, no Wheel option)
+  - Wheel toggle checkbox appears below motion picker
+  - Select a motion (e.g., After)
+  - Enable the "Y Wheel" toggle
   - Verify:
-    - Diagram updates with a semi-circular arc behind the formation
-    - Arc curves in the correct direction (left side for Trips Left, right for Trips Right)
-    - Concept remains identified (Smash should stay Smash, since Y doesn't flip sides)
+    - Diagram shows Y motion arc (After = Y flips to right)
+    - PLUS wheel arc (semicircle behind formation)
+    - Both arcs visible together
+  - Toggle wheel off/on to see arc appear/disappear
 
 ### 3. Route Interpretation Refactoring (Internal)
 - **What:** Route meaning logic has been refactored into a pluggable **RouteSemanticProvider** pattern
@@ -45,9 +49,10 @@
 2. **Y Wheel Motion**
    - Test Y Wheel in Trips Left and Trips Right formations
    - Verify arc direction and diagram clarity
-   - Confirm concept identification holds correctly
-   - Test motion toggle (Stop ↔ After ↔ Go ↔ Wheel)
-   - **Field test under pressure:** Can you quickly switch between motion types during rapid play design?
+   - Enable/disable wheel toggle independently from motion selection
+   - Test all combinations: No Motion + Wheel, Stop + Wheel, After + Wheel, Go + Wheel
+   - Confirm concept identification remains stable regardless of wheel state
+   - **Field test under pressure:** Can you quickly toggle the wheel on/off during rapid play design?
 
 3. **Overall Responsiveness**
    - How fast is formation selection and play generation?
