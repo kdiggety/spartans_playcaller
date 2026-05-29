@@ -1,5 +1,34 @@
 import Foundation
 
+/// Groups formations by conceptual family for the two-tier picker.
+/// Each family that supports a side selection maps to two Formation values.
+enum FormationFamily: String, CaseIterable, Identifiable {
+    case twins = "Twins"
+    case trips = "Trips"
+
+    var id: String { rawValue }
+
+    /// The side choices available for this family.
+    /// Returns false when side selection does not apply (Twins).
+    var supportsSideSelection: Bool {
+        switch self {
+        case .twins: return false
+        case .trips: return true
+        }
+    }
+
+    /// Resolve the concrete Formation for this family + side combination.
+    /// Twins ignores the side argument entirely.
+    func formation(side: FieldSide) -> Formation {
+        switch self {
+        case .twins:
+            return .twins
+        case .trips:
+            return side == .left ? .tripsLeft : .tripsRight
+        }
+    }
+}
+
 /// Supported formations defining receiver alignment.
 /// Each formation places receivers on specific sides of the ball.
 enum Formation: String, CaseIterable, Identifiable {
@@ -72,4 +101,28 @@ enum Formation: String, CaseIterable, Identifiable {
 /// Route interpretation depends entirely on this value.
 enum FieldSide: String {
     case left, right, center
+}
+
+extension Formation {
+    /// The family this formation belongs to.
+    var family: FormationFamily {
+        switch self {
+        case .twins:
+            return .twins
+        case .tripsLeft, .tripsRight:
+            return .trips
+        }
+    }
+
+    /// The directional side of this formation, or nil for Twins.
+    var side: FieldSide? {
+        switch self {
+        case .twins:
+            return nil
+        case .tripsLeft:
+            return .left
+        case .tripsRight:
+            return .right
+        }
+    }
 }

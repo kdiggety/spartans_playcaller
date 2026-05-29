@@ -43,14 +43,25 @@ struct PlayCallerView: View {
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
 
-            Picker("Formation", selection: $viewModel.selectedFormation) {
-                ForEach(Formation.allCases) { formation in
-                    Text(formation.rawValue).tag(formation)
+            Picker("Formation Family", selection: Binding(
+                get: { viewModel.selectedFormation.family },
+                set: { viewModel.setFormationFamily($0) }
+            )) {
+                ForEach(FormationFamily.allCases) { family in
+                    Text(family.rawValue).tag(family)
                 }
             }
             .pickerStyle(.segmented)
-            .onChange(of: viewModel.selectedFormation) { _, _ in
-                viewModel.formationChanged()
+
+            if viewModel.selectedFormation.family.supportsSideSelection {
+                Picker("Side", selection: Binding(
+                    get: { viewModel.selectedFormation.side ?? .left },
+                    set: { viewModel.setFormationSide($0) }
+                )) {
+                    Text("Left").tag(FieldSide.left)
+                    Text("Right").tag(FieldSide.right)
+                }
+                .pickerStyle(.segmented)
             }
         }
     }

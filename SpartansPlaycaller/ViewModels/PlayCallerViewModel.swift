@@ -223,4 +223,29 @@ final class PlayCallerViewModel: ObservableObject {
             applyMotion()
         }
     }
+
+    /// Called when the user picks a formation family (e.g. Twins vs. Trips).
+    /// Resolves the concrete Formation using the current side (or .left default
+    /// for newly-selected side-bearing families) and triggers formationChanged().
+    func setFormationFamily(_ family: FormationFamily) {
+        if family.supportsSideSelection {
+            let currentSide = selectedFormation.family == family
+                ? (selectedFormation.side ?? .left)
+                : .left
+            selectedFormation = family.formation(side: currentSide)
+        } else {
+            selectedFormation = family.formation(side: .left)
+        }
+        formationChanged()
+    }
+
+    /// Called when the user toggles Left / Right within a side-bearing family.
+    /// No-ops when the current family does not support side selection.
+    func setFormationSide(_ side: FieldSide) {
+        guard selectedFormation.family.supportsSideSelection else { return }
+        let newFormation = selectedFormation.family.formation(side: side)
+        guard newFormation != selectedFormation else { return }
+        selectedFormation = newFormation
+        formationChanged()
+    }
 }

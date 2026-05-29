@@ -7,34 +7,44 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000001 /* SpartansPlaycallerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000001; };
-		A10000002 /* PlayCallerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000002; };
-		A10000003 /* RouteDiagramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000003; };
-		A10000004 /* ReceiverAssignmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000004; };
-		A10000005 /* PlayCallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000005; };
-		A10000006 /* Receiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000006; };
-		A10000007 /* Formation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000007; };
-		A10000008 /* RouteNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000008; };
-		A10000009 /* RouteMeaning.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009; };
-		A10000010 /* RouteAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010; };
-		A10000011 /* PlayCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000011; };
-		A10000012 /* RouteConcept.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000012; };
-		A10000013 /* ConceptTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000013; };
-		A10000014 /* PlayCallParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000014; };
-		A10000015 /* ConceptLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000015; };
-		A10000016 /* ConceptMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000016; };
-		A10000017 /* RouteInterpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000017; };
-		A10000018 /* DiagramRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000018; };
-		A10000019 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000019; };
-		A10000020 /* ReceiverMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020; };
-		A10000021 /* RouteAssignmentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000021; };
-		A10000022 /* ConceptBadgeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000022; };
-		A10000023 /* PlayCallerViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000023; };
-		A10000024 /* ConceptMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000024; };
-		A10000025 /* RouteInterpreterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000025; };
-		A10000026 /* RouteDiagramViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000026; };
-		A10000027 /* ReceiverMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000027; };
+		A10000001 /* SpartansPlaycallerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000001 /* SpartansPlaycallerApp.swift */; };
+		A10000002 /* PlayCallerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000002 /* PlayCallerView.swift */; };
+		A10000003 /* RouteDiagramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000003 /* RouteDiagramView.swift */; };
+		A10000004 /* ReceiverAssignmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000004 /* ReceiverAssignmentView.swift */; };
+		A10000005 /* PlayCallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000005 /* PlayCallerViewModel.swift */; };
+		A10000006 /* Receiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000006 /* Receiver.swift */; };
+		A10000007 /* Formation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000007 /* Formation.swift */; };
+		A10000008 /* RouteNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000008 /* RouteNumber.swift */; };
+		A10000009 /* RouteMeaning.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009 /* RouteMeaning.swift */; };
+		A10000010 /* RouteAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010 /* RouteAssignment.swift */; };
+		A10000011 /* PlayCall.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000011 /* PlayCall.swift */; };
+		A10000012 /* RouteConcept.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000012 /* RouteConcept.swift */; };
+		A10000013 /* ConceptTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000013 /* ConceptTemplate.swift */; };
+		A10000014 /* PlayCallParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000014 /* PlayCallParser.swift */; };
+		A10000015 /* ConceptLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000015 /* ConceptLibrary.swift */; };
+		A10000016 /* ConceptMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000016 /* ConceptMatcher.swift */; };
+		A10000017 /* RouteInterpreter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000017 /* RouteInterpreter.swift */; };
+		A10000018 /* DiagramRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000018 /* DiagramRenderer.swift */; };
+		A10000019 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000019 /* Assets.xcassets */; };
+		A10000020 /* ReceiverMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020 /* ReceiverMotion.swift */; };
+		A10000021 /* RouteAssignmentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000021 /* RouteAssignmentError.swift */; };
+		A10000022 /* ConceptBadgeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000022 /* ConceptBadgeRow.swift */; };
+		A10000023 /* PlayCallerViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000023 /* PlayCallerViewModelTests.swift */; };
+		A10000024 /* ConceptMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000024 /* ConceptMatcherTests.swift */; };
+		A10000025 /* RouteInterpreterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000025 /* RouteInterpreterTests.swift */; };
+		A10000026 /* RouteDiagramViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000026 /* RouteDiagramViewTests.swift */; };
+		A10000027 /* ReceiverMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000027 /* ReceiverMotionTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A90000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A60000002 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A60000001;
+			remoteInfo = SpartansPlaycaller;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		A20000001 /* SpartansPlaycallerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpartansPlaycallerApp.swift; sourceTree = "<group>"; };
@@ -224,10 +234,10 @@
 				LastSwiftUpdateCheck = 1540;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
-					A60000003 = {
+					A60000001 = {
 						CreatedOnToolsVersion = 15.4;
 					};
-					A60000001 = {
+					A60000003 = {
 						CreatedOnToolsVersion = 15.4;
 					};
 				};
@@ -261,24 +271,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		A90000001 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A60000001 /* SpartansPlaycaller */;
-			targetProxy = A90000002 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
-/* Begin PBXContainerItemProxy section */
-		A90000002 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A60000002 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A60000001;
-			remoteInfo = SpartansPlaycaller;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A70000001 /* Sources */ = {
@@ -322,6 +314,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A90000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A60000001 /* SpartansPlaycaller */;
+			targetProxy = A90000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A80000004 /* Debug */ = {
@@ -450,7 +450,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = J866SFQLL4;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -479,7 +479,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = J866SFQLL4;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -582,7 +582,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = A60000002 /* Project object */;
 }
