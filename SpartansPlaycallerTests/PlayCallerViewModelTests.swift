@@ -362,4 +362,58 @@ final class PlayCallerViewModelTests: XCTestCase {
             XCTAssertEqual(yAssignment.motion, .after)
         }
     }
+
+    // MARK: - FormationFamily Action Tests
+
+    func testSetFormationFamilyToTwinsSetsFormationToTwins() {
+        viewModel.selectedFormation = .tripsLeft
+        viewModel.setFormationFamily(.twins)
+        XCTAssertEqual(viewModel.selectedFormation, .twins)
+    }
+
+    func testSetFormationFamilyToTripsDefaultsToLeft() {
+        viewModel.selectedFormation = .twins
+        viewModel.setFormationFamily(.trips)
+        XCTAssertEqual(viewModel.selectedFormation, .tripsLeft)
+    }
+
+    func testSetFormationFamilyToTripsPreservesRightSideIfAlreadyRight() {
+        viewModel.selectedFormation = .tripsRight
+        viewModel.setFormationFamily(.trips)
+        XCTAssertEqual(viewModel.selectedFormation, .tripsRight)
+    }
+
+    func testSetFormationSideToRightProducesTripsRight() {
+        viewModel.selectedFormation = .tripsLeft
+        viewModel.setFormationSide(.right)
+        XCTAssertEqual(viewModel.selectedFormation, .tripsRight)
+    }
+
+    func testSetFormationSideNoOpsOnTwins() {
+        viewModel.selectedFormation = .twins
+        viewModel.setFormationSide(.right)
+        XCTAssertEqual(viewModel.selectedFormation, .twins)
+    }
+
+    func testSetFormationSideIdempotentWhenSideUnchanged() {
+        viewModel.selectedFormation = .tripsLeft
+        viewModel.setFormationSide(.left)
+        XCTAssertEqual(viewModel.selectedFormation, .tripsLeft)
+    }
+
+    func testSetFormationFamilyCallsFormationChanged() {
+        viewModel.selectedFormation = .twins
+        viewModel.routeDigitInput = "6794"
+        viewModel.parseRouteDigits()
+
+        let playCallBefore = viewModel.currentPlayCall
+        XCTAssertNotNil(playCallBefore)
+
+        viewModel.setFormationFamily(.trips)
+
+        let playCallAfter = viewModel.currentPlayCall
+        XCTAssertNotNil(playCallAfter)
+        // Verify that formationChanged() was called and re-parsed the digits
+        XCTAssertEqual(playCallAfter?.formation, .tripsLeft)
+    }
 }
