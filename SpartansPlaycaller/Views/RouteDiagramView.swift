@@ -16,6 +16,7 @@ struct RouteDiagramView: View {
                 drawField(context: &context, config: config, size: size)
                 drawFootball(context: &context, config: config)
                 drawMotion(context: &context, config: config, positions: positions)
+                drawWheel(context: &context, config: config)
                 drawRoutes(context: &context, config: config, positions: positions)
                 drawReceivers(context: &context, config: config, positions: positions)
             }
@@ -71,6 +72,22 @@ struct RouteDiagramView: View {
                 )
             )
         }
+    }
+
+    private func drawWheel(context: inout GraphicsContext, config: DiagramConfig) {
+        guard playCall.yWheelEnabled else { return }
+
+        let (wheelPath, color) = renderer.yWheelArcPath(for: playCall, config: config)
+
+        context.stroke(
+            wheelPath,
+            with: .color(color.opacity(0.6)),
+            style: StrokeStyle(
+                lineWidth: 3,
+                lineCap: .round,
+                lineJoin: .round
+            )
+        )
     }
 
     private func drawField(context: inout GraphicsContext, config: DiagramConfig, size: CGSize) {
