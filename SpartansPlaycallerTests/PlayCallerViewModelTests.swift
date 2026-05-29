@@ -1,14 +1,15 @@
 import XCTest
 @testable import SpartansPlaycaller
 
-@MainActor
 final class PlayCallerViewModelTests: XCTestCase {
 
-    var viewModel: PlayCallerViewModel!
+    nonisolated(unsafe) var viewModel: PlayCallerViewModel!
 
     override func setUp() {
         super.setUp()
-        viewModel = PlayCallerViewModel()
+        MainActor.assumeIsolated {
+            viewModel = PlayCallerViewModel()
+        }
     }
 
     override func tearDown() {
@@ -18,7 +19,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - State Initialization Tests
 
-    func testViewModelInitializesWithDefaultState() {
+    @MainActor func testViewModelInitializesWithDefaultState() {
         XCTAssertEqual(viewModel.selectedFormation, .twins)
         XCTAssertNil(viewModel.selectedConcept)
         XCTAssertEqual(viewModel.routeDigitInput, "")
@@ -28,14 +29,14 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
     }
 
-    func testAvailableConceptsInitializedForDefaultFormation() {
+    @MainActor func testAvailableConceptsInitializedForDefaultFormation() {
         XCTAssertFalse(viewModel.availableConcepts.isEmpty)
         XCTAssertGreaterThan(viewModel.availableConcepts.count, 0)
     }
 
     // MARK: - Motion State Update Tests
 
-    func testSetYMotionUpdatesStateInTripsLeftFormation() {
+@MainActor func testSetYMotionUpdatesStateInTripsLeftFormation() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -47,7 +48,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
     }
 
-    func testSetYMotionUpdatesStateInTripsRightFormation() {
+@MainActor func testSetYMotionUpdatesStateInTripsRightFormation() {
         viewModel.selectedFormation = .tripsRight
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -59,7 +60,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
     }
 
-    func testSetYMotionRejectededInTwinsFormation() {
+@MainActor func testSetYMotionRejectededInTwinsFormation() {
         viewModel.selectedFormation = .twins
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -74,7 +75,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - Motion Application and PlayCall Recomputation Tests
 
-    func testCurrentPlayCallWithMotionIsRecomputedWhenMotionApplied() {
+@MainActor func testCurrentPlayCallWithMotionIsRecomputedWhenMotionApplied() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -94,7 +95,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         }
     }
 
-    func testMotionDoesNotAffectOtherReceivers() {
+@MainActor func testMotionDoesNotAffectOtherReceivers() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -117,7 +118,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - Concept Re-identification Tests
 
-    func testConceptsAreReidentifiedWhenMotionChanges() {
+@MainActor func testConceptsAreReidentifiedWhenMotionChanges() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -133,7 +134,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNotNil(viewModel.currentPlayCallWithMotion)
     }
 
-    func testLeftSideConceptIdentifiedAfterMotion() {
+@MainActor func testLeftSideConceptIdentifiedAfterMotion() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -145,7 +146,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertTrue(true) // Just verify no crash in re-identification
     }
 
-    func testRightSideConceptIdentifiedAfterMotion() {
+@MainActor func testRightSideConceptIdentifiedAfterMotion() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -158,7 +159,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - Motion Reset Tests
 
-    func testMotionResetsWhenFormationChangesFromTripsToTwins() {
+@MainActor func testMotionResetsWhenFormationChangesFromTripsToTwins() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -172,7 +173,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.yMotion)
     }
 
-    func testMotionPersistsWhenFormationStaysAsTrips() {
+@MainActor func testMotionPersistsWhenFormationStaysAsTrips() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -191,7 +192,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - Formation Validation Tests
 
-    func testMotionRejectionErrorMessageForTwinsFormation() {
+@MainActor func testMotionRejectionErrorMessageForTwinsFormation() {
         viewModel.selectedFormation = .twins
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -204,7 +205,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - PlayCall Generation Tests
 
-    func testGenerateFromConceptProducesPlayCallAndResetsMotion() {
+@MainActor func testGenerateFromConceptProducesPlayCallAndResetsMotion() {
         viewModel.selectedFormation = .twins
         viewModel.selectedConcept = .smash
 
@@ -215,7 +216,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
     }
 
-    func testGenerateFromConceptWithTripsAllowsMotionAfter() {
+@MainActor func testGenerateFromConceptWithTripsAllowsMotionAfter() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.selectedConcept = .smash
 
@@ -231,7 +232,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - Route Digit Parsing Tests
 
-    func testParseRouteDigitsResetsMotion() {
+@MainActor func testParseRouteDigitsResetsMotion() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -246,7 +247,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.yMotion)
     }
 
-    func testParseRouteDigitsWithValidInput() {
+@MainActor func testParseRouteDigitsWithValidInput() {
         viewModel.selectedFormation = .twins
         viewModel.routeDigitInput = "6794"
 
@@ -256,7 +257,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.errorMessage)
     }
 
-    func testParseRouteDigitsWithEmptyInput() {
+@MainActor func testParseRouteDigitsWithEmptyInput() {
         viewModel.selectedFormation = .twins
         viewModel.routeDigitInput = ""
 
@@ -268,7 +269,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - Reset Tests
 
-    func testResetClearsAllState() {
+@MainActor func testResetClearsAllState() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.selectedConcept = .smash
@@ -292,7 +293,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - Formation Change Tests
 
-    func testFormationChangeUpdatesAvailableConcepts() {
+@MainActor func testFormationChangeUpdatesAvailableConcepts() {
         viewModel.selectedFormation = .twins
         let twinsConcepts = viewModel.availableConcepts
 
@@ -304,7 +305,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNotEqual(twinsConcepts.count, tripsLeftConcepts.count)
     }
 
-    func testFormationChangeRemovesUnavailableConcept() {
+@MainActor func testFormationChangeRemovesUnavailableConcept() {
         viewModel.selectedFormation = .twins
         viewModel.selectedConcept = .smash
 
@@ -321,7 +322,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - Edge Cases
 
-    func testSetYMotionWithNilMotionClearsMotion() {
+@MainActor func testSetYMotionWithNilMotionClearsMotion() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -333,7 +334,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.yMotion)
     }
 
-    func testApplyMotionWithNoPlayCallDoesNotCrash() {
+@MainActor func testApplyMotionWithNoPlayCallDoesNotCrash() {
         viewModel.currentPlayCall = nil
         viewModel.yMotion = nil
 
@@ -346,7 +347,7 @@ final class PlayCallerViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.rightSideConcept)
     }
 
-    func testMultipleMotionChangesProduceCorrectFinalState() {
+@MainActor func testMultipleMotionChangesProduceCorrectFinalState() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()
@@ -365,43 +366,43 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     // MARK: - FormationFamily Action Tests
 
-    func testSetFormationFamilyToTwinsSetsFormationToTwins() {
+@MainActor func testSetFormationFamilyToTwinsSetsFormationToTwins() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.setFormationFamily(.twins)
         XCTAssertEqual(viewModel.selectedFormation, .twins)
     }
 
-    func testSetFormationFamilyToTripsDefaultsToLeft() {
+@MainActor func testSetFormationFamilyToTripsDefaultsToLeft() {
         viewModel.selectedFormation = .twins
         viewModel.setFormationFamily(.trips)
         XCTAssertEqual(viewModel.selectedFormation, .tripsLeft)
     }
 
-    func testSetFormationFamilyToTripsPreservesRightSideIfAlreadyRight() {
+@MainActor func testSetFormationFamilyToTripsPreservesRightSideIfAlreadyRight() {
         viewModel.selectedFormation = .tripsRight
         viewModel.setFormationFamily(.trips)
         XCTAssertEqual(viewModel.selectedFormation, .tripsRight)
     }
 
-    func testSetFormationSideToRightProducesTripsRight() {
+@MainActor func testSetFormationSideToRightProducesTripsRight() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.setFormationSide(.right)
         XCTAssertEqual(viewModel.selectedFormation, .tripsRight)
     }
 
-    func testSetFormationSideNoOpsOnTwins() {
+@MainActor func testSetFormationSideNoOpsOnTwins() {
         viewModel.selectedFormation = .twins
         viewModel.setFormationSide(.right)
         XCTAssertEqual(viewModel.selectedFormation, .twins)
     }
 
-    func testSetFormationSideIdempotentWhenSideUnchanged() {
+@MainActor func testSetFormationSideIdempotentWhenSideUnchanged() {
         viewModel.selectedFormation = .tripsLeft
         viewModel.setFormationSide(.left)
         XCTAssertEqual(viewModel.selectedFormation, .tripsLeft)
     }
 
-    func testSetFormationFamilyCallsFormationChanged() {
+@MainActor func testSetFormationFamilyCallsFormationChanged() {
         viewModel.selectedFormation = .twins
         viewModel.routeDigitInput = "6794"
         viewModel.parseRouteDigits()

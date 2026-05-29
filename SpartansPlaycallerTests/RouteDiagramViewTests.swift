@@ -10,14 +10,14 @@ final class RouteDiagramViewTests: XCTestCase {
 
     // MARK: - Basic Diagram Rendering Tests
 
-    func testRouteDiagramViewRendersWithoutCrashing() {
+@MainActor func testRouteDiagramViewRendersWithoutCrashing() {
         if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .twins) {
             let view = RouteDiagramView(playCall: playCall)
             XCTAssertNotNil(view)
         }
     }
 
-    func testRouteDiagramViewRendersAllFormations() {
+@MainActor func testRouteDiagramViewRendersAllFormations() {
         let formations: [Formation] = [.twins, .tripsLeft, .tripsRight]
 
         for formation in formations {
@@ -30,7 +30,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
     // MARK: - Motion Arc Rendering Tests
 
-    func testMotionArcRendersForYStop() {
+@MainActor func testMotionArcRendersForYStop() {
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             // Apply Y Stop motion
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
@@ -47,7 +47,7 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testMotionArcRendersForYAfter() {
+@MainActor func testMotionArcRendersForYAfter() {
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             // Apply Y After motion
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
@@ -65,7 +65,7 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testMotionArcRendersForYAfterFromRight() {
+@MainActor func testMotionArcRendersForYAfterFromRight() {
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
             // Apply Y After motion
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
@@ -85,7 +85,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
     // MARK: - Dashed Line Pattern Tests
 
-    func testDashedLinePatternConfigured() {
+@MainActor func testDashedLinePatternConfigured() {
         // The diagram uses [4, 4] dash pattern as per RouteDiagramView.swift
         // This test verifies the configuration is correct
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
@@ -102,7 +102,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
     // MARK: - Z-Order Tests (Rendering Layers)
 
-    func testMotionLinesRenderUnderRoutes() {
+@MainActor func testMotionLinesRenderUnderRoutes() {
         // In drawMotion() -> drawRoutes() -> drawReceivers()
         // Motion should draw first, routes second, receivers last
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
@@ -119,7 +119,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
     // MARK: - Concept Display Tests (via Concept Badges)
 
-    func testConceptDisplayedWhenIdentified() {
+@MainActor func testConceptDisplayedWhenIdentified() {
         let viewModel = PlayCallerViewModel()
         viewModel.selectedFormation = .twins
         viewModel.routeDigitInput = "6794"
@@ -136,7 +136,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
     // MARK: - Formation-Specific Rendering Tests
 
-    func testTwinsFormationDiagramRendersWithCorrectLayout() {
+@MainActor func testTwinsFormationDiagramRendersWithCorrectLayout() {
         if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .twins) {
             XCTAssertEqual(playCall.formation, .twins)
 
@@ -152,7 +152,7 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testTripsLeftFormationDiagramRendersWithCorrectLayout() {
+@MainActor func testTripsLeftFormationDiagramRendersWithCorrectLayout() {
         if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             XCTAssertEqual(playCall.formation, .tripsLeft)
 
@@ -168,7 +168,7 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testTripsRightFormationDiagramRendersWithCorrectLayout() {
+@MainActor func testTripsRightFormationDiagramRendersWithCorrectLayout() {
         if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
             XCTAssertEqual(playCall.formation, .tripsRight)
 
@@ -186,7 +186,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
     // MARK: - Edge Cases
 
-    func testDiagramRendersWith5Receivers() {
+@MainActor func testDiagramRendersWith5Receivers() {
         if case .success(let playCall) = interpreter.interpret(digits: "67943", formation: .twins) {
             let view = RouteDiagramView(playCall: playCall)
             XCTAssertNotNil(view)
@@ -195,7 +195,7 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testDiagramRendersWithAllMotionTypes() {
+@MainActor func testDiagramRendersWithAllMotionTypes() {
         for motion in ReceiverMotion.allCases {
             if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
                 if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
@@ -208,7 +208,7 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testDiagramRendersWhenYHasNoMotion() {
+@MainActor func testDiagramRendersWhenYHasNoMotion() {
         if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             // No motion applied
             if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
@@ -222,7 +222,7 @@ final class RouteDiagramViewTests: XCTestCase {
 
     // MARK: - Route Path Position and Side Tests (Fix Verification)
 
-    func testYRouteStartsFromFinalPositionWithMotion() {
+@MainActor func testYRouteStartsFromFinalPositionWithMotion() {
         // Trips Left, Y After: Y should draw route from right side (final position)
         if case .success(var playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
@@ -268,7 +268,7 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testYRouteSideInterpretationChangesWithMotion() {
+@MainActor func testYRouteSideInterpretationChangesWithMotion() {
         // Trips Left, route "1", no motion: Y on left, route "1" = Quick Out (breaks left)
         // Trips Left, route "1", Y After: Y flipped to right, route "1" = Quick Slant (breaks inward)
         let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
@@ -349,135 +349,3 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 }
-
-// MARK: - SwiftUI Previews for Visual Testing
-
-#if DEBUG
-struct RouteDiagramViewPreviewContainer: View {
-    let interpreter = RouteInterpreter()
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Base play (Twins, no motion)
-                Group {
-                    Text("Twins - Base Play (No Motion)")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-
-                    if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .twins) {
-                        RouteDiagramView(playCall: playCall)
-                            .frame(height: 300)
-                            .padding()
-                    }
-                }
-
-                // Y Stop motion in Trips Left
-                Group {
-                    Text("Trips Left - Y Stop (Same Side)")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-
-                    if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
-                        if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-                            playCall.assignments[yIndex].motion = .after
-                        }
-                        RouteDiagramView(playCall: playCall)
-                            .frame(height: 300)
-                            .padding()
-                    }
-                }
-
-                // Y After motion in Trips Left
-                Group {
-                    Text("Trips Left - Y After (Flips Right)")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-
-                    if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
-                        if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-                            playCall.assignments[yIndex].motion = .after
-                        }
-                        RouteDiagramView(playCall: playCall)
-                            .frame(height: 300)
-                            .padding()
-                    }
-                }
-
-                // Y After motion in Trips Right
-                Group {
-                    Text("Trips Right - Y After (Flips Left)")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-
-                    if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
-                        if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-                            playCall.assignments[yIndex].motion = .after
-                        }
-                        RouteDiagramView(playCall: playCall)
-                            .frame(height: 300)
-                            .padding()
-                    }
-                }
-
-                // Twins with 5 receivers (motion should be rejected by ViewModel, but diagram still renders)
-                Group {
-                    Text("Twins - 5 Receivers (H in Motion Not Recommended)")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-
-                    if case .success(var playCall) = interpreter.interpret(digits: "67943", formation: .twins) {
-                        RouteDiagramView(playCall: playCall)
-                            .frame(height: 300)
-                            .padding()
-                    }
-                }
-            }
-            .padding(.vertical)
-        }
-        .background(Color(white: 0.08))
-    }
-}
-
-#Preview("Route Diagram Visual Tests") {
-    RouteDiagramViewPreviewContainer()
-}
-
-#Preview("Trips Left - Y Stop", traits: .sizeThatFitsLayout) {
-    let interpreter = RouteInterpreter()
-    if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
-        RouteDiagramView(playCall: playCall)
-            .frame(height: 400)
-            .padding()
-    } else {
-        Text("Failed to create play call")
-    }
-}
-
-#Preview("Trips Left - Y After", traits: .sizeThatFitsLayout) {
-    let interpreter = RouteInterpreter()
-    if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
-        RouteDiagramView(playCall: playCall)
-            .frame(height: 400)
-            .padding()
-    } else {
-        Text("Failed to create play call")
-    }
-}
-
-#Preview("Trips Right - Y After", traits: .sizeThatFitsLayout) {
-    let interpreter = RouteInterpreter()
-    if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
-        RouteDiagramView(playCall: playCall)
-            .frame(height: 400)
-            .padding()
-    } else {
-        Text("Failed to create play call")
-    }
-}
-#endif
