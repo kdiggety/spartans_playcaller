@@ -14,7 +14,6 @@ struct PlayCallerView: View {
                     controlsSection
                     conceptSection
                     digitInputSection
-                    actionButtons
 
                     if let error = viewModel.errorMessage {
                         errorBanner(error)
@@ -78,10 +77,12 @@ struct PlayCallerView: View {
                     sideConceptRow(label: "Left", selection: $viewModel.selectedLeftConcept)
                         .onChange(of: viewModel.selectedLeftConcept) { _, _ in
                             viewModel.routeDigitInput = ""
+                            viewModel.autoUpdate()
                         }
                     sideConceptRow(label: "Right", selection: $viewModel.selectedRightConcept)
                         .onChange(of: viewModel.selectedRightConcept) { _, _ in
                             viewModel.routeDigitInput = ""
+                            viewModel.autoUpdate()
                         }
                 }
             } else {
@@ -99,6 +100,7 @@ struct PlayCallerView: View {
                                 ) {
                                     viewModel.selectedConcept = concept
                                     viewModel.routeDigitInput = ""
+                                    viewModel.autoUpdate()
                                 }
                             }
                         }
@@ -144,6 +146,8 @@ struct PlayCallerView: View {
                         let filtered = newValue.filter { $0.isNumber }
                         if filtered != newValue {
                             viewModel.routeDigitInput = filtered
+                        } else if !filtered.isEmpty {
+                            viewModel.autoUpdate()
                         }
                     }
                     .toolbar {
@@ -163,26 +167,6 @@ struct PlayCallerView: View {
                     .foregroundStyle(.tertiary)
             }
         }
-    }
-
-    private var actionButtons: some View {
-        Button(action: viewModel.unifiedTranslate) {
-            Label("Translate", systemImage: "arrow.left.arrow.right")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .disabled({
-            let hasDigits = !viewModel.routeDigitInput.isEmpty
-            let hasLeftConcept = viewModel.selectedFormation == .twins && viewModel.selectedLeftConcept != nil
-            let hasRightConcept = viewModel.selectedFormation == .twins && viewModel.selectedRightConcept != nil
-            let hasTwinsConcepts = hasLeftConcept && hasRightConcept
-            let hasTripsConceptSingle = viewModel.selectedFormation != .twins && viewModel.selectedConcept != nil
-
-            let hasValidConcepts = (viewModel.selectedFormation == .twins && hasTwinsConcepts)
-                                || (viewModel.selectedFormation != .twins && hasTripsConceptSingle)
-
-            return !(hasDigits || hasValidConcepts)
-        }())
     }
 
     private func errorBanner(_ message: String) -> some View {

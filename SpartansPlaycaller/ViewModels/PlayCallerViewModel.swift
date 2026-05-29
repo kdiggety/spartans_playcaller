@@ -110,10 +110,9 @@ final class PlayCallerViewModel: ObservableObject {
         }
     }
 
-    /// Unified action: translate between concepts and route digits
-    /// - If route digits are entered, parse them to identify concepts
-    /// - If concepts are selected, generate route digits from them
-    func unifiedTranslate() {
+    /// Auto-update diagram based on available inputs
+    /// Called whenever formation, concepts, or route digits change
+    func autoUpdate() {
         if !routeDigitInput.isEmpty {
             parseRouteDigits()
         } else {
