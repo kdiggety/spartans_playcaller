@@ -34,11 +34,15 @@ enum RouteNumber: Int, CaseIterable, Identifiable {
         case (.two, .right): return .quickOut
         case (.two, .center): return .quickOut
 
-        // 3: Always breaks LEFT at 90 degrees
-        case (.three, _): return .out
+        // 3: Out (left), Dig (right)
+        case (.three, .left): return .out
+        case (.three, .right): return .digIn
+        case (.three, .center): return .digIn
 
-        // 4: Always breaks RIGHT at 90 degrees
-        case (.four, _): return .digIn
+        // 4: Dig (left), Out (right)
+        case (.four, .left): return .digIn
+        case (.four, .right): return .out
+        case (.four, .center): return .out
 
         // 5: Comeback (left), Curl (right)
         case (.five, .left): return .comeback
@@ -50,11 +54,15 @@ enum RouteNumber: Int, CaseIterable, Identifiable {
         case (.six, .right): return .comeback
         case (.six, .center): return .comeback
 
-        // 7: Always angles top-left
-        case (.seven, _): return .corner
+        // 7: Corner (left), Post (right)
+        case (.seven, .left): return .corner
+        case (.seven, .right): return .post
+        case (.seven, .center): return .post
 
-        // 8: Always angles top-right
-        case (.eight, _): return .post
+        // 8: Post (left), Corner (right)
+        case (.eight, .left): return .post
+        case (.eight, .right): return .corner
+        case (.eight, .center): return .corner
 
         // 9: Straight vertical Go/Fade
         case (.nine, _): return .goFade

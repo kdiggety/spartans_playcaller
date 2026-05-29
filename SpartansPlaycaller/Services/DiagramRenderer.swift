@@ -73,7 +73,12 @@ struct DiagramRenderer {
     /// - 7 ALWAYS angles top-left
     /// - 8 ALWAYS angles top-right
     /// Side-awareness only affects the route MEANING label, not the drawing direction.
-    func routePath(for assignment: RouteAssignment, startPosition: CGPoint, config: DiagramConfig) -> [CGPoint] {
+    /// - Parameters:
+    ///   - assignment: The route assignment (contains receiver, route number, and original side).
+    ///   - startPosition: The starting position for this receiver (already accounts for motion final position for Y).
+    ///   - side: The field side to use for route interpretation (use motionFinalSide for receivers with motion).
+    ///   - config: Diagram configuration.
+    func routePath(for assignment: RouteAssignment, startPosition: CGPoint, side: FieldSide, config: DiagramConfig) -> [CGPoint] {
         let stemLength = config.routeLength
         let breakLen = config.breakLength
 
@@ -90,7 +95,7 @@ struct DiagramRenderer {
             // LEFT: Quick Out (break left quickly)
             // RIGHT: Quick Slant (break inward quickly)
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            if assignment.side == .left {
+            if side == .left {
                 // Quick out breaks LEFT (toward sideline for left-side receiver)
                 let breakPoint = CGPoint(x: shortStem.x - breakLen, y: shortStem.y)
                 return [startPosition, shortStem, breakPoint]
@@ -104,7 +109,7 @@ struct DiagramRenderer {
             // LEFT: Quick Slant (break inward)
             // RIGHT: Quick Out (break right quickly)
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            if assignment.side == .left {
+            if side == .left {
                 // Quick slant breaks inward (toward center)
                 let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
                 return [startPosition, shortStem, breakPoint]
@@ -127,7 +132,7 @@ struct DiagramRenderer {
         case .five:
             // LEFT: Comeback (stem up, break back down-left)
             // RIGHT: Curl (stem up, curl back down toward center)
-            if assignment.side == .left {
+            if side == .left {
                 let breakPoint = CGPoint(x: stemEnd.x - breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
                 return [startPosition, stemEnd, breakPoint]
             } else {
@@ -138,7 +143,7 @@ struct DiagramRenderer {
         case .six:
             // LEFT: Curl (stem up, curl back down toward center)
             // RIGHT: Comeback (stem up, break back down-right)
-            if assignment.side == .left {
+            if side == .left {
                 let breakPoint = CGPoint(x: stemEnd.x + breakLen * 0.3, y: stemEnd.y + breakLen * 0.4)
                 return [startPosition, stemEnd, breakPoint]
             } else {
@@ -161,5 +166,95 @@ struct DiagramRenderer {
             let deep = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 1.5)
             return [startPosition, deep]
         }
+    }
+
+    /// Compute Y's final position after motion is applied.
+    /// Y's final position depends on motion type and final side:
+    /// - **stop**: Y stays close to its original position (same side, minor offset toward tackle)
+    /// - **after**: Y moves dramatically to opposite side, well past the tackle
+    ///
+    /// - Parameters:
+    ///   - initialSide: The side Y aligns on in the formation
+    ///   - finalSide: The side Y ends up on after motion (from motion.finalSide logic)
+    ///   - motion: The motion type (determines endpoint distance)
+    ///   - formation: The formation context (affects tackle position)
+    ///   - config: Diagram configuration
+    /// - Returns: The final X position for Y at the line of scrimmage
+    func yFinalPosition(
+        initialSide: FieldSide,
+        finalSide: FieldSide,
+        motion: ReceiverMotion?,
+        formation: Formation,
+        config: DiagramConfig
+    ) -> CGPoint {
+        let centerX = config.fieldWidth / 2
+        let losY = config.lineOfScrimmageY
+        let basePositions = receiverPositions(formation: formation, config: config)
+
+        guard let yBasePos = basePositions[.Y] else { return CGPoint(x: centerX, y: losY) }
+
+        // If no motion or final side is the same as initial, return base position
+        if motion == nil || initialSide == finalSide {
+            return yBasePos
+        }
+
+        // Motion-based endpoint calculation for side changes
+        guard let motion = motion, initialSide != finalSide else {
+            return yBasePos
+        }
+
+        let baseDistance = abs(yBasePos.x - centerX)
+
+        // Y After/Go: moves dramatically past tackle on opposite side
+        // Double the distance for dramatic effect
+        let dramaticDistance = baseDistance * 2.5
+        let finalX = (finalSide == .right) ? centerX + dramaticDistance : centerX - dramaticDistance
+        return CGPoint(x: finalX, y: losY)
+    }
+
+    /// Compute a smooth arc path from initial to final position for motion visualization.
+    /// Arc geometry depends on motion type:
+    /// - Y Stop: Arc curves inward (convex toward field center) — Y stays same side
+    /// - Y After: Arc curves outward (convex away from field center) — Y moves to opposite side
+    func motionPath(
+        for receiver: Receiver,
+        motion: ReceiverMotion?,
+        from: CGPoint,
+        to: CGPoint,
+        config: DiagramConfig
+    ) -> [CGPoint] {
+        guard let motion = motion else { return [] }
+        guard from != to else { return [] }
+
+        // Compute control point for arc curvature
+        let midX = (from.x + to.x) / 2
+        let midY = (from.y + to.y) / 2
+        let distance = hypot(to.x - from.x, to.y - from.y)
+        let arcDepth = distance * 0.25
+
+        let centerX = config.fieldWidth / 2
+
+        // Curve outward (away from field center) — Y moves to opposite side
+        let outwardDir = (midX > centerX) ? 1.0 : -1.0
+        let controlPoint = CGPoint(x: midX + outwardDir * arcDepth, y: midY - arcDepth * 0.5)
+
+        // Sample points along quadratic Bézier curve
+        var pathPoints: [CGPoint] = []
+        for t in stride(from: CGFloat(0), through: CGFloat(1), by: 0.05) {
+            let point = quadraticBezier(p0: from, control: controlPoint, p1: to, t: t)
+            pathPoints.append(point)
+        }
+        return pathPoints
+    }
+
+    /// Quadratic Bézier curve interpolation.
+    private func quadraticBezier(p0: CGPoint, control: CGPoint, p1: CGPoint, t: CGFloat) -> CGPoint {
+        let mt = 1 - t
+        let mt2 = mt * mt
+        let t2 = t * t
+        return CGPoint(
+            x: mt2 * p0.x + 2 * mt * t * control.x + t2 * p1.x,
+            y: mt2 * p0.y + 2 * mt * t * control.y + t2 * p1.y
+        )
     }
 }

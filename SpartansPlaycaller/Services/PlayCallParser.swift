@@ -52,7 +52,8 @@ struct PlayCallParser {
                 receiver: receiver,
                 routeNumber: routeNumber,
                 side: side,
-                meaning: meaning
+                initialMeaning: meaning,
+                motion: nil
             ))
         }
 

@@ -46,12 +46,6 @@ struct ConceptLibrary {
         ))
 
         templates.append(ConceptTemplate(
-            concept: .verts,
-            formationContext: .twinsLeft,
-            receiverRoutes: [.X: .nine, .Y: .nine]
-        ))
-
-        templates.append(ConceptTemplate(
             concept: .scissors,
             formationContext: .twinsLeft,
             receiverRoutes: [.X: .eight, .Y: .seven]
@@ -76,13 +70,7 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .dagger,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .three, .A: .nine]
-        ))
-
-        templates.append(ConceptTemplate(
-            concept: .verts,
-            formationContext: .twinsRight,
-            receiverRoutes: [.Z: .nine, .A: .nine]
+            receiverRoutes: [.Z: .nine, .A: .three]
         ))
 
         templates.append(ConceptTemplate(
@@ -94,7 +82,7 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .sail,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .nine, .A: .four]
+            receiverRoutes: [.Z: .four, .A: .nine]
         ))
 
         // ──────────────────────────────────────────────
@@ -111,6 +99,12 @@ struct ConceptLibrary {
             concept: .china,
             formationContext: .tripsLeft,
             receiverRoutes: [.X: .six, .Y: .seven, .A: .six]
+        ))
+
+        templates.append(ConceptTemplate(
+            concept: .dagger,
+            formationContext: .tripsLeft,
+            receiverRoutes: [.X: .one, .Y: .nine, .A: .four]
         ))
 
         templates.append(ConceptTemplate(
@@ -144,7 +138,7 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .dagger,
             formationContext: .tripsRight,
-            receiverRoutes: [.Z: .three, .Y: .nine, .A: .two]
+            receiverRoutes: [.Z: .two, .Y: .nine, .A: .three]
         ))
 
         templates.append(ConceptTemplate(

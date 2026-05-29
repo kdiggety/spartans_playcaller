@@ -10,9 +10,6 @@ struct PlayCall: Identifiable {
 
     /// Human-readable play call string (e.g., "Twins 6794")
     var displayName: String {
-        if let concept = concept {
-            return "\(formation.rawValue) \(concept.rawValue) (\(routeDigits))"
-        }
-        return "\(formation.rawValue) \(routeDigits)"
+        "\(formation.rawValue) \(routeDigits)"
     }
 }

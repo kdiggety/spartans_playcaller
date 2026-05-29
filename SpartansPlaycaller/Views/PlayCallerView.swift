@@ -19,7 +19,7 @@ struct PlayCallerView: View {
                         errorBanner(error)
                     }
 
-                    if let playCall = viewModel.currentPlayCall {
+                    if let playCall = viewModel.currentPlayCallWithMotion ?? viewModel.currentPlayCall {
                         resultSection(playCall)
                     }
                 }
@@ -61,20 +61,47 @@ struct PlayCallerView: View {
                 .font(.caption.bold())
                 .foregroundStyle(.secondary)
 
-            if viewModel.availableConcepts.isEmpty {
-                Text("No concepts available for this formation")
-                    .font(.subheadline)
-                    .foregroundStyle(.tertiary)
+            if viewModel.selectedFormation == .twins {
+                VStack(alignment: .leading, spacing: 12) {
+                    sideConceptRow(label: "Left", selection: $viewModel.selectedLeftConcept)
+                    sideConceptRow(label: "Right", selection: $viewModel.selectedRightConcept)
+                }
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(viewModel.availableConcepts) { concept in
-                            ConceptChip(
-                                concept: concept,
-                                isSelected: viewModel.selectedConcept == concept
-                            ) {
-                                viewModel.selectedConcept = concept
+                if viewModel.availableConcepts.isEmpty {
+                    Text("No concepts available for this formation")
+                        .font(.subheadline)
+                        .foregroundStyle(.tertiary)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(viewModel.availableConcepts) { concept in
+                                ConceptChip(
+                                    concept: concept,
+                                    isSelected: viewModel.selectedConcept == concept
+                                ) {
+                                    viewModel.selectedConcept = concept
+                                }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func sideConceptRow(label: String, selection: Binding<RouteConcept?>) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(viewModel.availableConcepts) { concept in
+                        ConceptChip(
+                            concept: concept,
+                            isSelected: selection.wrappedValue == concept
+                        ) {
+                            selection.wrappedValue = selection.wrappedValue == concept ? nil : concept
                         }
                     }
                 }
@@ -94,6 +121,12 @@ struct PlayCallerView: View {
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 160)
+                    .onChange(of: viewModel.routeDigitInput) { _, newValue in
+                        let filtered = newValue.filter { $0.isNumber }
+                        if filtered != newValue {
+                            viewModel.routeDigitInput = filtered
+                        }
+                    }
 
                 Text("X  Y  Z  A  H")
                     .font(.system(.caption, design: .monospaced))
@@ -103,23 +136,23 @@ struct PlayCallerView: View {
     }
 
     private var actionButtons: some View {
-        HStack(spacing: 12) {
-            Button(action: viewModel.generateFromConcept) {
-                Label("Generate", systemImage: "wand.and.stars")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.blue)
-            .disabled(viewModel.selectedConcept == nil)
-
-            Button(action: viewModel.parseRouteDigits) {
-                Label("Parse", systemImage: "arrow.right.circle.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.green)
-            .disabled(viewModel.routeDigitInput.isEmpty)
+        Button(action: viewModel.unifiedTranslate) {
+            Label("Translate", systemImage: "arrow.left.arrow.right")
+                .frame(maxWidth: .infinity)
         }
+        .buttonStyle(.borderedProminent)
+        .disabled({
+            let hasDigits = !viewModel.routeDigitInput.isEmpty
+            let hasLeftConcept = viewModel.selectedFormation == .twins && viewModel.selectedLeftConcept != nil
+            let hasRightConcept = viewModel.selectedFormation == .twins && viewModel.selectedRightConcept != nil
+            let hasTwinsConcepts = hasLeftConcept && hasRightConcept
+            let hasTripsConceptSingle = viewModel.selectedFormation != .twins && viewModel.selectedConcept != nil
+
+            let hasValidConcepts = (viewModel.selectedFormation == .twins && hasTwinsConcepts)
+                                || (viewModel.selectedFormation != .twins && hasTripsConceptSingle)
+
+            return !(hasDigits || hasValidConcepts)
+        }())
     }
 
     private func errorBanner(_ message: String) -> some View {
@@ -142,25 +175,36 @@ struct PlayCallerView: View {
                 Text(playCall.displayName)
                     .font(.title2.bold())
 
-                if let concept = playCall.concept {
+                let showSideBadges = (viewModel.yMotion != nil && viewModel.selectedFormation.canApplyMotion())
+                                   || viewModel.selectedFormation == .twins
+
+                if showSideBadges {
+                    let hasAnySideConcept = viewModel.leftSideConcept != nil || viewModel.rightSideConcept != nil
+                    if hasAnySideConcept {
+                        SideConceptBadges(
+                            left: viewModel.leftSideConcept,
+                            right: viewModel.rightSideConcept
+                        )
+                    }
+                } else if let concept = playCall.concept {
                     ConceptBadge(concept: concept)
-                } else {
-                    Text("Unknown / Custom Concept")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color(.systemGray5))
-                        .clipShape(Capsule())
                 }
+                // else: show nothing when concept doesn't match and no motion
             }
 
             // Route diagram
             RouteDiagramView(playCall: playCall)
                 .frame(height: 320)
 
-            // Assignment table
-            ReceiverAssignmentView(assignments: playCall.assignments)
+            // Assignment table with motion picker
+            // Use assignments with motion applied (currentPlayCallWithMotion) if available
+            let displayAssignments = viewModel.currentPlayCallWithMotion?.assignments ?? playCall.assignments
+            ReceiverAssignmentView(
+                assignments: displayAssignments,
+                selectedMotion: $viewModel.yMotion,
+                onMotionChange: viewModel.setYMotion,
+                isMotionEnabled: viewModel.selectedFormation.canApplyMotion()
+            )
         }
     }
 }
@@ -199,6 +243,45 @@ struct ConceptBadge: View {
         .padding(.vertical, 4)
         .background(Color.green.opacity(0.1))
         .clipShape(Capsule())
+    }
+}
+
+struct SideConceptBadges: View {
+    let left: RouteConcept?
+    let right: RouteConcept?
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if let left {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.left")
+                        .font(.caption2)
+                    Text(left.rawValue)
+                        .font(.subheadline.bold())
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(Color.green.opacity(0.1))
+                .clipShape(Capsule())
+            }
+            if left != nil && right != nil {
+                Text("|")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            if let right {
+                HStack(spacing: 4) {
+                    Text(right.rawValue)
+                        .font(.subheadline.bold())
+                    Image(systemName: "arrow.right")
+                        .font(.caption2)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(Color.green.opacity(0.1))
+                .clipShape(Capsule())
+            }
+        }
     }
 }
 

@@ -8,13 +8,19 @@ final class PlayCallerViewModel: ObservableObject {
 
     @Published var selectedFormation: Formation = .twins
     @Published var selectedConcept: RouteConcept?
+    @Published var selectedLeftConcept: RouteConcept?
+    @Published var selectedRightConcept: RouteConcept?
     @Published var routeDigitInput: String = ""
+    @Published var yMotion: ReceiverMotion? = nil
 
     // MARK: - Output State
 
     @Published var currentPlayCall: PlayCall?
+    @Published var currentPlayCallWithMotion: PlayCall?
     @Published var errorMessage: String?
     @Published var availableConcepts: [RouteConcept] = []
+    @Published var leftSideConcept: RouteConcept?
+    @Published var rightSideConcept: RouteConcept?
 
     // MARK: - Services
 
@@ -29,20 +35,39 @@ final class PlayCallerViewModel: ObservableObject {
 
     // MARK: - Actions
 
-    /// Generate a play call from the selected concept
+    /// Generate a play call from the selected concept(s)
     func generateFromConcept() {
         errorMessage = nil
 
-        guard let concept = selectedConcept else {
-            errorMessage = "Select a concept to generate"
-            return
-        }
-
-        if let playCall = interpreter.generate(concept: concept, formation: selectedFormation) {
-            currentPlayCall = playCall
-            routeDigitInput = playCall.routeDigits
+        if selectedFormation == .twins {
+            guard let left = selectedLeftConcept, let right = selectedRightConcept else {
+                errorMessage = "Select a concept for each side"
+                return
+            }
+            guard let digits = interpreter.generateTwinsDigits(leftConcept: left, rightConcept: right) else {
+                errorMessage = "Cannot generate from \(left.rawValue) / \(right.rawValue)"
+                return
+            }
+            if case .success(let playCall) = interpreter.interpret(digits: digits, formation: selectedFormation) {
+                currentPlayCall = playCall
+                routeDigitInput = digits
+                yMotion = nil
+                applyMotion()
+            }
         } else {
-            errorMessage = "\(concept.rawValue) is not available in \(selectedFormation.rawValue)"
+            guard let concept = selectedConcept else {
+                errorMessage = "Select a concept to generate"
+                return
+            }
+
+            if let playCall = interpreter.generate(concept: concept, formation: selectedFormation) {
+                currentPlayCall = playCall
+                routeDigitInput = playCall.routeDigits
+                yMotion = nil
+                applyMotion()
+            } else {
+                errorMessage = "\(concept.rawValue) is not available in \(selectedFormation.rawValue)"
+            }
         }
     }
 
@@ -61,12 +86,38 @@ final class PlayCallerViewModel: ObservableObject {
         switch result {
         case .success(let playCall):
             currentPlayCall = playCall
-            // Sync concept picker if a concept was identified
-            selectedConcept = playCall.concept
+            yMotion = nil  // Reset motion when parsing new digits
+
+            if selectedFormation == .twins {
+                // Identify each side and sync to chip selections
+                let leftAssignments = playCall.assignments.filter { $0.side == .left }
+                let rightAssignments = playCall.assignments.filter { $0.side == .right }
+                selectedLeftConcept = interpreter.identifyForSide(.left, assignments: leftAssignments, formation: .twins)
+                selectedRightConcept = interpreter.identifyForSide(.right, assignments: rightAssignments, formation: .twins)
+                leftSideConcept = selectedLeftConcept
+                rightSideConcept = selectedRightConcept
+            } else {
+                selectedConcept = playCall.concept
+            }
+
+            applyMotion()
 
         case .failure(let error):
             errorMessage = error.localizedDescription
             currentPlayCall = nil
+            yMotion = nil
+            applyMotion()
+        }
+    }
+
+    /// Unified action: translate between concepts and route digits
+    /// - If route digits are entered, parse them to identify concepts
+    /// - If concepts are selected, generate route digits from them
+    func unifiedTranslate() {
+        if !routeDigitInput.isEmpty {
+            parseRouteDigits()
+        } else {
+            generateFromConcept()
         }
     }
 
@@ -85,16 +136,91 @@ final class PlayCallerViewModel: ObservableObject {
         currentPlayCall = nil
         errorMessage = nil
         selectedConcept = nil
+        selectedLeftConcept = nil
+        selectedRightConcept = nil
+        yMotion = nil
+        currentPlayCallWithMotion = nil
+        leftSideConcept = nil
+        rightSideConcept = nil
+    }
+
+    /// Handle motion change with validation
+    func setYMotion(_ motion: ReceiverMotion?) {
+        // Only allow motion in Trips formations
+        guard selectedFormation.canApplyMotion() else {
+            errorMessage = "Motion only available in Trips formations"
+            yMotion = nil
+            return
+        }
+
+        yMotion = motion
+        applyMotion()
+    }
+
+    /// Apply motion to the current play call and re-identify concepts per side
+    private func applyMotion() {
+        guard let playCall = currentPlayCall else {
+            currentPlayCallWithMotion = nil
+            leftSideConcept = nil
+            rightSideConcept = nil
+            return
+        }
+
+        // Create new RouteAssignments with motion applied to Y
+        let updatedAssignments = playCall.assignments.map { assignment -> RouteAssignment in
+            if assignment.receiver == .Y && yMotion != nil {
+                var updated = assignment
+                updated.motion = yMotion
+                return updated
+            }
+            return assignment
+        }
+
+        // Create derived PlayCall with original concept preserved
+        // (View layer decides whether to display it based on motion state)
+        currentPlayCallWithMotion = PlayCall(
+            formation: playCall.formation,
+            routeDigits: playCall.routeDigits,
+            assignments: updatedAssignments,
+            concept: playCall.concept
+        )
+
+        // Re-match concepts for left and right sides independently
+        reidentifyConceptsBySide(assignments: updatedAssignments, formation: playCall.formation)
+    }
+
+    /// Re-identify concepts separately for left and right sides after motion
+    private func reidentifyConceptsBySide(assignments: [RouteAssignment], formation: Formation) {
+        // Group receivers by final side after motion
+        let leftAssignments = assignments.filter {
+            let finalSide = $0.motionFinalSide
+            return finalSide == .left
+        }
+        let rightAssignments = assignments.filter {
+            let finalSide = $0.motionFinalSide
+            return finalSide == .right
+        }
+
+        leftSideConcept = interpreter.identifyForSide(.left, assignments: leftAssignments, formation: formation)
+        rightSideConcept = interpreter.identifyForSide(.right, assignments: rightAssignments, formation: formation)
     }
 
     /// Called when formation changes
     func formationChanged() {
         updateAvailableConcepts()
+        // Clear dual concept selections when formation changes
+        selectedLeftConcept = nil
+        selectedRightConcept = nil
+        // Reset motion when formation changes (motion only valid in Trips formations)
+        if !selectedFormation.canApplyMotion() {
+            yMotion = nil
+        }
         // Re-parse if there are digits entered
         if !routeDigitInput.isEmpty {
             parseRouteDigits()
         } else {
             currentPlayCall = nil
+            applyMotion()
         }
     }
 }
