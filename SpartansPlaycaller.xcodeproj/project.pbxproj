@@ -29,11 +29,13 @@
 		A10000020 /* ReceiverMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020 /* ReceiverMotion.swift */; };
 		A10000021 /* RouteAssignmentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000021 /* RouteAssignmentError.swift */; };
 		A10000022 /* ConceptBadgeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000022 /* ConceptBadgeRow.swift */; };
+		A10000028 /* RouteSemanticProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000028 /* RouteSemanticProvider.swift */; };
 		A10000023 /* PlayCallerViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000023 /* PlayCallerViewModelTests.swift */; };
 		A10000024 /* ConceptMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000024 /* ConceptMatcherTests.swift */; };
 		A10000025 /* RouteInterpreterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000025 /* RouteInterpreterTests.swift */; };
 		A10000026 /* RouteDiagramViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000026 /* RouteDiagramViewTests.swift */; };
 		A10000027 /* ReceiverMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000027 /* ReceiverMotionTests.swift */; };
+		A10000029 /* RouteSemanticProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000029 /* RouteSemanticProviderTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,11 +71,13 @@
 		A20000020 /* ReceiverMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverMotion.swift; sourceTree = "<group>"; };
 		A20000021 /* RouteAssignmentError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAssignmentError.swift; sourceTree = "<group>"; };
 		A20000022 /* ConceptBadgeRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptBadgeRow.swift; sourceTree = "<group>"; };
+		A20000028 /* RouteSemanticProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSemanticProvider.swift; sourceTree = "<group>"; };
 		A20000023 /* PlayCallerViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCallerViewModelTests.swift; sourceTree = "<group>"; };
 		A20000024 /* ConceptMatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptMatcherTests.swift; sourceTree = "<group>"; };
 		A20000025 /* RouteInterpreterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInterpreterTests.swift; sourceTree = "<group>"; };
 		A20000026 /* RouteDiagramViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDiagramViewTests.swift; sourceTree = "<group>"; };
 		A20000027 /* ReceiverMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverMotionTests.swift; sourceTree = "<group>"; };
+		A20000029 /* RouteSemanticProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSemanticProviderTests.swift; sourceTree = "<group>"; };
 		A30000001 /* SpartansPlaycaller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpartansPlaycaller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A30000002 /* SpartansPlaycallerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpartansPlaycallerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -131,6 +135,7 @@
 				A20000011 /* PlayCall.swift */,
 				A20000012 /* RouteConcept.swift */,
 				A20000013 /* ConceptTemplate.swift */,
+				A20000028 /* RouteSemanticProvider.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -183,6 +188,7 @@
 				A20000025 /* RouteInterpreterTests.swift */,
 				A20000026 /* RouteDiagramViewTests.swift */,
 				A20000027 /* ReceiverMotionTests.swift */,
+				A20000029 /* RouteSemanticProviderTests.swift */,
 			);
 			path = SpartansPlaycallerTests;
 			sourceTree = "<group>";
@@ -298,6 +304,7 @@
 				A10000020 /* ReceiverMotion.swift in Sources */,
 				A10000021 /* RouteAssignmentError.swift in Sources */,
 				A10000022 /* ConceptBadgeRow.swift in Sources */,
+				A10000028 /* RouteSemanticProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,6 +317,7 @@
 				A10000025 /* RouteInterpreterTests.swift in Sources */,
 				A10000026 /* RouteDiagramViewTests.swift in Sources */,
 				A10000027 /* ReceiverMotionTests.swift in Sources */,
+				A10000029 /* RouteSemanticProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
