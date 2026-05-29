@@ -243,7 +243,12 @@ final class PlayCallerViewModel: ObservableObject {
             }
         } else {
             currentPlayCall = nil
-            applyMotion()
+            // When toggling sides with concepts selected, regenerate the play call
+            if !isFamilyChange && (selectedConcept != nil || selectedLeftConcept != nil || selectedRightConcept != nil) {
+                generateFromConcept()
+            } else {
+                applyMotion()
+            }
         }
     }
 

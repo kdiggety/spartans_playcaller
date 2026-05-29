@@ -76,7 +76,7 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .scissors,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .seven, .A: .eight]
+            receiverRoutes: [.Z: .eight, .A: .seven]
         ))
 
         templates.append(ConceptTemplate(
@@ -110,7 +110,7 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .sail,
             formationContext: .tripsLeft,
-            receiverRoutes: [.X: .nine, .Y: .three, .A: .one]
+            receiverRoutes: [.X: .nine, .Y: .three, .A: .two]
         ))
 
         // ──────────────────────────────────────────────
