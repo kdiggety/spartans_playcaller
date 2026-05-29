@@ -350,4 +350,39 @@ final class ConceptMatcherTests: XCTestCase {
         XCTAssertFalse(hasZ, "Left side should NOT have Z")
         XCTAssertFalse(hasY, "Left side should NOT have Y (after flips Y to right)")
     }
+
+    // MARK: - Y Wheel Toggle Tests
+
+    func testConceptRemainValidWhenWheelAdded() {
+        let interpreter = RouteInterpreter()
+
+        // Parse a play call and verify concept remains independent of wheel toggle
+        if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
+            let originalConcept = playCall.concept
+
+            // Create a new play call with wheel enabled
+            let wheelEnabledPlayCall = PlayCall(
+                formation: playCall.formation,
+                routeDigits: playCall.routeDigits,
+                assignments: playCall.assignments,
+                concept: playCall.concept,
+                yWheelEnabled: true
+            )
+
+            // Concept should remain the same (wheel toggle is independent of concept matching)
+            XCTAssertEqual(wheelEnabledPlayCall.concept, originalConcept, "Concept should remain unchanged when wheel is enabled")
+            XCTAssertTrue(wheelEnabledPlayCall.yWheelEnabled, "Wheel should be enabled")
+
+            // Create play call with wheel disabled
+            let wheelDisabledPlayCall = PlayCall(
+                formation: playCall.formation,
+                routeDigits: playCall.routeDigits,
+                assignments: playCall.assignments,
+                concept: playCall.concept,
+                yWheelEnabled: false
+            )
+            XCTAssertEqual(wheelDisabledPlayCall.concept, originalConcept, "Concept should remain unchanged when wheel is disabled")
+            XCTAssertFalse(wheelDisabledPlayCall.yWheelEnabled, "Wheel should be disabled")
+        }
+    }
 }
