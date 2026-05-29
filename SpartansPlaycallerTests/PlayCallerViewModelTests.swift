@@ -1,6 +1,7 @@
 import XCTest
 @testable import SpartansPlaycaller
 
+@MainActor
 final class PlayCallerViewModelTests: XCTestCase {
 
     var viewModel: PlayCallerViewModel!
@@ -29,8 +30,7 @@ final class PlayCallerViewModelTests: XCTestCase {
 
     func testAvailableConceptsInitializedForDefaultFormation() {
         XCTAssertFalse(viewModel.availableConcepts.isEmpty)
-        // Twins should have concepts
-        XCTAssertGreater(viewModel.availableConcepts.count, 0)
+        XCTAssertGreaterThan(viewModel.availableConcepts.count, 0)
     }
 
     // MARK: - Motion State Update Tests

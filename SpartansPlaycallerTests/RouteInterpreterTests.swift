@@ -113,7 +113,7 @@ final class RouteInterpreterTests: XCTestCase {
         }
     }
 
-    func testMotionAfterFlipsSide() {
+    func testMotionAfterFlipsSideFromLeft() {
         if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
             if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
                 var movedY = yAssignment

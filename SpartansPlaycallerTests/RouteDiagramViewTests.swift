@@ -65,7 +65,7 @@ final class RouteDiagramViewTests: XCTestCase {
         }
     }
 
-    func testMotionArcRendersForYAfter() {
+    func testMotionArcRendersForYAfterFromRight() {
         if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
             // Apply Y After motion
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
@@ -450,46 +450,34 @@ struct RouteDiagramViewPreviewContainer: View {
 
 #Preview("Trips Left - Y Stop", traits: .sizeThatFitsLayout) {
     let interpreter = RouteInterpreter()
-    if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
-        if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-            playCall.assignments[yIndex].motion = .after
-        }
-        return AnyView(
-            RouteDiagramView(playCall: playCall)
-                .frame(height: 400)
-                .padding()
-        )
+    if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
+        RouteDiagramView(playCall: playCall)
+            .frame(height: 400)
+            .padding()
+    } else {
+        Text("Failed to create play call")
     }
-    return AnyView(Text("Failed to create play call"))
 }
 
 #Preview("Trips Left - Y After", traits: .sizeThatFitsLayout) {
     let interpreter = RouteInterpreter()
-    if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
-        if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-            playCall.assignments[yIndex].motion = .after
-        }
-        return AnyView(
-            RouteDiagramView(playCall: playCall)
-                .frame(height: 400)
-                .padding()
-        )
+    if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsLeft) {
+        RouteDiagramView(playCall: playCall)
+            .frame(height: 400)
+            .padding()
+    } else {
+        Text("Failed to create play call")
     }
-    return AnyView(Text("Failed to create play call"))
 }
 
 #Preview("Trips Right - Y After", traits: .sizeThatFitsLayout) {
     let interpreter = RouteInterpreter()
-    if case .success(var playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
-        if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
-            playCall.assignments[yIndex].motion = .after
-        }
-        return AnyView(
-            RouteDiagramView(playCall: playCall)
-                .frame(height: 400)
-                .padding()
-        )
+    if case .success(let playCall) = interpreter.interpret(digits: "6794", formation: .tripsRight) {
+        RouteDiagramView(playCall: playCall)
+            .frame(height: 400)
+            .padding()
+    } else {
+        Text("Failed to create play call")
     }
-    return AnyView(Text("Failed to create play call"))
 }
 #endif
