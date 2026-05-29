@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Main play caller interface.
 /// Provides formation/concept selection, digit entry, and displays
@@ -75,7 +76,13 @@ struct PlayCallerView: View {
             if viewModel.selectedFormation == .twins {
                 VStack(alignment: .leading, spacing: 12) {
                     sideConceptRow(label: "Left", selection: $viewModel.selectedLeftConcept)
+                        .onChange(of: viewModel.selectedLeftConcept) { _, _ in
+                            viewModel.routeDigitInput = ""
+                        }
                     sideConceptRow(label: "Right", selection: $viewModel.selectedRightConcept)
+                        .onChange(of: viewModel.selectedRightConcept) { _, _ in
+                            viewModel.routeDigitInput = ""
+                        }
                 }
             } else {
                 if viewModel.availableConcepts.isEmpty {
@@ -91,6 +98,7 @@ struct PlayCallerView: View {
                                     isSelected: viewModel.selectedConcept == concept
                                 ) {
                                     viewModel.selectedConcept = concept
+                                    viewModel.routeDigitInput = ""
                                 }
                             }
                         }
@@ -136,6 +144,17 @@ struct PlayCallerView: View {
                         let filtered = newValue.filter { $0.isNumber }
                         if filtered != newValue {
                             viewModel.routeDigitInput = filtered
+                        }
+                    }
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            Button("Done") {
+                                UIApplication.shared.sendAction(
+                                    #selector(UIResponder.resignFirstResponder),
+                                    to: nil, from: nil, for: nil
+                                )
+                            }
                         }
                     }
 
