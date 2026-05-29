@@ -12,6 +12,7 @@ final class PlayCallerViewModel: ObservableObject {
     @Published var selectedRightConcept: RouteConcept?
     @Published var routeDigitInput: String = ""
     @Published var yMotion: ReceiverMotion? = nil
+    @Published var yWheelEnabled: Bool = false
 
     // MARK: - Output State
 
@@ -181,7 +182,8 @@ final class PlayCallerViewModel: ObservableObject {
             formation: playCall.formation,
             routeDigits: playCall.routeDigits,
             assignments: updatedAssignments,
-            concept: playCall.concept
+            concept: playCall.concept,
+            yWheelEnabled: yWheelEnabled
         )
 
         // Re-match concepts for left and right sides independently
@@ -227,6 +229,9 @@ final class PlayCallerViewModel: ObservableObject {
         if !selectedFormation.canApplyMotion() {
             yMotion = nil
         }
+
+        // Always reset wheel toggle when formation changes
+        yWheelEnabled = false
 
         // Re-parse if there are digits entered (needed for both family change and side toggle)
         if !routeDigitInput.isEmpty {
