@@ -205,17 +205,25 @@ final class PlayCallerViewModel: ObservableObject {
         rightSideConcept = interpreter.identifyForSide(.right, assignments: rightAssignments, formation: formation)
     }
 
-    /// Called when formation changes
-    func formationChanged() {
+    /// Called when formation changes (family change or side toggle)
+    /// - Parameter isFamilyChange: true if the formation family changed (Twins→Trips or vice versa);
+    ///   false if only the side changed within the same family (Trips Left→Right)
+    func formationChanged(isFamilyChange: Bool = true) {
         updateAvailableConcepts()
-        // Clear dual concept selections when formation changes
-        selectedLeftConcept = nil
-        selectedRightConcept = nil
-        // Reset motion when formation changes (motion only valid in Trips formations)
+
+        // Clear concept selections only on family change
+        if isFamilyChange {
+            selectedLeftConcept = nil
+            selectedRightConcept = nil
+            selectedConcept = nil
+        }
+
+        // Reset motion only when switching to formations that don't support it
         if !selectedFormation.canApplyMotion() {
             yMotion = nil
         }
-        // Re-parse if there are digits entered
+
+        // Re-parse if there are digits entered (needed for both family change and side toggle)
         if !routeDigitInput.isEmpty {
             parseRouteDigits()
         } else {
@@ -246,6 +254,8 @@ final class PlayCallerViewModel: ObservableObject {
         let newFormation = selectedFormation.family.formation(side: side)
         guard newFormation != selectedFormation else { return }
         selectedFormation = newFormation
-        formationChanged()
+        // isFamilyChange: false because we're only toggling side within the same family
+        // This preserves Y motion and concept selections
+        formationChanged(isFamilyChange: false)
     }
 }
