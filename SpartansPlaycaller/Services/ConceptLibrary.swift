@@ -108,6 +108,12 @@ struct ConceptLibrary {
         ))
 
         templates.append(ConceptTemplate(
+            concept: .scissors,
+            formationContext: .tripsLeft,
+            receiverRoutes: [.X: .eight, .Y: .seven, .A: .six]
+        ))
+
+        templates.append(ConceptTemplate(
             concept: .sail,
             formationContext: .tripsLeft,
             receiverRoutes: [.X: .nine, .Y: .three, .A: .two]
