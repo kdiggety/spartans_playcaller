@@ -223,9 +223,17 @@ final class PlayCallerViewModel: ObservableObject {
             yMotion = nil
         }
 
+        // Preserve Y motion during side toggle (within same family)
+        let savedMotion = !isFamilyChange ? yMotion : nil
+
         // Re-parse if there are digits entered (needed for both family change and side toggle)
         if !routeDigitInput.isEmpty {
             parseRouteDigits()
+            // Restore motion after re-parsing if we're toggling sides and motion is still valid
+            if !isFamilyChange && selectedFormation.canApplyMotion() {
+                yMotion = savedMotion
+                applyMotion()
+            }
         } else {
             currentPlayCall = nil
             applyMotion()

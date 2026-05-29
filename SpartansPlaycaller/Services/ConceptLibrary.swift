@@ -64,7 +64,7 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .smash,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .five, .A: .eight]
+            receiverRoutes: [.Z: .eight, .A: .five]
         ))
 
         templates.append(ConceptTemplate(
