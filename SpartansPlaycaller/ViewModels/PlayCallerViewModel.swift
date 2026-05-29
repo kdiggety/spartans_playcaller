@@ -240,6 +240,11 @@ final class PlayCallerViewModel: ObservableObject {
                     yMotion = savedMotion
                     applyMotion()
                 }
+                // Regenerate play call to match restored concept (parseRouteDigits may have identified a different concept)
+                if selectedConcept != nil || selectedLeftConcept != nil || selectedRightConcept != nil {
+                    currentPlayCall = nil
+                    generateFromConcept()
+                }
             }
         } else {
             currentPlayCall = nil
