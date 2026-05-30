@@ -292,9 +292,6 @@ struct DiagramRenderer {
         let yAssignment = playCall.assignments.first { $0.receiver == .Y }
         let side = yAssignment?.side ?? playCall.formation.side(for: .Y)
 
-        var path = Path()
-        path.move(to: yPosition)
-
         // Arc geometry:
         // - loopDepth: how far back the arc curves (into backfield) — ~20-25% of field
         // - sideOffset: how far to the side the arc curves away from LOS
@@ -343,17 +340,11 @@ struct DiagramRenderer {
             )
         }
 
-        // Draw cubic Bézier curve for U-shaped arc
-        path.addCurve(
-            to: endPoint,
-            control1: controlPoint1,
-            control2: controlPoint2
-        )
-
-        // Sample points along curve for arrow placement
-        // This creates a smooth path by evaluating the cubic Bézier curve at regular intervals
+        // Sample points along curve using cubic Bézier formula
+        // Use dense sampling (0.02 stride = 50 points) for smooth visual rendering
+        // This ensures the line segments connecting sampled points appear as a smooth curve
         var pathPoints: [CGPoint] = [yPosition]
-        for t in stride(from: CGFloat(0.1), through: CGFloat(1), by: 0.1) {
+        for t in stride(from: CGFloat(0.02), through: CGFloat(1.0), by: 0.02) {
             let mt = 1 - t
             let mt2 = mt * mt
             let mt3 = mt2 * mt
@@ -367,7 +358,18 @@ struct DiagramRenderer {
             )
             pathPoints.append(point)
         }
-        pathPoints.append(endPoint)
+        // Always append the exact endpoint
+        if pathPoints.last != endPoint {
+            pathPoints.append(endPoint)
+        }
+
+        // Build path from sampled points by connecting with line segments
+        // This approach matches the motion path rendering and ensures consistent visual quality
+        var path = Path()
+        path.move(to: pathPoints[0])
+        for i in 1..<pathPoints.count {
+            path.addLine(to: pathPoints[i])
+        }
 
         return (path, pathPoints, .yellow)
     }
