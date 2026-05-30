@@ -270,20 +270,14 @@ struct DiagramRenderer {
         )
     }
 
-    /// Compute Y wheel arc path: U-shaped loop behind formation, same-side entry and exit.
-    /// Y wheel is a semi-circle arc that goes:
-    /// 1. Back (away from LOS) half the field width
-    /// 2. Down the sideline (away from center)
-    /// 3. Arc curves behind X/A receivers
-    ///
+    /// Compute Y wheel arc path: U-shaped loop that starts at Y, goes back, then returns.
     /// - Parameters:
     ///   - playCall: The play call containing formation and route assignments
     ///   - config: Diagram configuration
-    /// - Returns: A tuple of (path, color) where path is a SwiftUI Path and color is the stroke color (yellow)
+    /// - Returns: A tuple of (path, points for arrow, color)
     func yWheelArcPath(for playCall: PlayCall, config: DiagramConfig) -> (Path, [CGPoint], Color) {
         let positions = receiverPositions(formation: playCall.formation, config: config)
         guard let yPosition = positions[.Y] else {
-            // Y not in formation (shouldn't happen, but handle gracefully)
             return (Path(), [], .yellow)
         }
 
@@ -293,56 +287,61 @@ struct DiagramRenderer {
         var path = Path()
         path.move(to: yPosition)
 
-        // Create arc: goes back from Y, then returns toward LOS but doesn't fully close
-        let loopDepth = config.fieldHeight * 0.15  // How far back the arc goes
-        let sideOffset = config.fieldWidth * 0.05  // Offset to side for the curve
-        let returnDistance = loopDepth * 0.6  // Comes back 60% of the way toward LOS
+        // U-shaped arc: starts at Y, goes back deeper, then comes back to near start
+        let loopDepth = config.fieldHeight * 0.12  // How far back the U goes
+        let sideOffset = config.fieldWidth * 0.04  // Slight offset to side
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
         let endPoint: CGPoint
 
         if side == .left {
-            // Left-side Y wheel: arc goes back and to the left, returns toward LOS
+            // Left-side: U loops back and returns on left side
             controlPoint1 = CGPoint(
                 x: yPosition.x - sideOffset,
                 y: yPosition.y + loopDepth
             )
             controlPoint2 = CGPoint(
                 x: yPosition.x - sideOffset,
-                y: yPosition.y + returnDistance
+                y: yPosition.y + loopDepth * 0.5
             )
             endPoint = CGPoint(
-                x: yPosition.x - sideOffset * 0.5,
-                y: yPosition.y + returnDistance
+                x: yPosition.x,
+                y: yPosition.y + loopDepth * 0.3  // Ends partway up from deepest point
             )
         } else {
-            // Right-side Y wheel: arc goes back and to the right, returns toward LOS
+            // Right-side: U loops back and returns on right side
             controlPoint1 = CGPoint(
                 x: yPosition.x + sideOffset,
                 y: yPosition.y + loopDepth
             )
             controlPoint2 = CGPoint(
                 x: yPosition.x + sideOffset,
-                y: yPosition.y + returnDistance
+                y: yPosition.y + loopDepth * 0.5
             )
             endPoint = CGPoint(
-                x: yPosition.x + sideOffset * 0.5,
-                y: yPosition.y + returnDistance
+                x: yPosition.x,
+                y: yPosition.y + loopDepth * 0.3
             )
         }
 
-        // Draw cubic Bézier curve for arc
+        // Draw cubic Bézier curve for U-shaped arc
         path.addCurve(
             to: endPoint,
             control1: controlPoint1,
             control2: controlPoint2
         )
 
-        // Sample points along the curve for arrow placement
+        // Sample points along curve for arrow placement
         var pathPoints: [CGPoint] = [yPosition]
-        for t in stride(from: CGFloat(0), through: CGFloat(1), by: 0.1) {
-            let point = quadraticBezier(p0: yPosition, control: controlPoint1, p1: endPoint, t: t)
+        for t in stride(from: CGFloat(0.1), through: CGFloat(1), by: 0.1) {
+            let mt = 1 - t
+            let mt2 = mt * mt
+            let t2 = t * t
+            let point = CGPoint(
+                x: mt2 * mt2 * yPosition.x + 4 * mt2 * mt * t * controlPoint1.x + 6 * mt2 * t2 * controlPoint2.x + t2 * t * endPoint.x,
+                y: mt2 * mt2 * yPosition.y + 4 * mt2 * mt * t * controlPoint1.y + 6 * mt2 * t2 * controlPoint2.y + t2 * t * endPoint.y
+            )
             pathPoints.append(point)
         }
         pathPoints.append(endPoint)
