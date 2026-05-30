@@ -1,37 +1,39 @@
 # Y Wheel Arc Issues Backlog
 
-## Issue #1: Arc Rendering — CURRENT FOCUS
-**Status:** Diagnosis in progress
+## Issue #1: Arc Rendering — FIXED
+**Status:** ✅ RESOLVED in commit 2b105ae
 
-**Symptom:**
-- Arc doesn't look smooth/curved
-- May be rendering as line segments instead of smooth curve
-- May be using wrong line width or stroke style
-- Geometry might be correct but visual rendering is poor
+**Root Cause:**
+- Arc was using SwiftUI's native `addCurve()` to render a single cubic Bézier curve
+- While mathematically correct, this approach provided less control over visual quality
+- Comparison with motion arc (which used line segments connecting sampled points) showed
+  the line-segment approach provided consistently smoother visual rendering
 
-**Root Cause (Suspected):**
-- `yWheelArcPath()` creates a Path with `addCurve()` (should render smoothly)
-- But the sampled points (`pathPoints`) are only used for arrow placement, not for drawing the arc itself
-- The arc should be visually smooth because SwiftUI's `addCurve()` renders Bézier curves natively
-- Possible issues: stroke style (line width, cap, join), opacity, or Z-order
+**Solution Implemented:**
+- Changed from native `addCurve()` to dense sampled points with line segments
+- Increased sampling density from 0.1 stride (11 points) to 0.02 stride (~50 points)
+- Now uses same rendering approach as motion arc for visual consistency
+- Dense sampling ensures line segments appear as a smooth curve
 
-**Expected Behavior:**
-- Arc should appear as a single continuous smooth curve
-- Similar visual quality to route arrows (which use sampled points + line segments)
-- Yellow color with 0.7 opacity
-- 3pt line width with round caps and joins
+**Changes Made:**
+- `DiagramRenderer.yWheelArcPath()`:
+  - Changed sampling stride from 0.1 to 0.02 (5x more dense)
+  - Replaced `path.addCurve()` with point-by-point `path.addLine()`
+  - Ensures exact endpoint is always added
+- Created `docs/backlog/y-wheel-issues.md` for tracking remaining issues
 
-**Investigation Steps:**
-1. Verify `addCurve()` is being called correctly
-2. Check stroke style parameters (lineWidth, lineCap, lineJoin)
-3. Verify opacity and color application
-4. Compare visual rendering with motion arc (which uses sampled points + line segments)
-5. Check if arc is actually being drawn (Z-order, clipping, or rendering pipeline issue)
+**Verification:**
+- Build succeeds (no errors/warnings)
+- All tests pass:
+  - YWheelArcVisualSpecTests (10 tests) ✅
+  - DiagramRendererYWheelTests ✅
+  - RouteDiagramYWheelTests ✅
+- Arc now renders as smooth, visually polished U-shaped curve
 
-**Files to Review:**
-- `RouteDiagramView.drawWheel()` — stroke call
-- `DiagramRenderer.yWheelArcPath()` — path generation
-- `Y_WHEEL_ARC_GEOMETRY.md` — specification
+**Visual Impact:**
+- Arc appears as single continuous smooth curve (not segmented)
+- Consistent visual quality with other route elements
+- Y location selector now works smoothly without visual artifacts
 
 ---
 
