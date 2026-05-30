@@ -270,25 +270,7 @@ struct DiagramRenderer {
         )
     }
 
-    /// Dispatch to appropriate motion rendering based on yWheelEnabled and motion state.
-    /// If wheel is enabled, always render wheel arc.
-    /// Otherwise, render base motion arc if motion is selected.
-    ///
-    /// - Parameters:
-    ///   - playCall: The play call containing formation, motion, and wheel state
-    ///   - config: Diagram configuration
-    /// - Returns: A tuple of (path, color) or nil if no motion/wheel to render
-    func motionPathForPlayCall(for playCall: PlayCall, config: DiagramConfig) -> (Path, Color)? {
-        // If wheel is enabled, always render wheel arc
-        if playCall.yWheelEnabled {
-            return yWheelArcPath(for: playCall, config: config)
-        }
-
-        // Otherwise, no motion/wheel to render (the receiver motion arcs are drawn separately in the view)
-        return nil
-    }
-
-    /// Compute Y wheel arc path: semi-circular motion behind formation, same-side exit.
+    /// Compute Y wheel arc path: U-shaped loop behind formation, same-side entry and exit.
     /// Y wheel is a semi-circle arc that goes:
     /// 1. Back (away from LOS) half the field width
     /// 2. Down the sideline (away from center)
@@ -298,11 +280,11 @@ struct DiagramRenderer {
     ///   - playCall: The play call containing formation and route assignments
     ///   - config: Diagram configuration
     /// - Returns: A tuple of (path, color) where path is a SwiftUI Path and color is the stroke color (yellow)
-    func yWheelArcPath(for playCall: PlayCall, config: DiagramConfig) -> (Path, Color) {
+    func yWheelArcPath(for playCall: PlayCall, config: DiagramConfig) -> (Path, [CGPoint], Color) {
         let positions = receiverPositions(formation: playCall.formation, config: config)
         guard let yPosition = positions[.Y] else {
             // Y not in formation (shouldn't happen, but handle gracefully)
-            return (Path(), .yellow)
+            return (Path(), [], .yellow)
         }
 
         let yAssignment = playCall.assignments.first { $0.receiver == .Y }
@@ -311,51 +293,60 @@ struct DiagramRenderer {
         var path = Path()
         path.move(to: yPosition)
 
-        // Create U-shaped loop: starts at Y, goes back (away from LOS), then curves back toward LOS
-        let loopDepth = config.fieldHeight * 0.12  // How far back the U goes
-        let sideOffset = config.fieldWidth * 0.04  // Slight offset to side for the curve
+        // Create arc: goes back from Y, then returns toward LOS but doesn't fully close
+        let loopDepth = config.fieldHeight * 0.15  // How far back the arc goes
+        let sideOffset = config.fieldWidth * 0.05  // Offset to side for the curve
+        let returnDistance = loopDepth * 0.6  // Comes back 60% of the way toward LOS
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
         let endPoint: CGPoint
 
         if side == .left {
-            // Left-side Y wheel: U-shape that stays on left side
+            // Left-side Y wheel: arc goes back and to the left, returns toward LOS
             controlPoint1 = CGPoint(
                 x: yPosition.x - sideOffset,
                 y: yPosition.y + loopDepth
             )
             controlPoint2 = CGPoint(
                 x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth
+                y: yPosition.y + returnDistance
             )
             endPoint = CGPoint(
-                x: yPosition.x,
-                y: yPosition.y
+                x: yPosition.x - sideOffset * 0.5,
+                y: yPosition.y + returnDistance
             )
         } else {
-            // Right-side Y wheel: U-shape that stays on right side
+            // Right-side Y wheel: arc goes back and to the right, returns toward LOS
             controlPoint1 = CGPoint(
                 x: yPosition.x + sideOffset,
                 y: yPosition.y + loopDepth
             )
             controlPoint2 = CGPoint(
                 x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth
+                y: yPosition.y + returnDistance
             )
             endPoint = CGPoint(
-                x: yPosition.x,
-                y: yPosition.y
+                x: yPosition.x + sideOffset * 0.5,
+                y: yPosition.y + returnDistance
             )
         }
 
-        // Draw cubic Bézier curve for U-shaped loop
+        // Draw cubic Bézier curve for arc
         path.addCurve(
             to: endPoint,
             control1: controlPoint1,
             control2: controlPoint2
         )
 
-        return (path, .yellow)
+        // Sample points along the curve for arrow placement
+        var pathPoints: [CGPoint] = [yPosition]
+        for t in stride(from: CGFloat(0), through: CGFloat(1), by: 0.1) {
+            let point = quadraticBezier(p0: yPosition, control: controlPoint1, p1: endPoint, t: t)
+            pathPoints.append(point)
+        }
+        pathPoints.append(endPoint)
+
+        return (path, pathPoints, .yellow)
     }
 }

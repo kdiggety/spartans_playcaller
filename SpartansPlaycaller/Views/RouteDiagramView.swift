@@ -77,17 +77,24 @@ struct RouteDiagramView: View {
     private func drawWheel(context: inout GraphicsContext, config: DiagramConfig) {
         guard playCall.yWheelEnabled else { return }
 
-        let (wheelPath, color) = renderer.yWheelArcPath(for: playCall, config: config)
+        let (wheelPath, arcPoints, color) = renderer.yWheelArcPath(for: playCall, config: config)
 
         context.stroke(
             wheelPath,
-            with: .color(color.opacity(0.6)),
+            with: .color(color.opacity(0.7)),
             style: StrokeStyle(
                 lineWidth: 3,
                 lineCap: .round,
                 lineJoin: .round
             )
         )
+
+        // Draw arrow at the end of the arc pointing back toward LOS
+        if arcPoints.count >= 2 {
+            let endPoint = arcPoints.last!
+            let prevPoint = arcPoints[arcPoints.count - 2]
+            drawArrow(context: &context, from: prevPoint, to: endPoint, color: color)
+        }
     }
 
     private func drawField(context: inout GraphicsContext, config: DiagramConfig, size: CGSize) {
