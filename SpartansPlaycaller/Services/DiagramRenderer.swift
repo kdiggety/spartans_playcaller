@@ -312,8 +312,8 @@ struct DiagramRenderer {
         path.move(to: yPosition)
 
         // Create U-shaped loop: starts at Y, goes back (away from LOS), then curves back toward LOS
-        let loopDepth = config.fieldHeight * 0.25  // How far back the U goes
-        let sideOffset = config.fieldWidth * 0.08  // Slight offset to side for the curve
+        let loopDepth = config.fieldHeight * 0.12  // How far back the U goes
+        let sideOffset = config.fieldWidth * 0.04  // Slight offset to side for the curve
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
