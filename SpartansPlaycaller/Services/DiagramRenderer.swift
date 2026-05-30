@@ -293,12 +293,12 @@ struct DiagramRenderer {
         let side = yAssignment?.side ?? playCall.formation.side(for: .Y)
 
         // Arc geometry:
-        // - loopDepth: how far back the arc curves (into backfield) — ~20-25% of field
-        // - sideOffset: how far to the side the arc curves away from LOS
-        // - endpointFraction: how far back the endpoint is (0.5 = halfway back from start to deepest point)
-        let loopDepth = config.fieldHeight * 0.22       // 22% of field height
-        let sideOffset = config.fieldWidth * 0.05       // 5% of field width
-        let endpointFraction: CGFloat = 0.55            // Endpoint 55% of the way down
+        // - loopDepth: how far back the arc curves (into backfield) — ~10% of field for shallow loop
+        // - sideOffset: how far to the side the arc curves away from LOS — ~13% for very wide lateral sweep
+        // - endpointFraction: how far back the endpoint is (0.45 = 45% down the loop)
+        let loopDepth = config.fieldHeight * 0.10       // 10% of field height (very shallow vertical)
+        let sideOffset = config.fieldWidth * 0.13       // 13% of field width (very wide horizontal)
+        let endpointFraction: CGFloat = 0.45            // Endpoint 45% of the way down
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
@@ -306,37 +306,39 @@ struct DiagramRenderer {
 
         if side == .left {
             // Left-side: arc curves left and back, then returns
-            // First control point: curves down and left into the backfield
+            // First control point: curves down and FAR left into the backfield (maximum lateral extent)
             controlPoint1 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.4
+                x: yPosition.x - sideOffset * 1.8,
+                y: yPosition.y + loopDepth * 0.25
             )
-            // Second control point: curves back up and left, preparing to return
+            // Second control point: AT OR NEAR starting X, preparing to return immediately
+            // This creates a WIDE, SHALLOW U-shape with minimal depth
             controlPoint2 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.8
+                x: yPosition.x + sideOffset * 0.05,
+                y: yPosition.y + loopDepth * 0.60
             )
-            // Endpoint: partway back, roughly centered on starting X
+            // Endpoint: at starting X, minimal depth (nearly flat)
             endPoint = CGPoint(
-                x: yPosition.x - sideOffset * 0.3,
-                y: yPosition.y + loopDepth * endpointFraction
+                x: yPosition.x,
+                y: yPosition.y + loopDepth * (endpointFraction - 0.05)
             )
         } else {
             // Right-side: arc curves right and back, then returns
-            // First control point: curves down and right into the backfield
+            // First control point: curves down and FAR right into the backfield (maximum lateral extent)
             controlPoint1 = CGPoint(
-                x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth * 0.4
+                x: yPosition.x + sideOffset * 1.8,
+                y: yPosition.y + loopDepth * 0.25
             )
-            // Second control point: curves back up and right, preparing to return
+            // Second control point: AT OR NEAR starting X, preparing to return immediately
+            // This creates a WIDE, SHALLOW U-shape with minimal depth
             controlPoint2 = CGPoint(
-                x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth * 0.8
+                x: yPosition.x - sideOffset * 0.05,
+                y: yPosition.y + loopDepth * 0.60
             )
-            // Endpoint: partway back, roughly centered on starting X
+            // Endpoint: at starting X, minimal depth (nearly flat)
             endPoint = CGPoint(
-                x: yPosition.x + sideOffset * 0.3,
-                y: yPosition.y + loopDepth * endpointFraction
+                x: yPosition.x,
+                y: yPosition.y + loopDepth * (endpointFraction - 0.05)
             )
         }
 
