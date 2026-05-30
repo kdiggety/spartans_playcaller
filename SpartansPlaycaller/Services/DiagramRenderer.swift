@@ -311,51 +311,51 @@ struct DiagramRenderer {
         var path = Path()
         path.move(to: yPosition)
 
-        // Calculate arc control points
-        let backwardDistance = config.fieldWidth * 0.2  // 20% back
-        let sidewayDistance = config.fieldHeight * 0.3  // 30% down sideline
+        // Create U-shaped loop: starts at Y, goes back (away from LOS), then curves back toward LOS
+        let loopDepth = config.fieldHeight * 0.25  // How far back the U goes
+        let sideOffset = config.fieldWidth * 0.08  // Slight offset to side for the curve
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
         let endPoint: CGPoint
 
         if side == .left {
-            // Left-side Y wheel: arc goes to the left and down
+            // Left-side Y wheel: U-shape that stays on left side
             controlPoint1 = CGPoint(
-                x: yPosition.x - backwardDistance,
-                y: yPosition.y + sidewayDistance * 0.5
+                x: yPosition.x - sideOffset,
+                y: yPosition.y + loopDepth
             )
             controlPoint2 = CGPoint(
-                x: yPosition.x - backwardDistance * 0.5,
-                y: yPosition.y + sidewayDistance
+                x: yPosition.x - sideOffset,
+                y: yPosition.y + loopDepth
             )
             endPoint = CGPoint(
                 x: yPosition.x,
-                y: yPosition.y + sidewayDistance
+                y: yPosition.y
             )
         } else {
-            // Right-side Y wheel: arc goes to the right and down
+            // Right-side Y wheel: U-shape that stays on right side
             controlPoint1 = CGPoint(
-                x: yPosition.x + backwardDistance,
-                y: yPosition.y + sidewayDistance * 0.5
+                x: yPosition.x + sideOffset,
+                y: yPosition.y + loopDepth
             )
             controlPoint2 = CGPoint(
-                x: yPosition.x + backwardDistance * 0.5,
-                y: yPosition.y + sidewayDistance
+                x: yPosition.x + sideOffset,
+                y: yPosition.y + loopDepth
             )
             endPoint = CGPoint(
                 x: yPosition.x,
-                y: yPosition.y + sidewayDistance
+                y: yPosition.y
             )
         }
 
-        // Draw cubic Bézier curve for smooth arc
+        // Draw cubic Bézier curve for U-shaped loop
         path.addCurve(
             to: endPoint,
             control1: controlPoint1,
             control2: controlPoint2
         )
 
-        return (path, .yellow) // Yellow dashed line like Y After/Go
+        return (path, .yellow)
     }
 }
