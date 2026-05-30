@@ -271,6 +271,14 @@ struct DiagramRenderer {
     }
 
     /// Compute Y wheel arc path: U-shaped loop that starts at Y, goes back, then returns.
+    /// Arc geometry:
+    /// - Starts at Y's position on the line of scrimmage
+    /// - Curves downward and to the side (away from LOS, into the backfield)
+    /// - Curves back upward (returning toward the LOS)
+    /// - Ends partway back with arrow pointing back at the line of scrimmage
+    /// - Smooth curved path (cubic Bézier)
+    /// - Similar scale to other route arrows (20-30% of field height)
+    ///
     /// - Parameters:
     ///   - playCall: The play call containing formation and route assignments
     ///   - config: Diagram configuration
@@ -284,67 +292,86 @@ struct DiagramRenderer {
         let yAssignment = playCall.assignments.first { $0.receiver == .Y }
         let side = yAssignment?.side ?? playCall.formation.side(for: .Y)
 
-        var path = Path()
-        path.move(to: yPosition)
-
-        // U-shaped arc: starts at Y, goes back deeper, then comes back to near start
-        let loopDepth = config.fieldHeight * 0.15  // How far back the U goes
-        let sideOffset = config.fieldWidth * 0.06  // Offset to side for shape
+        // Arc geometry:
+        // - loopDepth: how far back the arc curves (into backfield) — ~10% of field for shallow loop
+        // - sideOffset: how far to the side the arc curves away from LOS — ~13% for very wide lateral sweep
+        // - endpointFraction: how far back the endpoint is (0.45 = 45% down the loop)
+        let loopDepth = config.fieldHeight * 0.10       // 10% of field height (very shallow vertical)
+        let sideOffset = config.fieldWidth * 0.13       // 13% of field width (very wide horizontal)
+        let endpointFraction: CGFloat = 0.45            // Endpoint 45% of the way down
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
         let endPoint: CGPoint
 
         if side == .left {
-            // Left-side: U loops back and returns on left side
+            // Left-side: arc curves left and back, then returns
+            // First control point: curves down and FAR left into the backfield (maximum lateral extent)
             controlPoint1 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth
+                x: yPosition.x - sideOffset * 1.8,
+                y: yPosition.y + loopDepth * 0.25
             )
+            // Second control point: AT OR NEAR starting X, preparing to return immediately
+            // This creates a WIDE, SHALLOW U-shape with minimal depth
             controlPoint2 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.6
+                x: yPosition.x + sideOffset * 0.05,
+                y: yPosition.y + loopDepth * 0.60
             )
+            // Endpoint: at starting X, minimal depth (nearly flat)
             endPoint = CGPoint(
                 x: yPosition.x,
-                y: yPosition.y + loopDepth * 0.5  // Deeper endpoint for visible U
+                y: yPosition.y + loopDepth * (endpointFraction - 0.05)
             )
         } else {
-            // Right-side: U loops back and returns on right side
+            // Right-side: arc curves right and back, then returns
+            // First control point: curves down and FAR right into the backfield (maximum lateral extent)
             controlPoint1 = CGPoint(
-                x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth
+                x: yPosition.x + sideOffset * 1.8,
+                y: yPosition.y + loopDepth * 0.25
             )
+            // Second control point: AT OR NEAR starting X, preparing to return immediately
+            // This creates a WIDE, SHALLOW U-shape with minimal depth
             controlPoint2 = CGPoint(
-                x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth * 0.6
+                x: yPosition.x - sideOffset * 0.05,
+                y: yPosition.y + loopDepth * 0.60
             )
+            // Endpoint: at starting X, minimal depth (nearly flat)
             endPoint = CGPoint(
                 x: yPosition.x,
-                y: yPosition.y + loopDepth * 0.5  // Deeper endpoint for visible U
+                y: yPosition.y + loopDepth * (endpointFraction - 0.05)
             )
         }
 
-        // Draw cubic Bézier curve for U-shaped arc
-        path.addCurve(
-            to: endPoint,
-            control1: controlPoint1,
-            control2: controlPoint2
-        )
-
-        // Sample points along curve for arrow placement
+        // Sample points along curve using cubic Bézier formula
+        // Use dense sampling (0.02 stride = 50 points) for smooth visual rendering
+        // This ensures the line segments connecting sampled points appear as a smooth curve
         var pathPoints: [CGPoint] = [yPosition]
-        for t in stride(from: CGFloat(0.1), through: CGFloat(1), by: 0.1) {
+        for t in stride(from: CGFloat(0.02), through: CGFloat(1.0), by: 0.02) {
             let mt = 1 - t
             let mt2 = mt * mt
+            let mt3 = mt2 * mt
             let t2 = t * t
+            let t3 = t2 * t
+
+            // Cubic Bézier: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
             let point = CGPoint(
-                x: mt2 * mt2 * yPosition.x + 4 * mt2 * mt * t * controlPoint1.x + 6 * mt2 * t2 * controlPoint2.x + t2 * t * endPoint.x,
-                y: mt2 * mt2 * yPosition.y + 4 * mt2 * mt * t * controlPoint1.y + 6 * mt2 * t2 * controlPoint2.y + t2 * t * endPoint.y
+                x: mt3 * yPosition.x + 3 * mt2 * t * controlPoint1.x + 3 * mt * t2 * controlPoint2.x + t3 * endPoint.x,
+                y: mt3 * yPosition.y + 3 * mt2 * t * controlPoint1.y + 3 * mt * t2 * controlPoint2.y + t3 * endPoint.y
             )
             pathPoints.append(point)
         }
-        pathPoints.append(endPoint)
+        // Always append the exact endpoint
+        if pathPoints.last != endPoint {
+            pathPoints.append(endPoint)
+        }
+
+        // Build path from sampled points by connecting with line segments
+        // This approach matches the motion path rendering and ensures consistent visual quality
+        var path = Path()
+        path.move(to: pathPoints[0])
+        for i in 1..<pathPoints.count {
+            path.addLine(to: pathPoints[i])
+        }
 
         return (path, pathPoints, .yellow)
     }
