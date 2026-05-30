@@ -288,8 +288,8 @@ struct DiagramRenderer {
         path.move(to: yPosition)
 
         // U-shaped arc: starts at Y, goes back deeper, then comes back to near start
-        let loopDepth = config.fieldHeight * 0.12  // How far back the U goes
-        let sideOffset = config.fieldWidth * 0.04  // Slight offset to side
+        let loopDepth = config.fieldHeight * 0.15  // How far back the U goes
+        let sideOffset = config.fieldWidth * 0.06  // Offset to side for shape
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
@@ -303,11 +303,11 @@ struct DiagramRenderer {
             )
             controlPoint2 = CGPoint(
                 x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.5
+                y: yPosition.y + loopDepth * 0.6
             )
             endPoint = CGPoint(
                 x: yPosition.x,
-                y: yPosition.y + loopDepth * 0.3  // Ends partway up from deepest point
+                y: yPosition.y + loopDepth * 0.5  // Deeper endpoint for visible U
             )
         } else {
             // Right-side: U loops back and returns on right side
@@ -317,11 +317,11 @@ struct DiagramRenderer {
             )
             controlPoint2 = CGPoint(
                 x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth * 0.5
+                y: yPosition.y + loopDepth * 0.6
             )
             endPoint = CGPoint(
                 x: yPosition.x,
-                y: yPosition.y + loopDepth * 0.3
+                y: yPosition.y + loopDepth * 0.5  // Deeper endpoint for visible U
             )
         }
 

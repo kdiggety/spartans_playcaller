@@ -133,6 +133,11 @@ struct RouteDiagramView: View {
 
     private func drawRoutes(context: inout GraphicsContext, config: DiagramConfig, positions: [Receiver: CGPoint]) {
         for assignment in playCall.assignments {
+            // Skip Y's route when wheel is enabled — wheel replaces the numbered route
+            if assignment.receiver == .Y && playCall.yWheelEnabled {
+                continue
+            }
+
             guard let initialPos = positions[assignment.receiver] else { continue }
 
             // For Y receiver with motion, compute the final position; otherwise use initial position
