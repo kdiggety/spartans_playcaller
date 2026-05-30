@@ -18,7 +18,7 @@ struct DiagramConfig {
         return DiagramConfig(
             fieldWidth: width,
             fieldHeight: height,
-            lineOfScrimmageY: height * 0.75,
+            lineOfScrimmageY: height * 0.60,
             routeLength: height * 0.25,
             breakLength: height * 0.15,
             receiverRadius: 12,
