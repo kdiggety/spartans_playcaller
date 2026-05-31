@@ -143,7 +143,7 @@ final class RouteDiagramViewTests: XCTestCase {
             let view = RouteDiagramView(playCall: playCall)
             XCTAssertNotNil(view)
 
-            // Twins: X, Y on left; Z, A on right
+            // Twins: X, A on left; Y, Z on right
             let leftReceivers = playCall.assignments.filter { playCall.formation.side(for: $0.receiver) == .left }
             let rightReceivers = playCall.assignments.filter { playCall.formation.side(for: $0.receiver) == .right }
 

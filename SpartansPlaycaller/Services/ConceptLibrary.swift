@@ -30,7 +30,7 @@ struct ConceptLibrary {
         var templates: [ConceptTemplate] = []
 
         // ──────────────────────────────────────────────
-        // TWINS LEFT (X and Y on left side)
+        // TWINS LEFT (X and A on left side)
         // ──────────────────────────────────────────────
 
         templates.append(ConceptTemplate(
@@ -58,7 +58,7 @@ struct ConceptLibrary {
         ))
 
         // ──────────────────────────────────────────────
-        // TWINS RIGHT (Z and A on right side)
+        // TWINS RIGHT (Y and Z on right side)
         // ──────────────────────────────────────────────
 
         templates.append(ConceptTemplate(

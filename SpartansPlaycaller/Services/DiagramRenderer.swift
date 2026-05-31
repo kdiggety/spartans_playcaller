@@ -41,12 +41,12 @@ struct DiagramRenderer {
 
         switch formation {
         case .twins:
-            // Left: X, Y (Y inside X)
+            // Left: X (outside), A (inside)
             positions[.X] = CGPoint(x: centerX - config.receiverSpacing * 2, y: losY)
-            positions[.Y] = CGPoint(x: centerX - config.receiverSpacing, y: losY)
-            // Right: Z, A (A outside Z)
-            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing, y: losY)
-            positions[.A] = CGPoint(x: centerX + config.receiverSpacing * 2, y: losY)
+            positions[.A] = CGPoint(x: centerX - config.receiverSpacing, y: losY)
+            // Right: Y (inside), Z (outside)
+            positions[.Y] = CGPoint(x: centerX + config.receiverSpacing, y: losY)
+            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 2, y: losY)
 
         case .tripsLeft:
             // A (outside), X, Y (inside) on left; Z isolated right

@@ -48,10 +48,10 @@ enum Formation: String, CaseIterable, Identifiable {
     func side(for receiver: Receiver) -> FieldSide {
         switch self {
         case .twins:
-            // X and Y left, Z and A right
+            // X (outside), A (inside) on left; Y (inside), Z (outside) on right
             switch receiver {
-            case .X, .Y: return .left
-            case .Z, .A: return .right
+            case .X, .A: return .left
+            case .Y, .Z: return .right
             case .H: return .center
             }
 
@@ -94,7 +94,7 @@ enum Formation: String, CaseIterable, Identifiable {
     var alignmentOrder: (left: [Receiver], right: [Receiver]) {
         switch self {
         case .twins:
-            return (left: [.X, .Y], right: [.Z, .A])
+            return (left: [.X, .A], right: [.Y, .Z])
 
         case .tripsLeft:
             // A outside X, X, Y inside X
