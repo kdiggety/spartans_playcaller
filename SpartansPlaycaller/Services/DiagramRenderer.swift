@@ -274,10 +274,12 @@ struct DiagramRenderer {
     /// Arc geometry:
     /// - Starts at Y's position on the line of scrimmage
     /// - Curves downward and to the side (away from LOS, into the backfield)
+    /// - Smooth rounded bottom (not sharp V)
     /// - Curves back upward (returning toward the LOS)
-    /// - Ends partway back with arrow pointing back at the line of scrimmage
+    /// - Ends at DIFFERENT X than start (tilted arc, not symmetric U)
+    /// - Final segment angles ~45° back toward LOS
+    /// - Arrow points back at line of scrimmage
     /// - Smooth curved path (cubic Bézier)
-    /// - Similar scale to other route arrows (20-30% of field height)
     ///
     /// - Parameters:
     ///   - playCall: The play call containing formation and route assignments
@@ -292,13 +294,13 @@ struct DiagramRenderer {
         let yAssignment = playCall.assignments.first { $0.receiver == .Y }
         let side = yAssignment?.side ?? playCall.formation.side(for: .Y)
 
-        // Arc geometry:
-        // - loopDepth: how far back the arc curves (into backfield) — ~10% of field for shallow loop
-        // - sideOffset: how far to the side the arc curves away from LOS — ~13% for very wide lateral sweep
-        // - endpointFraction: how far back the endpoint is (0.45 = 45% down the loop)
-        let loopDepth = config.fieldHeight * 0.10       // 10% of field height (very shallow vertical)
-        let sideOffset = config.fieldWidth * 0.13       // 13% of field width (very wide horizontal)
-        let endpointFraction: CGFloat = 0.45            // Endpoint 45% of the way down
+        // Arc geometry (2-3x larger scale for visibility):
+        // - loopDepth: how far back the arc curves (into backfield) — ~25% of field height (2.5x from 10%)
+        // - sideOffset: how far to the side the arc curves away from LOS — ~30% of field width (2.3x from 13%)
+        // - endpointFraction: how far back the endpoint is (~60% down the loop for tilted effect)
+        let loopDepth = config.fieldHeight * 0.25       // 25% of field height (2.5x larger)
+        let sideOffset = config.fieldWidth * 0.30       // 30% of field width (2.3x larger)
+        let endpointFraction: CGFloat = 0.60            // Endpoint 60% of the way down (deeper than start)
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
@@ -309,36 +311,40 @@ struct DiagramRenderer {
             // First control point: curves down and FAR left into the backfield (maximum lateral extent)
             controlPoint1 = CGPoint(
                 x: yPosition.x - sideOffset * 1.8,
-                y: yPosition.y + loopDepth * 0.25
+                y: yPosition.y + loopDepth * 0.30
             )
-            // Second control point: AT OR NEAR starting X, preparing to return immediately
-            // This creates a WIDE, SHALLOW U-shape with minimal depth
+            // Second control point: prepares for return with smooth rounded bottom
+            // Positioned to create smooth transition from descent to ascent
             controlPoint2 = CGPoint(
-                x: yPosition.x + sideOffset * 0.05,
-                y: yPosition.y + loopDepth * 0.60
+                x: yPosition.x - sideOffset * 0.35,
+                y: yPosition.y + loopDepth * 0.95
             )
-            // Endpoint: at starting X, minimal depth (nearly flat)
+            // Endpoint: tilted arc (different X than start)
+            // Offset by ~75% of sideOffset to create tilted effect
+            // Final segment angles ~45° back toward LOS
             endPoint = CGPoint(
-                x: yPosition.x,
-                y: yPosition.y + loopDepth * (endpointFraction - 0.05)
+                x: yPosition.x - sideOffset * 0.75,
+                y: yPosition.y + loopDepth * endpointFraction
             )
         } else {
             // Right-side: arc curves right and back, then returns
             // First control point: curves down and FAR right into the backfield (maximum lateral extent)
             controlPoint1 = CGPoint(
                 x: yPosition.x + sideOffset * 1.8,
-                y: yPosition.y + loopDepth * 0.25
+                y: yPosition.y + loopDepth * 0.30
             )
-            // Second control point: AT OR NEAR starting X, preparing to return immediately
-            // This creates a WIDE, SHALLOW U-shape with minimal depth
+            // Second control point: prepares for return with smooth rounded bottom
+            // Positioned to create smooth transition from descent to ascent
             controlPoint2 = CGPoint(
-                x: yPosition.x - sideOffset * 0.05,
-                y: yPosition.y + loopDepth * 0.60
+                x: yPosition.x + sideOffset * 0.35,
+                y: yPosition.y + loopDepth * 0.95
             )
-            // Endpoint: at starting X, minimal depth (nearly flat)
+            // Endpoint: tilted arc (different X than start)
+            // Offset by ~75% of sideOffset to create tilted effect
+            // Final segment angles ~45° back toward LOS
             endPoint = CGPoint(
-                x: yPosition.x,
-                y: yPosition.y + loopDepth * (endpointFraction - 0.05)
+                x: yPosition.x + sideOffset * 0.75,
+                y: yPosition.y + loopDepth * endpointFraction
             )
         }
 
