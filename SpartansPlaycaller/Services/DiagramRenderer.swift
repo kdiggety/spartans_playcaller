@@ -128,26 +128,16 @@ struct DiagramRenderer {
             return [startPosition, stemEnd, breakPoint]
 
         case .five:
-            // LEFT: Comeback (stem up, break back down-left)
-            // RIGHT: Curl (stem up, curl back down toward center)
-            if side == .left {
-                let breakPoint = CGPoint(x: stemEnd.x - breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
-                return [startPosition, stemEnd, breakPoint]
-            } else {
-                let breakPoint = CGPoint(x: stemEnd.x - breakLen * 0.3, y: stemEnd.y + breakLen * 0.4)
-                return [startPosition, stemEnd, breakPoint]
-            }
+            // Comeback / Curl: ALWAYS breaks back down-LEFT
+            // LEFT=Comeback (back toward sideline), RIGHT=Curl (back toward center)
+            let breakPoint = CGPoint(x: stemEnd.x - breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
+            return [startPosition, stemEnd, breakPoint]
 
         case .six:
-            // LEFT: Curl (stem up, curl back down toward center)
-            // RIGHT: Comeback (stem up, break back down-right)
-            if side == .left {
-                let breakPoint = CGPoint(x: stemEnd.x + breakLen * 0.3, y: stemEnd.y + breakLen * 0.4)
-                return [startPosition, stemEnd, breakPoint]
-            } else {
-                let breakPoint = CGPoint(x: stemEnd.x + breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
-                return [startPosition, stemEnd, breakPoint]
-            }
+            // Curl / Comeback: ALWAYS breaks back down-RIGHT
+            // LEFT=Curl (back toward center), RIGHT=Comeback (back toward sideline)
+            let breakPoint = CGPoint(x: stemEnd.x + breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
+            return [startPosition, stemEnd, breakPoint]
 
         case .seven:
             // ALWAYS angles top-left (Corner route)
