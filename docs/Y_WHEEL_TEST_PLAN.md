@@ -70,13 +70,23 @@ These checks must pass **before** implementation begins. They verify the foundat
   - Expected: `side(for:)` returns `.left` for Y receiver
   - Expected: A does NOT appear in Pro formation
 
+- [ ] **Step 1.4b:** Verify Pro Left Y Motion transformation
+  - Expected: With Y Motion After/Go, Pro Left transforms from 2x1 to 1x2
+  - Expected: Y flips from left to right side
+  - Expected: LEFT has X alone (1), RIGHT has Y inside + Z outside (2)
+
 - [ ] **Step 1.5:** Verify Pro Right formation (1x2 structure)
   - Expected: `case proRight = "Pro Right"` exists
   - Expected: X alone on left; Y (inside), Z (outside) on right
   - Expected: `side(for:)` returns `.right` for Y receiver
   - Expected: A does NOT appear in Pro formation
 
-**Pass Criteria:** All formations define Y as the inside receiver on the correct side.
+- [ ] **Step 1.5b:** Verify Pro Right Y Motion transformation
+  - Expected: With Y Motion After/Go, Pro Right transforms from 1x2 to 2x1
+  - Expected: Y flips from right to left side
+  - Expected: LEFT has Y inside + Z outside (2), RIGHT has X alone (1)
+
+**Pass Criteria:** All formations define Y as the inside receiver on the correct side; Pro transformations flip the 2-receiver side.
 
 ---
 
@@ -329,7 +339,7 @@ These tests require a running app on iPhone/iPad and manual verification.
 - [ ] A4.4: **Verify:** X is OUTSIDE on left; Z is ALONE on right
 - [ ] A4.5: Set Motion → None, Wheel → ON
 - [ ] A4.6: **Verify:** Arc appears curving LEFT on left side
-- [ ] A4.7: **Verify:** Formation is 2x1 (not 3x1)
+- [ ] A4.7: **Verify:** Formation is 2x1 (LEFT: X outside + Y inside; RIGHT: Z alone)
 
 **Expected Result:** PASS if toggle visible, arc renders on left, and formation is 2x1.
 
@@ -340,10 +350,10 @@ These tests require a running app on iPhone/iPad and manual verification.
 - [ ] A5.1: Select Formation → Pro Right
 - [ ] A5.2: Select play with Y receiver (e.g., "6758")
 - [ ] A5.3: **Verify:** Y is on the RIGHT side (inside receiver in 1x2 formation)
-- [ ] A5.4: **Verify:** X is ALONE on left; Y and Z are on right
+- [ ] A5.4: **Verify:** X is ALONE on left; Y (inside) and Z (outside) are on right
 - [ ] A5.5: Set Motion → None, Wheel → ON
 - [ ] A5.6: **Verify:** Arc appears curving RIGHT on right side
-- [ ] A5.7: **Verify:** Formation is 1x2 (not 3x1)
+- [ ] A5.7: **Verify:** Formation is 1x2 (LEFT: X alone; RIGHT: Y inside + Z outside)
 
 **Expected Result:** PASS if toggle visible, arc renders on right, and formation is 1x2.
 
@@ -456,6 +466,36 @@ These tests require a running app on iPhone/iPad and manual verification.
 - [ ] C4.5: **Verify:** Formation transforms to 2x2 (2 on each side)
 
 **Expected Result:** PASS if arc direction reverses and formation transforms to 2x2.
+
+---
+
+**Test C3: Pro Left + Y Motion AFTER/GO (transforms 2x1 → 1x2)**
+
+- [ ] C3.1: Select Formation → Pro Left, Wheel ON, Motion: None
+- [ ] C3.2: Observe: Arc curves LEFT (Y on left, 2x1 formation with X outside and Y inside)
+- [ ] C3.3: Change Motion → After (Y flips to right)
+- [ ] C3.4: **Verify:** Arc has relocated to Y's NEW position on the RIGHT side
+- [ ] C3.5: **Verify:** Arc now curves RIGHT (away from center, in Y's new position)
+- [ ] C3.6: **Verify:** Formation has visually transformed from 2x1 to 1x2 (LEFT: X alone; RIGHT: Y + Z)
+- [ ] C3.7: **Verify:** Arc is still visible and smooth
+- [ ] C3.8: **Verify:** Route shows "Wheel" regardless of motion selection
+
+**Expected Result:** PASS if arc relocates, direction reverses, formation transforms, and 2-receiver side flips.
+
+---
+
+**Test C4: Pro Right + Y Motion AFTER/GO (transforms 1x2 → 2x1)**
+
+- [ ] C4.1: Select Formation → Pro Right, Wheel ON, Motion: None
+- [ ] C4.2: Observe: Arc curves RIGHT (Y on right, 1x2 formation with Y inside and Z outside)
+- [ ] C4.3: Change Motion → After (Y flips to left)
+- [ ] C4.4: **Verify:** Arc has relocated to Y's NEW position on the LEFT side
+- [ ] C4.5: **Verify:** Arc now curves LEFT (away from center, in Y's new position)
+- [ ] C4.6: **Verify:** Formation has visually transformed from 1x2 to 2x1 (LEFT: Y + X; RIGHT: Z alone)
+- [ ] C4.7: **Verify:** Arc is still visible and smooth
+- [ ] C4.8: **Verify:** Route shows "Wheel" regardless of motion selection
+
+**Expected Result:** PASS if arc relocates, direction reverses, formation transforms, and 2-receiver side flips to left.
 
 ---
 
@@ -932,16 +972,21 @@ After all manual tests pass, Ken should verify:
 
 | Test | Result | Notes | Date |
 |------|--------|-------|------|
-| Test A1: Twins | [ ] PASS / [ ] FAIL |  | __ |
-| Test A2: Trips Left | [ ] PASS / [ ] FAIL |  | __ |
-| Test A3: Trips Right | [ ] PASS / [ ] FAIL |  | __ |
-| Test A4: Pro Left | [ ] PASS / [ ] FAIL |  | __ |
-| Test A5: Pro Right | [ ] PASS / [ ] FAIL |  | __ |
+| Test A1: Twins (no motion) | [ ] PASS / [ ] FAIL |  | __ |
+| Test A2: Trips Left (no motion) | [ ] PASS / [ ] FAIL |  | __ |
+| Test A3: Trips Right (no motion) | [ ] PASS / [ ] FAIL |  | __ |
+| Test A4: Pro Left (no motion) | [ ] PASS / [ ] FAIL |  | __ |
+| Test A5: Pro Right (no motion) | [ ] PASS / [ ] FAIL |  | __ |
 | Test B1–B5: Arc Geometry | [ ] PASS / [ ] FAIL |  | __ |
-| Test C1–C2: Post-Motion | [ ] PASS / [ ] FAIL |  | __ |
+| Test C1: Twins + After (2x2→3x1) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C2: Twins + Go (2x2→3x1) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C3: Pro Left + After/Go (2x1→1x2) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C4: Pro Right + After/Go (1x2→2x1) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C5: Trips Left + After (3x1→2x2) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C6: Trips Right + After (3x1→2x2) | [ ] PASS / [ ] FAIL |  | __ |
 | Test D1–D2: Route Override | [ ] PASS / [ ] FAIL |  | __ |
 | Test E1–E5: Visual Quality | [ ] PASS / [ ] FAIL |  | __ |
-| Test F1–F4: Edge Cases | [ ] PASS / [ ] FAIL |  | __ |
+| Test F1–F6: Edge Cases | [ ] PASS / [ ] FAIL |  | __ |
 | Integration Tests | [ ] PASS / [ ] FAIL |  | __ |
 | Regression Tests | [ ] PASS / [ ] FAIL |  | __ |
 | Device Coverage | [ ] PASS / [ ] FAIL |  | __ |
@@ -962,17 +1007,25 @@ After all manual tests pass, Ken should verify:
 
 ## Summary
 
-**Total Manual Tests:** 22 test groups (A–F)  
+**Total Manual Tests:** 23 test groups (A–F, now including Pro formations)  
 **Total Automated Tests:** 4 test suites  
 **Regression Tests:** 3 existing test suites  
 **Screen Sizes Tested:** 3 (iPhone SE, iPhone 15 Pro, iPad)  
 **Estimated Test Execution Time:** 2–3 hours (with automation)  
 
+**Formation Coverage:**
+- Twins (2x2): no motion + After/Go motion (transforms to 3x1)
+- Trips Left (3x1): no motion + After/Go motion (transforms to 2x2)
+- Trips Right (3x1): no motion + After/Go motion (transforms to 2x2)
+- Pro Left (2x1): no motion + After/Go motion (transforms to 1x2, 2-receiver side flips)
+- Pro Right (1x2): no motion + After/Go motion (transforms to 2x1, 2-receiver side flips)
+
 **Before Implementation, Ken Must Approve:**
-1. All requirements in `Y_WHEEL_REQUIREMENTS.md`
-2. All test coverage in this plan
-3. Formation gating logic (Twins wheel, Trips/Pro motion+wheel)
+1. All requirements in `Y_WHEEL_REQUIREMENTS.md` (including Pro formation transformations)
+2. All test coverage in this plan (including expanded Pro formation tests)
+3. Formation gating logic (all formations support motion and wheel independently)
 4. Arc geometry parameters
+5. Pro formation transformation details (2-receiver side flips with Y Motion After/Go)
 
 **After Implementation, Testing Agent Must Execute:**
 1. All automated unit + integration tests

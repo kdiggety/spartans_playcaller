@@ -48,13 +48,13 @@ When Y Motion After/Go is applied to Twins formation:
 
 When Y Motion is applied as **After** or **Go**, Y flips sides, transforming the formation:
 
-| Original Formation | Y Motion | Transformed Formation | Example |
+| Original Formation | Y Motion | Transformed Formation | Details |
 |-------------------|----------|----------------------|---------|
 | Twins (2x2) | After/Go | Trips (3x1) | 2 on right → 1 on right; Y moves to left creating 3 on left, 1 on right |
 | Trips Left (3x1) | After/Go | Twins (2x2) | Y moves to right, pairing with Z, creating 2 on each side |
 | Trips Right (3x1) | After/Go | Twins (2x2) | Y moves to left, pairing with X, creating 2 on each side |
-| Pro Left (2x1) | After/Go | Twins (2x2) | Y moves to right, creating 2 on each side |
-| Pro Right (1x2) | After/Go | Twins (2x2) | Y moves to left, creating 2 on each side |
+| Pro Left (2x1) | After/Go | 1x2 | Y moves to right: LEFT has X alone (1), RIGHT has Y inside + Z outside (2) |
+| Pro Right (1x2) | After/Go | 2x1 | Y moves to left: LEFT has Y inside + Z outside (2), RIGHT has X alone (1) |
 
 ### Concept Matching and Transformed Formations
 
@@ -211,7 +211,9 @@ Visual Balance: Arc depth equals route length, creating visual consistency acros
 
 ---
 
-## 4. Four Test Scenarios - Detailed Behavior
+## 4. Eight Test Scenarios - Detailed Behavior
+
+Pro formations now included with full transformation details.
 
 ### Scenario A: Twins, Y Motion NONE (2x2 formation remains)
 
@@ -321,6 +323,120 @@ Visual Balance: Arc depth equals route length, creating visual consistency acros
 - Motion and wheel work together without conflicts
 - Arc direction reverses from Scenario C (opposite side)
 - Special case receiver positioning does not affect arc rendering
+
+---
+
+### Scenario E: Pro Left, Y Motion NONE (2x1 formation remains)
+
+**Setup:**
+- Formation: Pro Left (2x1 structure)
+- Y position: Left side (inside receiver, paired with X)
+- Receivers: X (outside), Y (inside) on left; Z alone on right
+- Motion: None
+- Wheel: Enabled
+
+**Expected Arc Behavior:**
+- **Formation Type:** Remains 2x1 (no transformation)
+- **Arc Direction:** Curves LEFT (away from center of field)
+- **Arc Start:** Bottom of Y's receiver circle (on line of scrimmage)
+- **Arc X-coordinate:** Arc deviates LEFT, endpoint X-coordinate is **different** (more left) than start X
+- **Arc End:** ~25% down the field, angled back toward LOS at ~45°
+- **Route Display:** Assignment table shows "Wheel" (not a numbered route)
+- **Concept Status:** Concepts match as **2x1 formation** (formation hasn't changed)
+
+**Verification Points:**
+- Arc is visible in diagram
+- Arc curves away from center (left side)
+- Arc is the correct color (yellow)
+- Arc shape is smooth U-curve (not angular)
+- Arrow points back at LOS
+- No visual clipping at field edges
+- Y is clearly on left side with X (outside) and Z alone on right
+
+---
+
+### Scenario F: Pro Left, Y Motion AFTER/GO (transforms to 1x2)
+
+**Setup:**
+- Formation: Pro Left (originally 2x1)
+- Y position before motion: Left side (inside receiver, paired with X)
+- Motion: After or Go
+- Wheel: Enabled
+
+**Expected Arc Behavior:**
+- **Formation Type:** Transforms from 2x1 to **1x2** (2-receiver side flips from left to right)
+- **Y Post-Motion Position:** Y moves from left to right side (now inside on right, paired with Z)
+- **Arc Start:** Originates from Y's **new position on right side**
+- **Arc Direction:** Curves RIGHT (away from center, in Y's new position)
+- **Arc Start/End X-coords:** Different (tilted arc on right side of field)
+- **Arc End:** ~25% down the field, angled back toward LOS at ~45°
+- **Route Display:** "Wheel" (motion and wheel work together)
+- **Concept Status:** Concepts match as **1x2 formation** (formation has transformed)
+
+**Verification Points:**
+- Arc originates from Y's **post-motion position** (right side), not original left position
+- Arc curves right (away from center in new position)
+- Formation transformation is reflected in receiver layout: LEFT now has X alone (1), RIGHT has Y + Z (2)
+- Motion and wheel work together without conflicts
+- Arc direction reverses from Scenario E (opposite side)
+- Route shows "Wheel" regardless of underlying route number
+
+---
+
+### Scenario G: Pro Right, Y Motion NONE (1x2 formation remains)
+
+**Setup:**
+- Formation: Pro Right (1x2 structure)
+- Y position: Right side (inside receiver, paired with Z)
+- Receivers: X alone on left; Y (inside), Z (outside) on right
+- Motion: None
+- Wheel: Enabled
+
+**Expected Arc Behavior:**
+- **Formation Type:** Remains 1x2 (no transformation)
+- **Arc Direction:** Curves RIGHT (away from center of field)
+- **Arc Start:** Bottom of Y's receiver circle (on line of scrimmage)
+- **Arc X-coordinate:** Arc deviates RIGHT, endpoint X-coordinate is **different** (more right) than start X
+- **Arc End:** ~25% down the field, angled back toward LOS at ~45°
+- **Route Display:** Assignment table shows "Wheel"
+- **Concept Status:** Concepts match as **1x2 formation** (formation hasn't changed)
+
+**Verification Points:**
+- Arc is visible in diagram
+- Arc curves away from center (right side)
+- Arc is the correct color (yellow)
+- Arc shape is smooth U-curve (not angular)
+- Arrow points back at LOS
+- No visual clipping at field edges
+- Y is clearly on right side with Z (outside) and X alone on left
+
+---
+
+### Scenario H: Pro Right, Y Motion AFTER/GO (transforms to 2x1)
+
+**Setup:**
+- Formation: Pro Right (originally 1x2)
+- Y position before motion: Right side (inside receiver, paired with Z)
+- Motion: After or Go
+- Wheel: Enabled
+
+**Expected Arc Behavior:**
+- **Formation Type:** Transforms from 1x2 to **2x1** (2-receiver side flips from right to left)
+- **Y Post-Motion Position:** Y moves from right to left side (now inside on left, paired with X)
+- **Arc Start:** Originates from Y's **new position on left side**
+- **Arc Direction:** Curves LEFT (away from center, in Y's new position)
+- **Arc Start/End X-coords:** Different (tilted arc on left side of field)
+- **Arc End:** ~25% down the field, angled back toward LOS at ~45°
+- **Route Display:** "Wheel"
+- **Concept Status:** Concepts match as **2x1 formation** (formation has transformed)
+
+**Verification Points:**
+- Arc originates from Y's **post-motion position** (left side), not original right position
+- Arc curves left (away from center in new position)
+- Formation transformation is reflected in receiver layout: LEFT now has Y + X (2), RIGHT has Z alone (1)
+- Motion and wheel work together without conflicts
+- Arc direction reverses from Scenario G (opposite side)
+- Route shows "Wheel" regardless of underlying route number
 
 ---
 
