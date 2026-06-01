@@ -104,26 +104,16 @@ struct DiagramRenderer {
             return [startPosition, shortStem]
 
         case .one:
-            // Quick Out: perpendicular break (90°) — breaks away from center on both sides
+            // Quick Out: ALWAYS breaks LEFT (90° perpendicular to the left) regardless of receiver side
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            if side == .left {
-                let breakPoint = CGPoint(x: shortStem.x - breakLen, y: shortStem.y)
-                return [startPosition, shortStem, breakPoint]
-            } else {
-                let breakPoint = CGPoint(x: shortStem.x + breakLen, y: shortStem.y)
-                return [startPosition, shortStem, breakPoint]
-            }
+            let breakPoint = CGPoint(x: shortStem.x - breakLen, y: shortStem.y)
+            return [startPosition, shortStem, breakPoint]
 
         case .two:
-            // Quick Slant: diagonal break (~45°) — breaks away from center on both sides
+            // Quick Slant: ALWAYS breaks RIGHT (~45° diagonal to the right) regardless of receiver side
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            if side == .left {
-                let breakPoint = CGPoint(x: shortStem.x - breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
-                return [startPosition, shortStem, breakPoint]
-            } else {
-                let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
-                return [startPosition, shortStem, breakPoint]
-            }
+            let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
+            return [startPosition, shortStem, breakPoint]
 
         case .three:
             // ALWAYS breaks LEFT at 90 degrees (Out route breaking left)

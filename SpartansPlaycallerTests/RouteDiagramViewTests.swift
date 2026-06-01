@@ -269,12 +269,13 @@ final class RouteDiagramViewTests: XCTestCase {
     }
 
 @MainActor func testYRouteSideInterpretationChangesWithMotion() {
-        // Trips Left, route "1", no motion: Y on left, route "1" = Quick Out (breaks left)
-        // Trips Left, route "1", Y After: Y flipped to right, route "1" = Quick Slant (breaks inward)
+        // Routes 1 and 2 use absolute directions:
+        // Route "1" ALWAYS breaks LEFT regardless of receiver side
+        // Route "2" ALWAYS breaks RIGHT regardless of receiver side
         let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
         let renderer = DiagramRenderer()
 
-        // First: No motion case
+        // First: Route 1 on left (no motion) - should break LEFT
         if case .success(let playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
             if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
                 XCTAssertEqual(yAssignment.side, .left)
@@ -291,19 +292,19 @@ final class RouteDiagramViewTests: XCTestCase {
                     config: config
                 )
 
-                // Route "1" on left should break LEFT (Quick Out)
+                // Route "1" ALWAYS breaks LEFT (absolute direction)
                 // Path should have 3 points: start, stem end, break point
-                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Quick Out route should have break point")
+                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Route 1 should have break point")
                 if routePath.count >= 3 {
                     let breakPoint = routePath[2]
                     // Break point X should be less than stem (going left)
                     let stemPoint = routePath[1]
-                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Quick Out breaks left")
+                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Route 1 always breaks left")
                 }
             }
         }
 
-        // Second: Y After motion case
+        // Second: Route 1 on right (with Y After motion) - should STILL break LEFT
         if case .success(var playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
                 playCall.assignments[yIndex].motion = .after
@@ -332,18 +333,14 @@ final class RouteDiagramViewTests: XCTestCase {
                     config: config
                 )
 
-                // Route "1" on right should be Quick Slant (breaks inward/toward center)
+                // Route "1" ALWAYS breaks LEFT (absolute direction, even when receiver is on right)
                 // Path should have 3 points: start, stem end, break point
-                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Quick Slant route should have break point")
+                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Route 1 should have break point")
                 if routePath.count >= 3 {
                     let breakPoint = routePath[2]
                     let stemPoint = routePath[1]
-                    // Break point X should be less than stem X (inward/toward center from right side)
-                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Quick Slant breaks inward from right side")
-                    // But not as far left as Pure Quick Out would go
-                    // This is harder to test precisely, but we can verify the break is smaller
-                    let breakDistance = abs(breakPoint.x - stemPoint.x)
-                    XCTAssertLessThan(breakDistance, 30, "Quick Slant break is more modest than Quick Out")
+                    // Break point X should be less than stem X (LEFT, absolute direction)
+                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Route 1 always breaks left even from right side")
                 }
             }
         }
