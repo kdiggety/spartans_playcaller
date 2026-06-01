@@ -62,7 +62,7 @@ When Y Motion is applied as **After** or **Go**, Y flips sides, transforming the
 
 - When Twins becomes 3x1 via Y After/Go: concepts match as **3x1 formation**
 - When Trips becomes 2x2 via Y After/Go: concepts match as **2x2 formation**
-- **Y Wheel does NOT override concept matching** — it displays the arc regardless of the underlying route, but concept identification uses the transformed formation type
+- **Y Wheel does NOT override concept matching.** When Y Wheel is enabled in Trips formations, the other two receivers' route combinations are evaluated for concept matching based on the transformed formation type. In Twins and Pro formations, Y Wheel does not apply concept matching logic. Y Wheel concept classification is secondary and less critical for play identification than standard route combinations.
 
 ---
 
@@ -444,7 +444,7 @@ Pro formations now included with full transformation details.
 
 ### How Y Wheel Interacts with Concept Matching
 
-**Critical Principle:** Y Wheel **does NOT override concept matching**. Concepts are identified based on the transformed formation type, not the wheel toggle.
+**Critical Principle:** Y Wheel **does NOT override concept matching**. When Y Wheel is enabled in Trips formations, the other two receivers' route combinations are evaluated for concept matching based on the transformed formation type. In Twins and Pro formations, Y Wheel does not apply concept matching logic. Y Wheel concept classification is secondary and less critical for play identification than standard route combinations.
 
 ### Concept Matching Rules
 
