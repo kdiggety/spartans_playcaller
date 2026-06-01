@@ -36,25 +36,25 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .smash,
             formationContext: .twinsLeft,
-            receiverRoutes: [.X: .six, .Y: .seven]
+            receiverRoutes: [.X: .six, .A: .seven]
         ))
 
         templates.append(ConceptTemplate(
             concept: .dagger,
             formationContext: .twinsLeft,
-            receiverRoutes: [.X: .four, .Y: .nine]
+            receiverRoutes: [.X: .four, .A: .nine]
         ))
 
         templates.append(ConceptTemplate(
             concept: .scissors,
             formationContext: .twinsLeft,
-            receiverRoutes: [.X: .eight, .Y: .seven]
+            receiverRoutes: [.X: .eight, .A: .seven]
         ))
 
         templates.append(ConceptTemplate(
             concept: .sail,
             formationContext: .twinsLeft,
-            receiverRoutes: [.X: .nine, .Y: .three]
+            receiverRoutes: [.X: .nine, .A: .three]
         ))
 
         // ──────────────────────────────────────────────
@@ -64,25 +64,25 @@ struct ConceptLibrary {
         templates.append(ConceptTemplate(
             concept: .smash,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .eight, .A: .five]
+            receiverRoutes: [.Y: .eight, .Z: .five]
         ))
 
         templates.append(ConceptTemplate(
             concept: .dagger,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .nine, .A: .three]
+            receiverRoutes: [.Y: .nine, .Z: .three]
         ))
 
         templates.append(ConceptTemplate(
             concept: .scissors,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .eight, .A: .seven]
+            receiverRoutes: [.Y: .eight, .Z: .seven]
         ))
 
         templates.append(ConceptTemplate(
             concept: .sail,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .four, .A: .nine]
+            receiverRoutes: [.Y: .four, .Z: .nine]
         ))
 
         // ──────────────────────────────────────────────
