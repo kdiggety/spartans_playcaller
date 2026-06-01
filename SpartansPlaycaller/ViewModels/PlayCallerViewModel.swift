@@ -230,8 +230,10 @@ final class PlayCallerViewModel: ObservableObject {
             yMotion = nil
         }
 
-        // Always reset wheel toggle when formation changes
-        yWheelEnabled = false
+        // Reset wheel toggle only on family change (not on side toggle within same family)
+        if isFamilyChange {
+            yWheelEnabled = false
+        }
 
         // Re-parse if there are digits entered (needed for both family change and side toggle)
         if !routeDigitInput.isEmpty {

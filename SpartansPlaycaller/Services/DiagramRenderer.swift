@@ -287,20 +287,39 @@ struct DiagramRenderer {
     /// - Returns: A tuple of (path, points for arrow, color)
     func yWheelArcPath(for playCall: PlayCall, config: DiagramConfig) -> (Path, [CGPoint], Color) {
         let positions = receiverPositions(formation: playCall.formation, config: config)
-        guard let yPosition = positions[.Y] else {
+        guard let initialYPosition = positions[.Y] else {
             return (Path(), [], .yellow)
         }
 
         let yAssignment = playCall.assignments.first { $0.receiver == .Y }
-        let side = yAssignment?.side ?? playCall.formation.side(for: .Y)
+        let initialSide = yAssignment?.side ?? playCall.formation.side(for: .Y)
 
-        // Arc geometry (2-3x larger scale for visibility):
-        // - loopDepth: how far back the arc curves (into backfield) — ~25% of field height (2.5x from 10%)
-        // - sideOffset: how far to the side the arc curves away from LOS — ~30% of field width (2.3x from 13%)
-        // - endpointFraction: how far back the endpoint is (~60% down the loop for tilted effect)
-        let loopDepth = config.fieldHeight * 0.25       // 25% of field height (2.5x larger)
-        let sideOffset = config.fieldWidth * 0.30       // 30% of field width (2.3x larger)
-        let endpointFraction: CGFloat = 0.60            // Endpoint 60% of the way down (deeper than start)
+        // If Y has motion, compute final position after motion is applied
+        let yPosition: CGPoint
+        let side: FieldSide
+
+        if let motion = yAssignment?.motion {
+            let finalSide = motion.finalSide(originalSide: initialSide)
+            yPosition = yFinalPosition(
+                initialSide: initialSide,
+                finalSide: finalSide,
+                motion: motion,
+                formation: playCall.formation,
+                config: config
+            )
+            side = finalSide
+        } else {
+            yPosition = initialYPosition
+            side = initialSide
+        }
+
+        // Arc geometry per specification:
+        // - loopDepth: how far back the arc curves (into backfield) — 25% of field height
+        // - sideOffset: how far to the side the arc curves away from LOS — 30% of field width
+        // - endpointFraction: endpoint at 55% of loopDepth
+        let loopDepth = config.fieldHeight * 0.25       // 25% of field height
+        let sideOffset = config.fieldWidth * 0.30       // 30% of field width
+        let endpointFraction: CGFloat = 0.55            // Endpoint 55% of the way down
 
         let controlPoint1: CGPoint
         let controlPoint2: CGPoint
@@ -308,42 +327,38 @@ struct DiagramRenderer {
 
         if side == .left {
             // Left-side: arc curves left and back, then returns
-            // First control point: curves down and FAR left into the backfield (maximum lateral extent)
+            // Control Point 1: curves down and left at 40% depth
             controlPoint1 = CGPoint(
-                x: yPosition.x - sideOffset * 1.8,
-                y: yPosition.y + loopDepth * 0.30
+                x: yPosition.x - sideOffset,
+                y: yPosition.y + loopDepth * 0.4
             )
-            // Second control point: prepares for return with smooth rounded bottom
-            // Positioned to create smooth transition from descent to ascent
+            // Control Point 2: deepest point of arc at 80% depth
             controlPoint2 = CGPoint(
-                x: yPosition.x - sideOffset * 0.35,
-                y: yPosition.y + loopDepth * 0.95
+                x: yPosition.x - sideOffset,
+                y: yPosition.y + loopDepth * 0.8
             )
             // Endpoint: tilted arc (different X than start)
-            // Offset by ~75% of sideOffset to create tilted effect
-            // Final segment angles ~45° back toward LOS
+            // Returns leftward but less than max extent (30% of sideOffset)
             endPoint = CGPoint(
-                x: yPosition.x - sideOffset * 0.75,
+                x: yPosition.x - sideOffset * 0.3,
                 y: yPosition.y + loopDepth * endpointFraction
             )
         } else {
             // Right-side: arc curves right and back, then returns
-            // First control point: curves down and FAR right into the backfield (maximum lateral extent)
+            // Control Point 1: curves down and right at 40% depth
             controlPoint1 = CGPoint(
-                x: yPosition.x + sideOffset * 1.8,
-                y: yPosition.y + loopDepth * 0.30
+                x: yPosition.x + sideOffset,
+                y: yPosition.y + loopDepth * 0.4
             )
-            // Second control point: prepares for return with smooth rounded bottom
-            // Positioned to create smooth transition from descent to ascent
+            // Control Point 2: deepest point of arc at 80% depth
             controlPoint2 = CGPoint(
-                x: yPosition.x + sideOffset * 0.35,
-                y: yPosition.y + loopDepth * 0.95
+                x: yPosition.x + sideOffset,
+                y: yPosition.y + loopDepth * 0.8
             )
             // Endpoint: tilted arc (different X than start)
-            // Offset by ~75% of sideOffset to create tilted effect
-            // Final segment angles ~45° back toward LOS
+            // Returns rightward but less than max extent (30% of sideOffset)
             endPoint = CGPoint(
-                x: yPosition.x + sideOffset * 0.75,
+                x: yPosition.x + sideOffset * 0.3,
                 y: yPosition.y + loopDepth * endpointFraction
             )
         }

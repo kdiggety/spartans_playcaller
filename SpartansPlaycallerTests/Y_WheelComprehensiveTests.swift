@@ -467,12 +467,7 @@ class Y_WheelComprehensiveTests: XCTestCase {
         if let motion = motion {
             if let index = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
                 var assignment = playCall.assignments[index]
-                assignment = RouteAssignment(
-                    receiver: assignment.receiver,
-                    routeNumber: assignment.routeNumber,
-                    side: assignment.side,
-                    motion: motion
-                )
+                assignment.motion = motion
                 playCall.assignments[index] = assignment
             }
         }
