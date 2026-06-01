@@ -104,13 +104,15 @@ struct DiagramRenderer {
             return [startPosition, shortStem]
 
         case .one:
-            // Quick Out: ALWAYS breaks LEFT (90° perpendicular to the left) regardless of receiver side
+            // Quick Out / Quick Slant: ALWAYS breaks LEFT visually (90° perpendicular)
+            // Semantic meaning varies: LEFT=quickOut, RIGHT=quickSlant
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
             let breakPoint = CGPoint(x: shortStem.x - breakLen, y: shortStem.y)
             return [startPosition, shortStem, breakPoint]
 
         case .two:
-            // Quick Slant: ALWAYS breaks RIGHT (~45° diagonal to the right) regardless of receiver side
+            // Quick Slant / Quick Out: ALWAYS breaks RIGHT visually (~45° diagonal)
+            // Semantic meaning varies: LEFT=quickSlant, RIGHT=quickOut
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
             let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
             return [startPosition, shortStem, breakPoint]

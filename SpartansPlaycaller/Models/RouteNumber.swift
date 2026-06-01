@@ -25,10 +25,16 @@ enum RouteNumber: Int, CaseIterable, Identifiable {
             return BubbleRouteSemantics(meaning: .hitch)
 
         case .one:
-            return AbsoluteDirectionRouteSemantics(meaning: .quickOut)
+            return SideAwareRouteSemantics(
+                leftMeaning: .quickOut,
+                rightMeaning: .quickSlant
+            )
 
         case .two:
-            return AbsoluteDirectionRouteSemantics(meaning: .quickSlant)
+            return SideAwareRouteSemantics(
+                leftMeaning: .quickSlant,
+                rightMeaning: .quickOut
+            )
 
         case .three:
             return AbsoluteDirectionRouteSemantics(meaning: .out)
