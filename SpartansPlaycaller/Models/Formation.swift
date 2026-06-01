@@ -115,13 +115,11 @@ enum Formation: String, CaseIterable, Identifiable {
     }
 
     /// Check if motion is allowed in this formation.
-    /// Motion is only valid in Trips formations.
+    /// Motion is valid in Twins, Trips, and Pro formations.
     func canApplyMotion() -> Bool {
         switch self {
-        case .tripsLeft, .tripsRight, .proLeft, .proRight:
+        case .twins, .tripsLeft, .tripsRight, .proLeft, .proRight:
             return true
-        case .twins:
-            return false
         }
     }
 }

@@ -978,12 +978,12 @@ After all manual tests pass, Ken should verify:
 | Test A4: Pro Left (no motion) | [ ] PASS / [ ] FAIL |  | __ |
 | Test A5: Pro Right (no motion) | [ ] PASS / [ ] FAIL |  | __ |
 | Test B1–B5: Arc Geometry | [ ] PASS / [ ] FAIL |  | __ |
-| Test C1: Twins + After (2x2→3x1) | [ ] PASS / [ ] FAIL |  | __ |
-| Test C2: Twins + Go (2x2→3x1) | [ ] PASS / [ ] FAIL |  | __ |
-| Test C3: Pro Left + After/Go (2x1→1x2) | [ ] PASS / [ ] FAIL |  | __ |
-| Test C4: Pro Right + After/Go (1x2→2x1) | [ ] PASS / [ ] FAIL |  | __ |
-| Test C5: Trips Left + After (3x1→2x2) | [ ] PASS / [ ] FAIL |  | __ |
-| Test C6: Trips Right + After (3x1→2x2) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C1: Twins + After (2x1→3x1) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C2: Twins + Go (2x1→3x1) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C3: Trips Left + After (3x1→2x2) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C4: Trips Right + After (3x1→2x2) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C5: Pro Left + After/Go (2x1→1x2) | [ ] PASS / [ ] FAIL |  | __ |
+| Test C6: Pro Right + After/Go (1x2→2x1) | [ ] PASS / [ ] FAIL |  | __ |
 | Test D1–D2: Route Override | [ ] PASS / [ ] FAIL |  | __ |
 | Test E1–E5: Visual Quality | [ ] PASS / [ ] FAIL |  | __ |
 | Test F1–F6: Edge Cases | [ ] PASS / [ ] FAIL |  | __ |
