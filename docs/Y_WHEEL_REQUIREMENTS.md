@@ -18,10 +18,12 @@
 
 **Trips Formation (3x1 structure):**
 - 3 receivers on one side, 1 receiver on the other
-- **Trips Left:** X (outside), A (middle), Y (inside) on left; Z alone on right
+- A is always on the outside; X/Z in the middle; Y on the inside
+- **Trips Left:** A (outside), X (middle), Y (inside) on left; Z alone on right
   - Y is the inside receiver on the left
-- **Trips Right:** X alone on left; Y (inside), Z (middle), A (outside) on right
+- **Trips Right:** Z alone on left; Y (inside), Z (middle), A (outside) on right
   - Y is the inside receiver on the right
+- **Y is always the inside receiver on its designated side for Trips**
 - Motion support (After/Go) available
 
 **Pro Formation (3x1 structure variant):**
@@ -35,6 +37,15 @@
 Across all formations (Twins, Trips, Pro), **Y is always the inside receiver**:
 - In 2x2 (Twins): Y is inside on its side
 - In 3x1 (Trips/Pro): Y is inside on its side (between X and Z/A)
+
+### Twins Y Motion After/Go Special Case
+
+When Y Motion After/Go is applied to Twins formation:
+- Y flips to the opposite side, creating: Y (most inside), A (inside), X (outside)
+- This is a special case formation resulting from the Y motion transformation
+- **Important:** This special case does **NOT** affect diagram rendering or arc behavior
+- Arc behavior and route rendering remain consistent regardless of receiver positioning
+- The arc direction and geometry are determined by Y's final position (post-motion), not the receiver ordering
 
 ### Formation Transformations with Y Motion (After/Go)
 
@@ -110,6 +121,14 @@ When both motion and wheel are active (possible in all formations that support m
 ---
 
 ## 3. Arc Geometry Specification
+
+### Arc Behavior Consistency
+
+**Key Principle:** Arc direction and behavior are consistent regardless of special case receiver positioning (e.g., Twins Y Motion After/Go). The arc:
+- Curves away from the center of the field in Y's final position
+- Points back at the LOS at the endpoint in all scenarios
+- Originates from Y's post-motion position (if motion is active)
+- Maintains the same visual depth and proportions across all formations
 
 ### Mathematical Definition
 
@@ -258,7 +277,8 @@ Visual Balance: Arc depth equals route length, creating visual consistency acros
 
 **Setup:**
 - Formation: Trips Left (3x1 structure)
-- Y position: Left side (inside receiver, between X and A)
+- Y position: Left side (inside receiver, between A and X)
+- Receivers: A (outside), X (middle), Y (inside) on left; Z alone on right
 - Motion: None
 - Wheel: Enabled
 
@@ -285,13 +305,14 @@ Visual Balance: Arc depth equals route length, creating visual consistency acros
 
 **Setup:**
 - Formation: Trips Left (originally 3x1)
-- Y position before motion: Left side (inside receiver)
+- Y position before motion: Left side (inside receiver, between A and X)
 - Motion: After or Go
 - Wheel: Enabled
 
 **Expected Arc Behavior:**
 - **Formation Type:** Transforms from 3x1 to **2x2** (Y flips to right, creating 2 on each side)
 - **Y Post-Motion Position:** Y moves from left to right side (now inside on right, paired with Z)
+- **Special Case Note:** Resulting receiver arrangement is a special case formation (Y most inside on right), but **does NOT affect diagram rendering or arc behavior**
 - **Arc Start:** Originates from Y's **new position on right side**
 - **Arc Direction:** Curves RIGHT (away from center, in Y's new position)
 - **Arc Start/End X-coords:** Different (tilted arc on right side of field)
@@ -305,6 +326,7 @@ Visual Balance: Arc depth equals route length, creating visual consistency acros
 - Formation transformation is reflected in concept matching
 - Motion and wheel work together without conflicts
 - Arc direction reverses from Scenario C (opposite side)
+- Special case receiver positioning does not affect arc rendering
 
 ---
 

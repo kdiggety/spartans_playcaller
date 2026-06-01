@@ -43,13 +43,13 @@ These checks must pass **before** implementation begins. They verify the foundat
 
 - [ ] **Step 1.2:** Verify Trips Left formation (3x1 structure)
   - Expected: `case tripsLeft = "Trips Left"` exists
-  - Expected: Y is on the LEFT side (inside receiver, between X and A)
+  - Expected: A is on outside; X in middle; Y is on the LEFT side (inside receiver, between A and X)
   - Expected: `side(for:)` returns `.left` for Y receiver
   - Command: `grep -A 20 "case tripsLeft" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/Formation.swift`
 
 - [ ] **Step 1.3:** Verify Trips Right formation (3x1 structure)
   - Expected: `case tripsRight = "Trips Right"` exists
-  - Expected: Y is on the RIGHT side (inside receiver, between A and Z)
+  - Expected: A is on outside; Z in middle; Y is on the RIGHT side (inside receiver, between Z and A)
   - Expected: `side(for:)` returns `.right` for Y receiver
 
 - [ ] **Step 1.4:** Verify Pro Left and Pro Right formations
@@ -74,7 +74,8 @@ These checks must pass **before** implementation begins. They verify the foundat
 - [ ] **Step 2.2:** Code review: Verify wheel gating is independent of motion
   - Search for: Any guard statements gating wheel availability
   - Expected: Both motion and wheel are available for all formations (Twins, Trips, Pro)
-  - Twins: Supports motion (After/Go) which transforms to 3x1, independent of wheel toggle
+  - Twins: Supports motion (After/Go) which transforms from 2x2 to 3x1 (Y flips to opposite side), independent of wheel toggle
+  - Twins special case: When Y Motion After/Go is applied, creates special receiver ordering (Y most inside on flipped side) but does NOT affect diagram rendering
 
 - [ ] **Step 2.3:** Verify ReceiverMotion.after and .go flip sides correctly
   - Expected: `.after.finalSide(.left)` returns `.right`
@@ -269,13 +270,13 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 **Test A2: Trips Left (3x1, no motion)**
 
-- [ ] A2.1: Select Formation → Trips Left
+- [ ] A2.1: Select Formation → Trips Left (A outside, X middle, Y inside on left)
 - [ ] A2.2: Select play "6758" (Smash concept in Trips Left)
 - [ ] A2.3: Scroll to Y receiver row
 - [ ] A2.4: **Verify:** Motion picker is visible, showing [None | Stop | After | Go] (or similar)
 - [ ] A2.5: **Verify:** Below motion picker, "Y Wheel" toggle is visible, OFF by default
 - [ ] A2.6: **Verify:** Motion is set to None (no transformation)
-- [ ] A2.7: **Verify:** Y is on the LEFT side of formation diagram (inside receiver in 3x1)
+- [ ] A2.7: **Verify:** Y is on the LEFT side of formation diagram (inside receiver, between A and X)
 - [ ] A2.8: Tap "Y Wheel" toggle → ON
 - [ ] A2.9: **Verify:** Diagram updates; Y route shows "Wheel"
 - [ ] A2.10: **Verify:** Arc appears curving to the LEFT (away from center)
@@ -380,7 +381,7 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 ### Test Group C: Formation Transformation with Y Motion (After/Go)
 
-**Test C1: Twins + After Motion (transforms 2x2 → 3x1)**
+**Test C1: Twins + After Motion (transforms 2x2 → 3x1 with special case)**
 
 - [ ] C1.1: Select Formation → Twins, Motion: None, Wheel ON
 - [ ] C1.2: Observe: Arc curves RIGHT (Y on right, 2x2 formation)
@@ -390,20 +391,22 @@ These tests require a running app on iPhone/iPad and manual verification.
 - [ ] C1.6: **Verify:** Formation has visually transformed from 2x2 to 3x1 (3 on left, 1 on right)
 - [ ] C1.7: **Verify:** Arc is still visible and smooth
 - [ ] C1.8: **Verify:** Route shows "Wheel" regardless of motion selection
+- [ ] C1.9: **Special Case Note:** Receiver positioning is now Y (most inside), A (inside), X (outside) on left side. This special case formation does **NOT** affect arc rendering.
 
-**Expected Result:** PASS if arc relocates, direction reverses, and formation transforms to 3x1.
+**Expected Result:** PASS if arc relocates, direction reverses, formation transforms to 3x1, and special case doesn't affect arc.
 
 ---
 
-**Test C2: Twins + Go Motion (transforms 2x2 → 3x1)**
+**Test C2: Twins + Go Motion (transforms 2x2 → 3x1 with special case)**
 
 - [ ] C2.1: Select Formation → Twins, Motion: None, Wheel ON
 - [ ] C2.2: Change Motion → Go (Y flips to left, similar to After)
 - [ ] C2.3: **Verify:** Arc curves LEFT (Y on left side after motion)
 - [ ] C2.4: **Verify:** Formation transforms to 3x1 (3 on left, 1 on right)
 - [ ] C2.5: **Verify:** Motion and wheel work together without conflicts
+- [ ] C2.6: **Special Case Note:** Same receiver ordering (Y most inside on left). Arc rendering is consistent and unaffected.
 
-**Expected Result:** PASS if Go motion transforms formation similarly to After.
+**Expected Result:** PASS if Go motion transforms formation similarly to After; special case doesn't affect arc.
 
 ---
 
