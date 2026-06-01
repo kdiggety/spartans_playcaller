@@ -8,44 +8,36 @@
 
 ## 0. Formation Definitions and Transformations
 
+### Key Principle: Y is Always the Inside Receiver
+
+Across all formations (Twins, Trips, Pro), **Y is always the inside receiver on its designated side**.
+
 ### Core Formation Definitions
 
 **Twins Formation (2x2 structure):**
 - Left side: X (outside), A (inside)
 - Right side: Y (inside), Z (outside)
-- Y is always the inside receiver on the right
 - **Supports Y motion (After/Go) which transforms to 3x1 formation**
 
 **Trips Formation (3x1 structure):**
 - 3 receivers on one side, 1 receiver on the other
 - A is always on the outside; X/Z in the middle; Y on the inside
 - **Trips Left:** A (outside), X (middle), Y (inside) on left; Z alone on right
-  - Y is the inside receiver on the left
-- **Trips Right:** Z alone on left; Y (inside), Z (middle), A (outside) on right
-  - Y is the inside receiver on the right
-- **Y is always the inside receiver on its designated side for Trips**
+- **Trips Right:** X alone on left; Y (inside), Z (middle), A (outside) on right
 - Motion support (After/Go) available
 
 **Pro Formation (3x1 structure variant):**
 - Similar 3x1 structure to Trips
-- **Pro Left:** 3 receivers on left, 1 on right (Y is inside on left)
-- **Pro Right:** 1 receiver on left, 3 on right (Y is inside on right)
+- **Pro Left:** 3 receivers on left, 1 on right
+- **Pro Right:** 1 receiver on left, 3 on right
 - Motion support (After/Go) available
-
-### Key Principle: Y is Always the Inside Receiver
-
-Across all formations (Twins, Trips, Pro), **Y is always the inside receiver**:
-- In 2x2 (Twins): Y is inside on its side
-- In 3x1 (Trips/Pro): Y is inside on its side (between X and Z/A)
 
 ### Twins Y Motion After/Go Special Case
 
 When Y Motion After/Go is applied to Twins formation:
-- Y flips to the opposite side, creating: Y (most inside), A (inside), X (outside)
-- This is a special case formation resulting from the Y motion transformation
-- **Important:** This special case does **NOT** affect diagram rendering or arc behavior
-- Arc behavior and route rendering remain consistent regardless of receiver positioning
-- The arc direction and geometry are determined by Y's final position (post-motion), not the receiver ordering
+- Y flips to the opposite side, creating a 3x1 formation
+- **Important:** The resulting receiver ordering is a special case, but does **NOT** affect diagram rendering or arc behavior
+- Arc direction and geometry are determined by Y's final position (post-motion), not receiver ordering
 
 ### Formation Transformations with Y Motion (After/Go)
 
@@ -94,27 +86,24 @@ When Y Motion is applied as **After** or **Go**, Y flips sides, transforming the
 
 Y Wheel is available in the following formations:
 
-| Formation | Y Position | Motion Available? | Wheel Available? | Note |
-|-----------|------------|--------------------|------------------|------|
-| Twins | Right (inside) | **Yes** | **Yes** | 2x2; Y motion (After/Go) transforms to 3x1 |
-| Trips Left | Left (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on left |
-| Trips Right | Right (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on right |
-| Pro Left | Left (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on left |
-| Pro Right | Right (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on right |
+| Formation | Motion Available? | Wheel Available? | Note |
+|-----------|-------------------|------------------|------|
+| Twins | **Yes** | **Yes** | 2x2; Y motion (After/Go) transforms to 3x1 |
+| Trips Left | **Yes** | **Yes** | 3x1 |
+| Trips Right | **Yes** | **Yes** | 3x1 |
+| Pro Left | **Yes** | **Yes** | 3x1 |
+| Pro Right | **Yes** | **Yes** | 3x1 |
 
 **Important Notes:**
-- In Twins formation, Y is always on the right (as the inside receiver in the 2x2 structure)
-- **Twins SUPPORTS Y motion (After/Go)** — Y flips to left side, transforming formation to 3x1
-- **Y Wheel is available in all formations** (Twins, Trips, Pro) independent of motion
-- **Code Review Gate:** `Formation.canApplyMotion()` returns `true` for all formations (Twins, Trips, Pro); `canApplyWheel()` returns `true` for all formations
+- **All formations support Y Wheel independently of motion**
+- **Code Review Gate:** `Formation.canApplyMotion()` returns `true` for all formations; `canApplyWheel()` returns `true` for all formations
 
 ### Motion Interaction
 
 When both motion and wheel are active (possible in all formations that support motion: Twins, Trips, Pro):
 - Y first executes the motion (Stop/After/Go) to reach a final position
-- Y flips sides (After/Go transforms the formation type)
-- Y Wheel arc then originates from that **post-motion position**
-- The arc curves away from the center in Y's **final position's side**
+- Y Wheel arc originates from Y's **post-motion position**
+- The arc curves away from the center in Y's **final position**
 - Route interpretation uses Y's **final side** (post-motion) for concept matching
 - Arc direction reverses when Y flips sides (e.g., left-curving arc becomes right-curving arc)
 
