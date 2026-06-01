@@ -30,6 +30,26 @@ The app generates play calls from named concepts, parses route digit sequences i
 - **Formations**: Twins (2x2), Trips Left (3 left, 1 right), Trips Right (1 left, 3 right)
 - **Concepts**: Named combinations (Smash, Dagger, Verts, Scissors, Sail, China) that map to specific receiver-route templates per formation
 
+## Route Nomenclature
+
+Every route has an **absolute visual direction** (always breaks the same screen direction regardless of receiver field position) and a **side-aware semantic label** (the name changes per side because the same break is toward the sideline for one receiver and toward the center for another).
+
+| Route | Stem | Visual Direction | LEFT Semantic | RIGHT Semantic |
+|-------|------|-----------------|--------------|---------------|
+| 0 | Short (30%) DOWN | Short stem into backfield, no break | Hitch | Hitch |
+| 1 | Short (25%) | Always LEFT 90° | Quick Out | Quick Slant |
+| 2 | Short (25%) | Always RIGHT 45° | Quick Slant | Quick Out |
+| 3 | Full (100%) | Always LEFT 90° | Out | Dig/In |
+| 4 | Full (100%) | Always RIGHT 90° | Dig/In | Out |
+| 5 | Full (100%) | Always back-LEFT (curls downfield) | Comeback | Curl |
+| 6 | Full (100%) | Always back-RIGHT (curls downfield) | Curl | Comeback |
+| 7 | Full (100%) | Always top-LEFT 45° (continues upfield) | Corner | Post |
+| 8 | Full (100%) | Always top-RIGHT 45° (continues upfield) | Post | Corner |
+| 9 | Deep (150%) | Straight vertical, no break | Go/Fade | Go/Fade |
+
+Routes 0 and 9: constant (same label both sides).
+Routes 1–8: side-aware (label flips per side). Visual direction NEVER mirrors — always the same absolute screen direction regardless of receiver position.
+
 ## Architecture
 
 ```
