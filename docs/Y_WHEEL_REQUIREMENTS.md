@@ -6,6 +6,58 @@
 
 ---
 
+## 0. Formation Definitions and Transformations
+
+### Core Formation Definitions
+
+**Twins Formation (2x2 structure):**
+- Left side: X (outside), A (inside)
+- Right side: Y (inside), Z (outside)
+- Y is always the inside receiver on the right
+- No motion support in Twins
+
+**Trips Formation (3x1 structure):**
+- 3 receivers on one side, 1 receiver on the other
+- **Trips Left:** X (outside), A (middle), Y (inside) on left; Z alone on right
+  - Y is the inside receiver on the left
+- **Trips Right:** X alone on left; Y (inside), Z (middle), A (outside) on right
+  - Y is the inside receiver on the right
+- Motion support (After/Go) available
+
+**Pro Formation (3x1 structure variant):**
+- Similar 3x1 structure to Trips
+- **Pro Left:** 3 receivers on left, 1 on right (Y is inside on left)
+- **Pro Right:** 1 receiver on left, 3 on right (Y is inside on right)
+- Motion support (After/Go) available
+
+### Key Principle: Y is Always the Inside Receiver
+
+Across all formations (Twins, Trips, Pro), **Y is always the inside receiver**:
+- In 2x2 (Twins): Y is inside on its side
+- In 3x1 (Trips/Pro): Y is inside on its side (between X and Z/A)
+
+### Formation Transformations with Y Motion (After/Go)
+
+When Y Motion is applied as **After** or **Go**, Y flips sides, transforming the formation:
+
+| Original Formation | Y Motion | Transformed Formation | Example |
+|-------------------|----------|----------------------|---------|
+| Twins (2x2) | After/Go | Trips (3x1) | 2 on right → 1 on right; Y moves to left creating 3 on left, 1 on right |
+| Trips Left (3x1) | After/Go | Twins (2x2) | Y moves to right, pairing with Z, creating 2 on each side |
+| Trips Right (3x1) | After/Go | Twins (2x2) | Y moves to left, pairing with X, creating 2 on each side |
+| Pro Left (3x1) | After/Go | Twins (2x2) | Y moves to right, creating 2 on each side |
+| Pro Right (3x1) | After/Go | Twins (2x2) | Y moves to left, creating 2 on each side |
+
+### Concept Matching and Transformed Formations
+
+**Critical Rule:** Concepts are identified against the **transformed formation type**, not the original formation type.
+
+- When Twins becomes 3x1 via Y After/Go: concepts match as **3x1 formation**
+- When Trips becomes 2x2 via Y After/Go: concepts match as **2x2 formation**
+- **Y Wheel does NOT override concept matching** — it displays the arc regardless of the underlying route, but concept identification uses the transformed formation type
+
+---
+
 ## 1. Feature Overview
 
 **Y Wheel** is a new receiver motion option for the Y receiver that renders as a semi-circular arc originating from Y's position and extending downfield and away from the center of the field.
@@ -31,27 +83,29 @@
 
 Y Wheel is available in the following formations:
 
-| Formation | Y Position | Motion Available? | Wheel Available? |
-|-----------|------------|--------------------|------------------|
-| Twins | Left side | **No** | **Yes** |
-| Trips Left | Left side (slot) | **Yes** | **Yes** |
-| Trips Right | Right side (slot) | **Yes** | **Yes** |
-| Pro Left | Left side (slot) | **Yes** | **Yes** |
-| Pro Right | Right side (slot) | **Yes** | **Yes** |
+| Formation | Y Position | Motion Available? | Wheel Available? | Note |
+|-----------|------------|--------------------|------------------|------|
+| Twins | Right (inside) | **No** | **Yes** | 2x2; Y is inside receiver on right |
+| Trips Left | Left (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on left |
+| Trips Right | Right (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on right |
+| Pro Left | Left (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on left |
+| Pro Right | Right (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on right |
 
-**Important Note on Twins Formation:**
-- Twins currently does **NOT** support motion (Y stays on left side)
-- However, **Y Wheel MUST be available in Twins** for coaches to use wheel concepts
-- This means: Twins receives Y Wheel as a **unique feature that does not require motion support**
-- **Action Required:** Code review must verify that `Formation.canApplyWheel()` (or similar gate) permits Twins while `canApplyMotion()` continues to reject it
+**Important Notes:**
+- In Twins formation, Y is always on the right (as the inside receiver in the 2x2 structure)
+- **Twins does NOT support motion** — Y stays on the right side
+- **Y Wheel MUST be available in Twins** for coaches to use wheel concepts without motion
+- **Code Review Gate:** `Formation.canApplyMotion()` returns `false` for Twins; `canApplyWheel()` returns `true` for all formations (Twins, Trips, Pro)
 
 ### Motion Interaction
 
-When both motion and wheel are active:
+When both motion and wheel are active (only possible in Trips/Pro):
 - Y first executes the motion (Stop/After/Go) to reach a final position
+- Y flips sides (After/Go transforms the formation type)
 - Y Wheel arc then originates from that **post-motion position**
-- The arc curves away from the center in Y's final position's side
-- Route interpretation uses Y's **final side** (post-motion), not original side
+- The arc curves away from the center in Y's **final position's side**
+- Route interpretation uses Y's **final side** (post-motion) for concept matching
+- Arc direction reverses when Y flips sides (e.g., left-curving arc becomes right-curving arc)
 
 ---
 
@@ -64,10 +118,15 @@ Y Wheel uses a **cubic Bézier curve** sampled at 0.02-stride intervals (~50 poi
 #### Parameters (Baseline)
 
 ```
-loopDepth      = fieldHeight × 0.22       // 22% of field height
-sideOffset     = fieldWidth × 0.05        // 5% of field width
+loopDepth      = fieldHeight × 0.25       // 25% of field height
+sideOffset     = fieldWidth × 0.30        // 30% of field width
 endpointFraction = 0.55                   // Endpoint at 55% of loopDepth
 ```
+
+**Rationale:**
+- sideOffset ~30% ensures arc has noticeable horizontal deviation
+- loopDepth ~25% provides reasonable depth without extending too far
+- endpointFraction 0.55 ensures arc returns toward LOS before endpoint
 
 #### Curve Calculation (Left Side Example - Y starts on left)
 
@@ -124,38 +183,43 @@ Mirror the left-side geometry:
 
 ### Scaling on iPhone
 
-Example on iPhone 17 (812px field height):
+Example on iPhone 15 Pro (812px field height):
 ```
-Arc Depth ≈ 812 × 0.22 = 178px
+Arc Depth ≈ 812 × 0.25 = 203px
+Side Offset ≈ 390px × 0.30 ≈ 117px
 
 Comparative Scale:
-  - Route length (vertical routes):  ~203px (25% of field)
-  - Break length (horizontal routes): ~122px (15% of field)
-  - Arc depth:                        ~178px (22% of field) ✓ proportionate
+  - Route length (vertical routes):   ~203px (25% of field) ✓ arc matches
+  - Break length (horizontal routes):  ~117px (30% of field width) ✓ reasonable offset
+  - Arc depth:                         ~203px (25% of field) ✓ proportionate to routes
+  
+Visual Balance: Arc depth equals route length, creating visual consistency across play diagrams.
 ```
 
 ---
 
 ## 4. Four Test Scenarios - Detailed Behavior
 
-### Scenario A: Twins LEFT, Y Motion NONE
+### Scenario A: Twins, Y Motion NONE (2x2 formation remains)
 
 **Setup:**
-- Formation: Twins
-- Y starts: Left side
-- Motion: None (no selection made)
+- Formation: Twins (2x2 structure)
+- Y position: Right side (inside receiver)
+- Motion: None
 - Wheel: Enabled
 
 **Expected Arc Behavior:**
-- **Arc Direction:** Curves LEFT (away from center of field)
+- **Formation Type:** Remains 2x2 (no transformation)
+- **Arc Direction:** Curves RIGHT (away from center of field)
 - **Arc Start:** Bottom of Y's receiver circle (on line of scrimmage)
-- **Arc X-coordinate:** Arc deviates LEFT, endpoint X-coordinate is **different** (more left) than start X
-- **Arc End:** ~22% down the field, angled back toward LOS at ~45°
+- **Arc X-coordinate:** Arc deviates RIGHT, endpoint X-coordinate is **different** (more right) than start X
+- **Arc End:** ~25% down the field, angled back toward LOS at ~45°
 - **Route Display:** Assignment table shows "Wheel" (not a numbered route)
-- **Concept Status:** If matched to a concept, concept identification **persists** (Y hasn't moved)
+- **Concept Status:** Concepts match as **2x2 formation** (formation hasn't changed)
 
 **Verification Points:**
 - Arc is visible in diagram
+- Arc curves away from center (right side)
 - Arc is the correct color (yellow)
 - Arc shape is smooth U-curve (not angular)
 - Arrow points back at LOS
@@ -163,80 +227,131 @@ Comparative Scale:
 
 ---
 
-### Scenario B: Twins LEFT, Y Motion AFTER/GO
+### Scenario B: Twins, Y Motion AFTER/GO (transforms to 3x1)
 
 **Setup:**
-- Formation: Twins
-- Y original side: Left
-- Motion: After or Go (flips Y to right side)
+- Formation: Twins (originally 2x2)
+- Y position before motion: Right side
+- Motion: After or Go
 - Wheel: Enabled
 
 **Expected Arc Behavior:**
-- **Y Post-Motion Position:** Y has moved from left to right side (motion flips sides)
-- **Arc Start:** Originates from Y's NEW position (right side)
-- **Arc Direction:** Curves RIGHT (away from center, which is now on Y's right in final position)
-- **Arc Start/End X-coords:** Different (tilted arc on right side of field)
-- **Arc End:** ~22% down the field, angled back toward LOS at ~45°
-- **Route Display:** "Wheel" (route interpretation uses Y's final side for route number, but wheel overrides it)
-- **Concept Status:** If original concept relied on Y's left-side interpretation, concept is **not re-identified** (wheel overrides route meaning)
+- **Formation Type:** Transforms from 2x2 to **3x1** (Y flips to left, creating 3 on left, 1 on right)
+- **Y Post-Motion Position:** Y moves from right to left side (now inside on left)
+- **Arc Start:** Originates from Y's **new position on left side**
+- **Arc Direction:** Curves LEFT (away from center, in Y's new position)
+- **Arc Start/End X-coords:** Different (tilted arc on left side of field)
+- **Arc End:** ~25% down the field, angled back toward LOS at ~45°
+- **Route Display:** "Wheel" (motion and wheel work together)
+- **Concept Status:** Concepts match as **3x1 formation** (formation has transformed)
 
 **Verification Points:**
-- Arc originates from Y's **post-motion position**, not original left position
-- Arc curves in the direction of Y's final side
+- Arc originates from Y's **post-motion position** (left side), not original right position
+- Arc curves left (away from center in new position)
+- Formation transformation is reflected in concept matching
 - Motion and wheel work together without conflicts
 - Route shows "Wheel" regardless of underlying route number
 
 ---
 
-### Scenario C: Twins RIGHT, Y Motion NONE
+### Scenario C: Trips Left, Y Motion NONE (3x1 formation remains)
 
 **Setup:**
-- Formation: Twins
-- Y starts: Right side (in 2x2 Twins formation, Y is on the left naturally, so this would require receiver reassignment logic — verify with Ken if Twins has right-aligned variant)
-- **Clarification Needed:** Does Twins Left / Twins Right exist as distinct formations, or is Twins always 2x2 with Y on left? Assuming YES for this scenario (either via Twins Right variant or misalignment).
+- Formation: Trips Left (3x1 structure)
+- Y position: Left side (inside receiver, between X and A)
 - Motion: None
 - Wheel: Enabled
 
 **Expected Arc Behavior:**
-- **Arc Direction:** Curves RIGHT (away from center)
-- **Arc Start:** Bottom of Y's receiver circle
-- **Arc End:** ~22% down field, endpoint X-coordinate is **different** (more right) than start
-- **Endpoint Angle:** ~45° back toward LOS
-- **Route Display:** "Wheel"
-- **Concept Status:** Persists (Y hasn't moved)
+- **Formation Type:** Remains 3x1 (no transformation)
+- **Arc Direction:** Curves LEFT (away from center of field)
+- **Arc Start:** Bottom of Y's receiver circle (on line of scrimmage)
+- **Arc X-coordinate:** Arc deviates LEFT, endpoint X-coordinate is **different** (more left) than start X
+- **Arc End:** ~25% down the field, angled back toward LOS at ~45°
+- **Route Display:** Assignment table shows "Wheel"
+- **Concept Status:** Concepts match as **3x1 formation** (formation hasn't changed)
 
 **Verification Points:**
-- Arc direction mirrors Scenario A (opposite side)
-- All other visual properties consistent
-- No regressions in Scenario A when switching sides
+- Arc is visible in diagram
+- Arc curves away from center (left side)
+- Arc is the correct color (yellow)
+- Arc shape is smooth U-curve (not angular)
+- Arrow points back at LOS
+- No visual clipping at field edges
 
 ---
 
-### Scenario D: Twins RIGHT, Y Motion AFTER/GO
+### Scenario D: Trips Left, Y Motion AFTER/GO (transforms to 2x2)
 
 **Setup:**
-- Formation: Twins (right-aligned variant, pending clarification)
-- Y original side: Right
-- Motion: After/Go (flips Y to left)
+- Formation: Trips Left (originally 3x1)
+- Y position before motion: Left side (inside receiver)
+- Motion: After or Go
 - Wheel: Enabled
 
 **Expected Arc Behavior:**
-- **Y Post-Motion Position:** Y has flipped to left side
-- **Arc Start:** Originates from Y's new position (left side)
-- **Arc Direction:** Curves LEFT
-- **Arc Start/End X-coords:** Different (tilted arc on left side)
-- **Endpoint Angle:** ~45° back toward LOS
+- **Formation Type:** Transforms from 3x1 to **2x2** (Y flips to right, creating 2 on each side)
+- **Y Post-Motion Position:** Y moves from left to right side (now inside on right, paired with Z)
+- **Arc Start:** Originates from Y's **new position on right side**
+- **Arc Direction:** Curves RIGHT (away from center, in Y's new position)
+- **Arc Start/End X-coords:** Different (tilted arc on right side of field)
+- **Arc End:** ~25% down the field, angled back toward LOS at ~45°
 - **Route Display:** "Wheel"
-- **Concept Status:** Wheel overrides route interpretation
+- **Concept Status:** Concepts match as **2x2 formation** (formation has transformed)
 
 **Verification Points:**
-- Motion and wheel integrate correctly
-- Arc originates from post-motion position
-- Consistent with Scenario B (opposite side)
+- Arc originates from Y's **post-motion position** (right side), not original left position
+- Arc curves right (away from center in new position)
+- Formation transformation is reflected in concept matching
+- Motion and wheel work together without conflicts
+- Arc direction reverses from Scenario C (opposite side)
 
 ---
 
-## 5. UI Requirements
+## 5. Concept Matching Behavior
+
+### How Y Wheel Interacts with Concept Matching
+
+**Critical Principle:** Y Wheel **does NOT override concept matching**. Concepts are identified based on the transformed formation type, not the wheel toggle.
+
+### Concept Matching Rules
+
+1. **Formation Transformation First:**
+   - If Y Motion (After/Go) is active, formation type changes (e.g., Twins 2x2 → 3x1 Trips)
+   - Concept matching uses the **transformed** formation type
+
+2. **Y Wheel Toggle:**
+   - Wheel ON/OFF affects only the **visual display** (arc instead of numbered route)
+   - Wheel does NOT change concept identification
+   - Wheel does NOT change formation type
+   - Underlying route (and concept matching) persists regardless of wheel state
+
+### Examples
+
+**Example 1: Twins, Y Motion NONE, Y Wheel ON**
+- Formation: Twins (2x2)
+- Y Motion: None (no transformation)
+- Concepts match as: **2x2 formation**
+- Visual: Y shows "Wheel" arc (not a numbered route)
+- Concept identification: Unchanged by wheel toggle
+
+**Example 2: Twins, Y Motion AFTER, Y Wheel ON**
+- Formation: Twins (transforms to 3x1)
+- Y Motion: After (Y flips to left)
+- Concepts match as: **3x1 formation** (transformed)
+- Visual: Y shows "Wheel" arc originating from left side
+- Concept identification: Uses transformed 3x1 formation
+
+**Example 3: Trips Left, Y Motion AFTER, Y Wheel ON**
+- Formation: Trips Left (transforms to 2x2)
+- Y Motion: After (Y flips to right)
+- Concepts match as: **2x2 formation** (transformed)
+- Visual: Y shows "Wheel" arc originating from right side
+- Concept identification: Uses transformed 2x2 formation
+
+---
+
+## 6. UI Requirements
 
 ### Motion Picker Enhancement
 
@@ -270,7 +385,7 @@ Comparative Scale:
 
 ---
 
-## 6. Arc Visibility and Rendering Requirements
+## 7. Arc Visibility and Rendering Requirements
 
 ### Screen Size Coverage
 
@@ -308,7 +423,7 @@ Rendering order (back to front):
 
 ---
 
-## 7. Implementation Constraints
+## 8. Implementation Constraints
 
 ### Code Review Gates
 
@@ -334,7 +449,7 @@ Before implementation begins, the following must be verified:
 
 ---
 
-## 8. Known Issues and Backlog Items
+## 9. Known Issues and Backlog Items
 
 ### Resolved (as of 2026-05-29)
 
@@ -350,7 +465,7 @@ Before implementation begins, the following must be verified:
 
 ---
 
-## 9. Acceptance Criteria (Ken Review Checklist)
+## 10. Acceptance Criteria (Ken Review Checklist)
 
 Before implementation, Ken must confirm:
 
@@ -364,7 +479,7 @@ Before implementation, Ken must confirm:
 
 ---
 
-## 10. Success Metrics (Post-Implementation)
+## 11. Success Metrics (Post-Implementation)
 
 After implementation and testing:
 

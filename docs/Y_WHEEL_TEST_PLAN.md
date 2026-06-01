@@ -10,89 +10,125 @@
 ## Overview
 
 This test plan validates the Y Wheel feature across all supported formations, with special focus on:
-1. Formation gating (Twins always enabled, Trips/Pro with optional motion)
-2. Arc geometry accuracy (left vs right curves, post-motion positioning)
-3. UI presence and behavior (toggle visibility, route override)
-4. Visual quality (smoothness, clarity, no clipping)
-5. Integration with existing features (motion interaction, concept matching)
+1. **Formation Definitions and Transformations:** Y is always inside receiver; formations transform with motion (After/Go)
+2. **Formation Gating:** Twins available for wheel (no motion); Trips/Pro available for both motion and wheel
+3. **Arc Geometry Accuracy:** Correct curves for left vs right positions; proper origin at post-motion positions
+4. **Concept Matching:** Concepts match transformed formation type; wheel does NOT override concept identification
+5. **UI Presence and Behavior:** Toggle visibility, route override ("Wheel" display)
+6. **Visual Quality:** Smoothness, clarity, no clipping across screen sizes
+7. **Motion Integration:** Arc relocates and changes direction when Y moves via After/Go
 
 **Test Execution Strategy:**
-- Unit tests (automated): Formation gating, geometry calculations, route semantics
-- Manual UI tests (on device): Visual verification, touch interaction, screen size coverage
-- Integration tests (automated): Full play flow with wheel + motion combinations
+- Unit tests (automated): Formation gating, geometry calculations, concept matching with transformed formations
+- Manual UI tests (on device): Visual verification of arc direction, touch interaction, screen size coverage
+- Integration tests (automated): Full play flow with wheel + motion combinations, concept matching behavior
 
 ---
 
-## Part 1: Pre-Implementation Gating Verification
+## Part 1: Pre-Implementation Gating and Formation Definition Verification
 
-These checks must pass **before** implementation begins. They verify the foundation is ready.
+These checks must pass **before** implementation begins. They verify the foundation is ready and formation definitions are correct.
 
-### Check 1: Formation Motion Support
+### Check 1: Formation Definitions and Structure
 
 **File:** `SpartansPlaycaller/Models/Formation.swift`
 
 **Verification Steps:**
 
-- [ ] **Step 1.1:** Read `Formation.canApplyMotion()` method
+- [ ] **Step 1.1:** Verify Twins formation (2x2 structure)
+  - Expected: `case twins = "Twins"` exists
+  - Expected: Y is on the RIGHT side (inside receiver in 2x2)
+  - Expected: `side(for:)` returns `.right` for Y receiver
+  - Command: `grep -A 20 "case twins" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/Formation.swift`
+
+- [ ] **Step 1.2:** Verify Trips Left formation (3x1 structure)
+  - Expected: `case tripsLeft = "Trips Left"` exists
+  - Expected: Y is on the LEFT side (inside receiver, between X and A)
+  - Expected: `side(for:)` returns `.left` for Y receiver
+  - Command: `grep -A 20 "case tripsLeft" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/Formation.swift`
+
+- [ ] **Step 1.3:** Verify Trips Right formation (3x1 structure)
+  - Expected: `case tripsRight = "Trips Right"` exists
+  - Expected: Y is on the RIGHT side (inside receiver, between A and Z)
+  - Expected: `side(for:)` returns `.right` for Y receiver
+
+- [ ] **Step 1.4:** Verify Pro Left and Pro Right formations
+  - Expected: Both exist with Y as inside receiver on their respective sides
+  - Pro Left: Y on left; Pro Right: Y on right
+
+**Pass Criteria:** All formations define Y as the inside receiver on the correct side.
+
+---
+
+### Check 2: Formation Motion Support and Transformation
+
+**File:** `SpartansPlaycaller/Models/Formation.swift` and `SpartansPlaycaller/Models/ReceiverMotion.swift`
+
+**Verification Steps:**
+
+- [ ] **Step 2.1:** Read `Formation.canApplyMotion()` method
   - Expected: Returns `true` for Trips Left, Trips Right, Pro Left, Pro Right
   - Expected: Returns `false` for Twins
   - Command: `grep -A 10 "func canApplyMotion" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/Formation.swift`
 
-- [ ] **Step 1.2:** Code review: Check for any logic that would break Twins wheel support
+- [ ] **Step 2.2:** Code review: Verify wheel gating is independent of motion
   - Search for: Any guard statements gating wheel availability to formations with motion
-  - Red flag: `if formation.canApplyMotion() { enableWheel }` — this would prevent Twins
-  - Expected: Wheel gating is independent of motion gating
+  - Red flag: `if formation.canApplyMotion() { enableWheel }` — this would prevent Twins wheel
+  - Expected: Wheel gating is independent of motion gating; Twins supports wheel but not motion
 
-- [ ] **Step 1.3:** Verify Twins formation definition
-  - Expected: `case twins = "Twins"` exists in Formation enum
-  - Expected: `side(for:)` returns correct sides (X, Y = left; Z, A = right)
-  - Command: `grep -A 15 "case twins" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/Formation.swift`
+- [ ] **Step 2.3:** Verify ReceiverMotion.after and .go flip sides correctly
+  - Expected: `.after.finalSide(.left)` returns `.right`
+  - Expected: `.after.finalSide(.right)` returns `.left`
+  - Expected: `.go.finalSide(.left)` returns `.right`
+  - Expected: `.go.finalSide(.right)` returns `.left`
+  - Command: `grep -A 15 "func finalSide" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/ReceiverMotion.swift`
 
-**Pass Criteria:** All three steps confirm formation gating allows Twins wheel while restricting motion.
+**Pass Criteria:** Motion correctly transforms Y's side; wheel gating independent of motion support.
 
 ---
 
-### Check 2: ReceiverMotion Wheel Support
+### Check 3: Y Wheel Toggle Support
 
-**File:** `SpartansPlaycaller/Models/ReceiverMotion.swift`
+**File:** `SpartansPlaycaller/Models/ReceiverMotion.swift` and `SpartansPlaycaller/Models/PlayCall.swift`
 
 **Verification Steps:**
 
-- [ ] **Step 2.1:** Check if `ReceiverMotion.wheel` case exists
-  - Command: `grep "case wheel" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/ReceiverMotion.swift`
-  - Expected: Output shows `case wheel` (or similar)
+- [ ] **Step 3.1:** Check if Y Wheel toggle is represented in model
+  - Search: `PlayCall.swift` for `yWheelEnabled` or similar flag
+  - Expected: A boolean property representing Y Wheel toggle state (ON/OFF)
   - If missing: Will be added during implementation
 
-- [ ] **Step 2.2:** Verify `finalSide(originalSide:)` implementation
-  - Expected: `case .wheel: return originalSide` (doesn't flip sides like After/Go)
-  - Command: `grep -A 1 "case .wheel" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/ReceiverMotion.swift`
+- [ ] **Step 3.2:** Check for motion picker UI that allows wheel independent of motion
+  - Search: `ReceiverAssignmentView.swift` or `PlayCallerView.swift`
+  - Verify: Y Wheel toggle appears separately from motion picker
+  - Verify: No logic that gates wheel based on motion selection
 
-- [ ] **Step 2.3:** Check for motion picker UI that restricts wheel to Trips/Pro only
-  - Search: `ReceiverAssignmentView.swift` or `PlayCallerView.swift` for motion picker
-  - Verify: No logic that gates wheel based on motion (wheel should be independent)
-
-**Pass Criteria:** ReceiverMotion supports wheel as an independent option from motion.
+**Pass Criteria:** Y Wheel is represented as independent toggle in model and UI layer.
 
 ---
 
-### Check 3: Route Assignment Wheel Support
+### Check 4: Concept Matching with Formation Transformations
 
-**File:** `SpartansPlaycaller/Models/RouteAssignment.swift`
+**File:** `SpartansPlaycaller/Models/ConceptMatcher.swift` and relevant test files
 
 **Verification Steps:**
 
-- [ ] **Step 3.1:** Check if route can be assigned as "Wheel"
-  - Search: RouteAssignment struct for a field representing the route name/type
-  - Expected: Either a string field (route can be "Wheel") or an enum case for wheel
-  - Command: `grep -E "(route|routeName)" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/RouteAssignment.swift | head -10`
+- [ ] **Step 4.1:** Understand concept matching logic
+  - Review: How concepts are identified based on formation type
+  - Expected: Concepts should match against the current formation type (after any transformations)
+  - Command: `grep -A 20 "identify" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/ConceptMatcher.swift | head -30`
 
-- [ ] **Step 3.2:** Verify route interpretation logic handles wheel
-  - Search: RouteNumber.meaning(on:) or RouteInterpreter for wheel handling
-  - Expected: Wheel route either:
-    - Has its own RouteMeaning type (e.g., `.wheel` case), OR
-    - Delegates to underlying numbered route for concept matching while display overrides to "Wheel"
+- [ ] **Step 4.2:** Verify formation type is determined after motion is applied
+  - Expected: When Y Motion After/Go is active, formation type changes before concept matching
+  - Example: Twins + Y After/Go → concept matching uses 3x1 (not 2x2)
+  - Example: Trips Left + Y After/Go → concept matching uses 2x2 (not 3x1)
 
-**Pass Criteria:** Route system can represent and display "Wheel" as a distinct route type.
+- [ ] **Step 4.3:** Verify Y Wheel doesn't affect concept matching
+  - Expected: Y Wheel toggle does not change which formation type is used for concept matching
+  - Expected: Concept matching behavior is identical whether wheel is ON or OFF
+  - The wheel only affects visual display, not concept identification
+
+**Pass Criteria:** Concept matching uses transformed formation type; wheel toggle doesn't affect matching.
 
 ---
 
@@ -204,79 +240,85 @@ These tests verify the Bézier curve math and rendering.
 
 These tests require a running app on iPhone/iPad and manual verification.
 
-### Test Group A: UI Presence (All Formations)
+### Test Group A: UI Presence and Formation-Specific Behavior
 
 **Setup:**
 - Build and run app on iPhone 15 Pro (or target device)
 - Pre-select any play that uses Y receiver (e.g., "6794" for Smash concept)
 
-**Test A1: Twins**
+**Test A1: Twins (2x2, no motion)**
 
 - [ ] A1.1: Select Formation → Twins
 - [ ] A1.2: Select any play (e.g., "6794")
 - [ ] A1.3: Scroll to Y receiver row in assignment table
 - [ ] A1.4: **Verify:** Motion picker is **NOT visible** (Twins doesn't support motion)
 - [ ] A1.5: **Verify:** Below Y route display, a toggle labeled "Y Wheel" is visible (ON/OFF)
-- [ ] A1.6: **Verify:** Toggle is currently OFF (default)
-- [ ] A1.7: Tap toggle → ON
-- [ ] A1.8: **Verify:** Diagram updates; Y route changes from a number (e.g., "7") to "Wheel"
-- [ ] A1.9: **Verify:** A yellow arc appears in diagram starting from Y's position
-- [ ] A1.10: Tap toggle → OFF
-- [ ] A1.11: **Verify:** Route reverts to number; arc disappears
+- [ ] A1.6: **Verify:** Toggle is currently OFF (default); Y shows numbered route
+- [ ] A1.7: **Verify:** Y is on the RIGHT side of formation diagram (inside receiver in 2x2)
+- [ ] A1.8: Tap toggle → ON
+- [ ] A1.9: **Verify:** Diagram updates; Y route changes from a number to "Wheel"
+- [ ] A1.10: **Verify:** A yellow arc appears starting from Y's position (right side)
+- [ ] A1.11: **Verify:** Arc curves RIGHT (away from center of field)
+- [ ] A1.12: Tap toggle → OFF
+- [ ] A1.13: **Verify:** Route reverts to number; arc disappears
 
-**Expected Result:** PASS if all steps succeed; FAIL if toggle is not visible or arc doesn't appear/disappear.
+**Expected Result:** PASS if all steps succeed; formation remains 2x2; arc curves right.
 
 ---
 
-**Test A2: Trips Left**
+**Test A2: Trips Left (3x1, no motion)**
 
 - [ ] A2.1: Select Formation → Trips Left
 - [ ] A2.2: Select play "6758" (Smash concept in Trips Left)
 - [ ] A2.3: Scroll to Y receiver row
 - [ ] A2.4: **Verify:** Motion picker is visible, showing [None | Stop | After | Go] (or similar)
 - [ ] A2.5: **Verify:** Below motion picker, "Y Wheel" toggle is visible, OFF by default
-- [ ] A2.6: Motion is set to None
-- [ ] A2.7: Tap "Y Wheel" toggle → ON
-- [ ] A2.8: **Verify:** Diagram updates; Y route shows "Wheel"
-- [ ] A2.9: **Verify:** Arc appears curving to the LEFT (away from center)
-- [ ] A2.10: Change motion: None → After
-- [ ] A2.11: **Verify:** Arc redraws (may curve direction if Y flips sides)
-- [ ] A2.12: **Verify:** Arc is still visible and smooth
+- [ ] A2.6: **Verify:** Motion is set to None (no transformation)
+- [ ] A2.7: **Verify:** Y is on the LEFT side of formation diagram (inside receiver in 3x1)
+- [ ] A2.8: Tap "Y Wheel" toggle → ON
+- [ ] A2.9: **Verify:** Diagram updates; Y route shows "Wheel"
+- [ ] A2.10: **Verify:** Arc appears curving to the LEFT (away from center)
+- [ ] A2.11: **Verify:** Formation remains 3x1 (no transformation)
+- [ ] A2.12: **Verify:** Arc is smooth and clearly visible
 
-**Expected Result:** PASS if wheel and motion work together.
+**Expected Result:** PASS if wheel displays correctly; formation remains 3x1; arc curves left.
 
 ---
 
-**Test A3: Trips Right**
+**Test A3: Trips Right (3x1, no motion)**
 
 - [ ] A3.1: Select Formation → Trips Right
-- [ ] A3.2: Select play (e.g., "6758" as Smash mirror for Trips Right)
-- [ ] A3.3: Verify Y Wheel toggle is visible
+- [ ] A3.2: Select play with Y receiver (e.g., "6758")
+- [ ] A3.3: **Verify:** Y is on the RIGHT side of formation diagram (inside receiver in 3x1)
 - [ ] A3.4: Set Motion → None, Wheel → ON
-- [ ] A3.5: **Verify:** Arc curves to the RIGHT (opposite of Trips Left)
-- [ ] A3.6: **Verify:** Arc direction is correct for right side
+- [ ] A3.5: **Verify:** Arc curves to the RIGHT (away from center)
+- [ ] A3.6: **Verify:** Formation remains 3x1 (no transformation)
+- [ ] A3.7: **Verify:** Arc direction is correct for right-side Y
 
-**Expected Result:** PASS if arc curves correctly on right side.
+**Expected Result:** PASS if arc curves correctly on right side; formation remains 3x1.
 
 ---
 
-**Test A4: Pro Left**
+**Test A4: Pro Left (3x1, no motion)**
 
 - [ ] A4.1: Select Formation → Pro Left
 - [ ] A4.2: Select play with Y receiver
-- [ ] A4.3: Verify Y Wheel toggle is visible
-- [ ] A4.4: Enable wheel, verify arc appears on left side
+- [ ] A4.3: **Verify:** Y is on the LEFT side
+- [ ] A4.4: Set Wheel → ON
+- [ ] A4.5: **Verify:** Arc appears curving LEFT on left side
 
-**Expected Result:** PASS if toggle visible and arc renders.
+**Expected Result:** PASS if toggle visible and arc renders on left.
 
 ---
 
-**Test A5: Pro Right**
+**Test A5: Pro Right (3x1, no motion)**
 
 - [ ] A5.1: Select Formation → Pro Right
-- [ ] A5.2: Enable wheel, verify arc appears on right side
+- [ ] A5.2: **Verify:** Y is on the RIGHT side
+- [ ] A5.3: Set Wheel → ON
+- [ ] A5.4: **Verify:** Arc appears curving RIGHT on right side
 
-**Expected Result:** PASS if toggle visible and arc renders.
+**Expected Result:** PASS if toggle visible and arc renders on right.
 
 ---
 
@@ -335,30 +377,56 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 ---
 
-### Test Group C: Post-Motion Position (Advanced)
+### Test Group C: Formation Transformation with Y Motion (After/Go)
 
-**Setup:** Formation: Trips Left, Motion: After, Wheel: ON
+**Test C1: Twins + After Motion (transforms 2x2 → 3x1)**
 
-**Test C1: Arc Starts from Y's Post-Motion Position**
+- [ ] C1.1: Select Formation → Twins, Wheel ON
+- [ ] C1.2: Observe: Arc curves RIGHT (Y on right, 2x2 formation)
+- [ ] C1.3: Change Motion → After (Y flips to left)
+- [ ] C1.4: **Verify:** Arc has relocated to Y's NEW position on the LEFT side
+- [ ] C1.5: **Verify:** Arc now curves LEFT (away from center in new position)
+- [ ] C1.6: **Verify:** Formation has visually transformed from 2x2 to 3x1 (3 on left, 1 on right)
+- [ ] C1.7: **Verify:** Arc is still visible and smooth
 
-- [ ] C1.1: Select Trips Left, Y Wheel ON
-- [ ] C1.2: Set Motion → None; observe arc position
-- [ ] C1.3: Change Motion → After (Y flips to right side)
-- [ ] C1.4: **Verify:** Arc has moved; it now originates from Y's NEW position on the right side
-- [ ] C1.5: **Verify:** Arc is still visible (not lost or hidden)
-
-**Expected Result:** PASS if arc relocates when motion changes Y's position.
+**Expected Result:** PASS if arc relocates, direction reverses, and formation transforms to 3x1.
 
 ---
 
-**Test C2: Arc Curves Opposite Direction After Motion Flip**
+**Test C2: Twins + Go Motion (transforms 2x2 → 3x1)**
 
-- [ ] C2.1: With Motion: None, Wheel: ON — observe arc curves LEFT
-- [ ] C2.2: Change Motion → After
-- [ ] C2.3: **Verify:** Arc now curves RIGHT (mirrors the left-side curve)
-- [ ] C2.4: This is expected because Y has flipped to the right side
+- [ ] C2.1: Select Formation → Twins, Wheel ON
+- [ ] C2.2: Change Motion → Go (Y flips to left, similar to After)
+- [ ] C2.3: **Verify:** Arc curves LEFT (Y on left side after motion)
+- [ ] C2.4: **Verify:** Formation transforms to 3x1 (3 on left, 1 on right)
 
-**Expected Result:** PASS if arc direction reverses with motion.
+**Expected Result:** PASS if Go motion transforms formation similarly to After.
+
+---
+
+**Test C3: Trips Left + After Motion (transforms 3x1 → 2x2)**
+
+- [ ] C3.1: Select Formation → Trips Left, Wheel ON, Motion: None
+- [ ] C3.2: Observe: Arc curves LEFT (Y on left, 3x1 formation)
+- [ ] C3.3: Change Motion → After (Y flips to right)
+- [ ] C3.4: **Verify:** Arc has relocated to Y's NEW position on the RIGHT side
+- [ ] C3.5: **Verify:** Arc now curves RIGHT (away from center in new position)
+- [ ] C3.6: **Verify:** Formation has visually transformed from 3x1 to 2x2 (2 on each side)
+- [ ] C3.7: **Verify:** Arc is still visible and smooth
+
+**Expected Result:** PASS if arc relocates, direction reverses, and formation transforms to 2x2.
+
+---
+
+**Test C4: Trips Right + After Motion (transforms 3x1 → 2x2)**
+
+- [ ] C4.1: Select Formation → Trips Right, Wheel ON, Motion: None
+- [ ] C4.2: Observe: Arc curves RIGHT (Y on right, 3x1 formation)
+- [ ] C4.3: Change Motion → After (Y flips to left)
+- [ ] C4.4: **Verify:** Arc curves LEFT (Y on left side after motion)
+- [ ] C4.5: **Verify:** Formation transforms to 2x2 (2 on each side)
+
+**Expected Result:** PASS if arc direction reverses and formation transforms to 2x2.
 
 ---
 
@@ -485,17 +553,50 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 **Test F3: Switch Formations While Wheel is ON**
 
-- [ ] F3.1: Formation: Twins, Wheel: ON, arc visible
+- [ ] F3.1: Formation: Twins, Wheel: ON, arc visible, Motion: None
 - [ ] F3.2: Change Formation: Twins → Trips Left
 - [ ] F3.3: **Verify:** Arc updates for Trips Left (curves left)
 - [ ] F3.4: Change Formation: Trips Left → Trips Right
 - [ ] F3.5: **Verify:** Arc updates (curves right)
 - [ ] F3.6: Change Formation: Trips Right → Pro Left
-- [ ] F3.7: **Verify:** Arc updates for Pro Left
+- [ ] F3.7: **Verify:** Arc updates for Pro Left (curves left)
 - [ ] F3.8: **Verify:** Wheel toggle remains visible and functional
 - [ ] F3.9: **Verify:** No crashes or broken state
 
 **Expected Result:** PASS if formations switch smoothly with wheel enabled.
+
+---
+
+**Test F5: Toggle Y Wheel During Formation Transformation**
+
+- [ ] F5.1: Formation: Trips Left, Motion: None, Wheel: OFF
+- [ ] F5.2: Change Motion: None → After (formation transforms to 2x2, Y moves to right)
+- [ ] F5.3: **Verify:** Y has moved to right side; formation visually changed
+- [ ] F5.4: Enable Wheel: OFF → ON
+- [ ] F5.5: **Verify:** Arc appears on right side (at transformed position)
+- [ ] F5.6: Disable Wheel: ON → OFF
+- [ ] F5.7: **Verify:** Arc disappears; route shows numbered form
+- [ ] F5.8: Change Motion: After → None (Y returns to left, formation transforms back to 3x1)
+- [ ] F5.9: Enable Wheel: OFF → ON
+- [ ] F5.10: **Verify:** Arc now curves left (at original position after motion removed)
+
+**Expected Result:** PASS if wheel toggle works correctly through formation transformations.
+
+---
+
+**Test F6: Switch Between Formations With and Without Motion Support**
+
+- [ ] F6.1: Formation: Twins (no motion support), Wheel: ON, Motion: none (grayed out)
+- [ ] F6.2: Change Formation: Twins → Trips Left (motion supported)
+- [ ] F6.3: **Verify:** Motion picker appears and becomes active
+- [ ] F6.4: **Verify:** Wheel toggle still visible and functional
+- [ ] F6.5: Enable Motion: After
+- [ ] F6.6: **Verify:** Arc relocates to Y's new position (left→right transformation)
+- [ ] F6.7: Change Formation: Trips Left → Twins (motion not supported)
+- [ ] F6.8: **Verify:** Motion picker disappears
+- [ ] F6.9: **Verify:** Wheel toggle remains enabled and arc visible
+
+**Expected Result:** PASS if UI adapts correctly when switching formations with different motion support.
 
 ---
 
@@ -515,36 +616,65 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 ## Part 4: Integration Tests (Automated)
 
-These tests verify Y Wheel works with the broader play-calling flow.
+These tests verify Y Wheel works with the broader play-calling flow and concept matching with formation transformations.
 
-### Integration Test 4.1: Concept Matching with Y Wheel
+### Integration Test 4.1: Concept Matching with Transformed Formations
 
-**Test File:** `SpartansPlaycallerTests/ConceptMatcherYWheelTests.swift` (new)
+**Test File:** `SpartansPlaycallerTests/ConceptMatcherTransformationTests.swift` (new)
 
 ```swift
-class ConceptMatcherYWheelTests: XCTestCase {
+class ConceptMatcherTransformationTests: XCTestCase {
     
-    func testYWheelDoesNotBreakConceptMatching() {
-        // Setup: Trips Left, Smash concept (X:6, Y:7, Z:5, A:8)
+    func testTwinsWithoutMotionMatches2x2Concept() {
+        // Setup: Twins, Smash concept (2x2), no motion, wheel enabled
+        var playCall = PlayCall(
+            formation: .twins,
+            digitSequence: "6758",
+            selectedConcept: .smash,
+            yReceiverMotion: nil,
+            yWheelEnabled: true
+        )
+        
+        let identified = ConceptMatcher.identify(playCall)
+        // Smash should match as 2x2 concept (formation unchanged)
+        XCTAssertTrue(identified.concept == .smash || identified.concept == .matched_2x2,
+                      "Twins without motion should match 2x2 concepts")
+    }
+    
+    func testTwinsWithAfterMotionMatches3x1Concept() {
+        // Setup: Twins (2x2) + After motion → transforms to 3x1, wheel enabled
+        var playCall = PlayCall(
+            formation: .twins,
+            digitSequence: "6758",
+            selectedConcept: .smash,
+            yReceiverMotion: .after,
+            yWheelEnabled: true
+        )
+        
+        // After motion transforms Twins from 2x2 to 3x1
+        // Concepts should match against the TRANSFORMED 3x1 formation
+        let identified = ConceptMatcher.identify(playCall)
+        XCTAssertTrue(identified.formation == .tripsLike_3x1 || identified.concept == .matched_3x1,
+                      "Twins with After motion should match 3x1 concepts (transformed)")
+    }
+    
+    func testTripsLeftWithoutMotionMatches3x1Concept() {
+        // Setup: Trips Left, Smash concept (3x1), no motion, wheel enabled
         var playCall = PlayCall(
             formation: .tripsLeft,
             digitSequence: "6758",
             selectedConcept: .smash,
             yReceiverMotion: nil,
-            yWheelEnabled: false
+            yWheelEnabled: true
         )
         
-        var identified = ConceptMatcher.identify(playCall)
-        XCTAssertEqual(identified.left, .smash, "Smash should be identified initially")
-        
-        // Enable wheel
-        playCall.yWheelEnabled = true
-        identified = ConceptMatcher.identify(playCall)
-        XCTAssertEqual(identified.left, .smash, "Wheel should not break concept identification (Y stays on left side)")
+        let identified = ConceptMatcher.identify(playCall)
+        XCTAssertTrue(identified.concept == .smash || identified.concept == .matched_3x1,
+                      "Trips Left without motion should match 3x1 concepts")
     }
     
-    func testYWheelWithMotionFlipReIdentification() {
-        // Setup: Trips Left, Y After motion (Y flips to right), then wheel
+    func testTripsLeftWithAfterMotionMatches2x2Concept() {
+        // Setup: Trips Left (3x1) + After motion → transforms to 2x2, wheel enabled
         var playCall = PlayCall(
             formation: .tripsLeft,
             digitSequence: "6758",
@@ -553,25 +683,53 @@ class ConceptMatcherYWheelTests: XCTestCase {
             yWheelEnabled: true
         )
         
-        // Wheel should still be active; Y is on right side after motion
-        // Concept matching may or may not identify Smash, depending on whether
-        // the route interpretation uses Y's final side
+        // After motion transforms Trips Left from 3x1 to 2x2
+        // Concepts should match against the TRANSFORMED 2x2 formation
         let identified = ConceptMatcher.identify(playCall)
-        // Exact assertion depends on route interpretation rules; document expected behavior
-        print("Identified with After + Wheel: \(identified)")
+        XCTAssertTrue(identified.formation == .twins_2x2 || identified.concept == .matched_2x2,
+                      "Trips Left with After motion should match 2x2 concepts (transformed)")
+    }
+    
+    func testYWheelDoesNotAffectConceptMatching() {
+        // Setup: Trips Left, no motion, same concept with wheel OFF and ON
+        let wheelOff = PlayCall(
+            formation: .tripsLeft,
+            digitSequence: "6758",
+            selectedConcept: .smash,
+            yReceiverMotion: nil,
+            yWheelEnabled: false
+        )
+        
+        let wheelOn = PlayCall(
+            formation: .tripsLeft,
+            digitSequence: "6758",
+            selectedConcept: .smash,
+            yReceiverMotion: nil,
+            yWheelEnabled: true
+        )
+        
+        let identifiedOff = ConceptMatcher.identify(wheelOff)
+        let identifiedOn = ConceptMatcher.identify(wheelOn)
+        
+        // Concept matching should be identical whether wheel is ON or OFF
+        XCTAssertEqual(identifiedOff.concept, identifiedOn.concept,
+                       "Y Wheel should not affect concept identification")
     }
 }
 ```
 
 **Execution:**
-- [ ] Run test: `xcodebuild test -scheme SpartansPlaycaller -only-testing SpartansPlaycallerTests/ConceptMatcherYWheelTests 2>&1 | tail -5`
-- [ ] Expected: Tests PASSED (concept identification is not broken by wheel)
+- [ ] Run test: `xcodebuild test -scheme SpartansPlaycaller -only-testing SpartansPlaycallerTests/ConceptMatcherTransformationTests 2>&1 | tail -10`
+- [ ] Expected: All tests PASSED
 
-**Pass Criteria:** Wheel doesn't break concept matching; behaves predictably with motion.
+**Pass Criteria:** 
+- Concepts match transformed formation type (not original formation)
+- Wheel toggle does not affect concept matching
+- Formation transformations are reflected in concept identification
 
 ---
 
-### Integration Test 4.2: Full Play Call Flow
+### Integration Test 4.2: Formation Transformation and Visual Updates
 
 **Test File:** `SpartansPlaycallerTests/PlayCallFlowYWheelTests.swift` (exists or new)
 
@@ -579,40 +737,82 @@ class ConceptMatcherYWheelTests: XCTestCase {
 class PlayCallFlowYWheelTests: XCTestCase {
     let viewModel = PlayCallerViewModel()
     
-    func testCompleteYWheelPlayFlow() {
-        // Step 1: Select formation
-        viewModel.selectedFormation = .tripsLeft
+    func testTwinsWithMotionTransformation() {
+        // Step 1: Select Twins formation
+        viewModel.selectedFormation = .twins
         
-        // Step 2: Select concept
-        viewModel.selectedLeftConcept = .smash
-        
-        // Step 3: Generate digits
-        viewModel.generatePlayCall()
-        XCTAssertEqual(viewModel.digitSequence, "6758", "Smash should generate correct digits")
-        
-        // Step 4: Enable wheel
+        // Step 2: Enable Y Wheel
         viewModel.yWheelEnabled = true
         XCTAssertTrue(viewModel.yWheelEnabled, "Wheel should be enabled")
         
-        // Step 5: Verify diagram doesn't crash
-        let diagram = RouteDiagramView(playCall: viewModel.playCall)
-        XCTAssertNotNil(diagram, "Diagram should render without crashing")
+        // Step 3: Verify diagram shows arc on right side (Y on right in 2x2)
+        let diagramNoMotion = RouteDiagramView(playCall: viewModel.playCall)
+        XCTAssertNotNil(diagramNoMotion, "Diagram should render without crashing")
         
-        // Step 6: Toggle motion
+        // Step 4: Apply After motion (Y flips to left, formation transforms to 3x1)
         viewModel.selectedMotion = .after
         
-        // Step 7: Verify diagram still works
+        // Step 5: Verify diagram updates with arc on left side and formation transformed
         let diagramWithMotion = RouteDiagramView(playCall: viewModel.playCall)
-        XCTAssertNotNil(diagramWithMotion, "Diagram should handle wheel + motion without crashing")
+        XCTAssertNotNil(diagramWithMotion, "Diagram should handle transformation without crashing")
+        
+        // Step 6: Verify Y position changed and arc direction reversed
+        let yPositionAfterMotion = viewModel.playCall.yReceiver.position(in: viewModel.selectedFormation)
+        XCTAssertEqual(yPositionAfterMotion, .left, "Y should be on left side after After motion")
+    }
+    
+    func testTripsLeftWithMotionTransformation() {
+        // Step 1: Select Trips Left formation
+        viewModel.selectedFormation = .tripsLeft
+        
+        // Step 2: Enable Y Wheel
+        viewModel.yWheelEnabled = true
+        
+        // Step 3: Verify arc curves left (Y on left in 3x1)
+        let diagramNoMotion = RouteDiagramView(playCall: viewModel.playCall)
+        XCTAssertNotNil(diagramNoMotion, "Diagram should render without crashing")
+        
+        // Step 4: Apply After motion (Y flips to right, formation transforms to 2x2)
+        viewModel.selectedMotion = .after
+        
+        // Step 5: Verify diagram updates with arc on right side
+        let diagramWithMotion = RouteDiagramView(playCall: viewModel.playCall)
+        XCTAssertNotNil(diagramWithMotion, "Diagram should handle transformation without crashing")
+        
+        // Step 6: Verify Y position changed
+        let yPositionAfterMotion = viewModel.playCall.yReceiver.position(in: viewModel.selectedFormation)
+        XCTAssertEqual(yPositionAfterMotion, .right, "Y should be on right side after After motion")
+    }
+    
+    func testYWheelToggleWithTransformedFormation() {
+        // Setup: Trips Left with After motion (transformed to 2x2)
+        viewModel.selectedFormation = .tripsLeft
+        viewModel.selectedMotion = .after
+        
+        // Toggle wheel off and on
+        viewModel.yWheelEnabled = false
+        var diagram = RouteDiagramView(playCall: viewModel.playCall)
+        XCTAssertNotNil(diagram, "Diagram should render with wheel OFF")
+        
+        viewModel.yWheelEnabled = true
+        diagram = RouteDiagramView(playCall: viewModel.playCall)
+        XCTAssertNotNil(diagram, "Diagram should render with wheel ON after transformation")
+        
+        // Verify no crashes and consistent behavior
+        XCTAssertTrue(viewModel.yWheelEnabled, "Wheel toggle should persist")
     }
 }
 ```
 
 **Execution:**
-- [ ] Run test: `xcodebuild test -scheme SpartansPlaycaller -only-testing SpartansPlaycallerTests/PlayCallFlowYWheelTests 2>&1 | tail -5`
-- [ ] Expected: Tests PASSED (no crashes, coherent behavior)
+- [ ] Run test: `xcodebuild test -scheme SpartansPlaycaller -only-testing SpartansPlaycallerTests/PlayCallFlowYWheelTests 2>&1 | tail -10`
+- [ ] Expected: Tests PASSED (no crashes, transformations handled correctly)
 
-**Pass Criteria:** End-to-end play flow with wheel works without crashes.
+**Pass Criteria:** 
+- Formation transformations update arc position and direction
+- Y position changes correctly with motion
+- Wheel toggle works with transformed formations
+- No crashes during visual updates
 
 ---
 
