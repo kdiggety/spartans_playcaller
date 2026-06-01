@@ -99,8 +99,8 @@ struct DiagramRenderer {
 
         switch assignment.routeNumber {
         case .zero:
-            // Hitch: short stem only
-            let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.3)
+            // Hitch: short stem straight DOWN into backfield (away from LOS)
+            let shortStem = CGPoint(x: startPosition.x, y: startPosition.y + stemLength * 0.3)
             return [startPosition, shortStem]
 
         case .one:
