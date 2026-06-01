@@ -14,7 +14,7 @@
 - Left side: X (outside), A (inside)
 - Right side: Y (inside), Z (outside)
 - Y is always the inside receiver on the right
-- No motion support in Twins
+- **Supports Y motion (After/Go) which transforms to 3x1 formation**
 
 **Trips Formation (3x1 structure):**
 - 3 receivers on one side, 1 receiver on the other
@@ -85,7 +85,7 @@ Y Wheel is available in the following formations:
 
 | Formation | Y Position | Motion Available? | Wheel Available? | Note |
 |-----------|------------|--------------------|------------------|------|
-| Twins | Right (inside) | **No** | **Yes** | 2x2; Y is inside receiver on right |
+| Twins | Right (inside) | **Yes** | **Yes** | 2x2; Y motion (After/Go) transforms to 3x1 |
 | Trips Left | Left (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on left |
 | Trips Right | Right (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on right |
 | Pro Left | Left (inside) | **Yes** | **Yes** | 3x1; Y is inside receiver on left |
@@ -93,13 +93,13 @@ Y Wheel is available in the following formations:
 
 **Important Notes:**
 - In Twins formation, Y is always on the right (as the inside receiver in the 2x2 structure)
-- **Twins does NOT support motion** — Y stays on the right side
-- **Y Wheel MUST be available in Twins** for coaches to use wheel concepts without motion
-- **Code Review Gate:** `Formation.canApplyMotion()` returns `false` for Twins; `canApplyWheel()` returns `true` for all formations (Twins, Trips, Pro)
+- **Twins SUPPORTS Y motion (After/Go)** — Y flips to left side, transforming formation to 3x1
+- **Y Wheel is available in all formations** (Twins, Trips, Pro) independent of motion
+- **Code Review Gate:** `Formation.canApplyMotion()` returns `true` for all formations (Twins, Trips, Pro); `canApplyWheel()` returns `true` for all formations
 
 ### Motion Interaction
 
-When both motion and wheel are active (only possible in Trips/Pro):
+When both motion and wheel are active (possible in all formations that support motion: Twins, Trips, Pro):
 - Y first executes the motion (Stop/After/Go) to reach a final position
 - Y flips sides (After/Go transforms the formation type)
 - Y Wheel arc then originates from that **post-motion position**
@@ -355,15 +355,16 @@ Visual Balance: Arc depth equals route length, creating visual consistency acros
 
 ### Motion Picker Enhancement
 
-**Current State (Trips/Pro formations only):**
+**Current State (all formations support motion):**
 - Segmented control or picker showing: `None | Stop | After/Go`
 - Visible in assignment table for Y receiver row
+- Available for: Twins, Trips Left, Trips Right, Pro Left, Pro Right
 
-**Y Wheel Integration (all supporting formations):**
-- Motion picker remains unchanged: `None | Stop | After/Go` (only in Trips/Pro)
+**Y Wheel Integration (all formations):**
+- Motion picker: `None | Stop | After/Go` available for all formations
 - **Below** motion picker, a **separate toggle** appears: `Y Wheel` with ON/OFF switch
 - Toggle is available in:
-  - Twins (no motion available, but wheel available)
+  - Twins (motion available; wheel available independently)
   - Trips Left, Trips Right (motion and wheel both available)
   - Pro Left, Pro Right (motion and wheel both available)
 
@@ -430,9 +431,9 @@ Rendering order (back to front):
 Before implementation begins, the following must be verified:
 
 1. **Formation Gating:**
-   - [ ] Verify `Formation.canApplyMotion()` returns `true` for: Trips Left, Trips Right, Pro Left, Pro Right
-   - [ ] Verify `Formation.canApplyMotion()` returns `false` for: Twins
-   - [ ] Code review: Ensure no changes to motion gating will accidentally break Twins wheel support
+   - [ ] Verify `Formation.canApplyMotion()` returns `true` for: Twins, Trips Left, Trips Right, Pro Left, Pro Right
+   - [ ] Verify `Formation.canApplyWheel()` returns `true` for: Twins, Trips Left, Trips Right, Pro Left, Pro Right
+   - [ ] Code review: Ensure all formations support both motion and wheel independently
 
 2. **Receiver Model:**
    - [ ] Check: `ReceiverMotion` enum supports `.wheel` case
@@ -458,9 +459,9 @@ Before implementation begins, the following must be verified:
 
 ### Pending Verification
 
-- [ ] **Twins Formation Support:** Confirm that code can gate motion (`false`) while allowing wheel (`true`)
+- [ ] **Twins Formation Motion Support:** Confirm that Twins supports motion (After/Go) and correctly transforms to 3x1 formation
 - [ ] **Post-Motion Arc Start:** When Y has After/Go motion enabled alongside wheel, verify arc starts from Y's **final position**, not original position
-- [ ] **No-Motion Visibility:** Verify wheel arc displays even when Y motion is set to "None" (not After/Go)
+- [ ] **Motion Picker Presence:** Verify motion picker appears for Twins and all other formations
 - [ ] **Screen Edge Clipping:** Verify arc doesn't clip on all supported screen sizes (iPhone SE to iPad)
 
 ---

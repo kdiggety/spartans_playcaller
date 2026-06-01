@@ -67,14 +67,14 @@ These checks must pass **before** implementation begins. They verify the foundat
 **Verification Steps:**
 
 - [ ] **Step 2.1:** Read `Formation.canApplyMotion()` method
-  - Expected: Returns `true` for Trips Left, Trips Right, Pro Left, Pro Right
-  - Expected: Returns `false` for Twins
+  - Expected: Returns `true` for Twins, Trips Left, Trips Right, Pro Left, Pro Right
+  - Expected: All formations support motion (After/Go transforms formation type)
   - Command: `grep -A 10 "func canApplyMotion" /Users/klewisjr/Development/iOS/spartans_playcaller/SpartansPlaycaller/Models/Formation.swift`
 
 - [ ] **Step 2.2:** Code review: Verify wheel gating is independent of motion
-  - Search for: Any guard statements gating wheel availability to formations with motion
-  - Red flag: `if formation.canApplyMotion() { enableWheel }` — this would prevent Twins wheel
-  - Expected: Wheel gating is independent of motion gating; Twins supports wheel but not motion
+  - Search for: Any guard statements gating wheel availability
+  - Expected: Both motion and wheel are available for all formations (Twins, Trips, Pro)
+  - Twins: Supports motion (After/Go) which transforms to 3x1, independent of wheel toggle
 
 - [ ] **Step 2.3:** Verify ReceiverMotion.after and .go flip sides correctly
   - Expected: `.after.finalSide(.left)` returns `.right`
@@ -155,9 +155,9 @@ class FormationWheelGatingTests: XCTestCase {
         }
     }
     
-    // Test: Only Trips and Pro support motion
-    func testMotionGatingUnchanged() {
-        XCTAssertFalse(Formation.twins.canApplyMotion())
+    // Test: All formations support motion
+    func testMotionSupportedForAllFormations() {
+        XCTAssertTrue(Formation.twins.canApplyMotion())
         XCTAssertTrue(Formation.tripsLeft.canApplyMotion())
         XCTAssertTrue(Formation.tripsRight.canApplyMotion())
         XCTAssertTrue(Formation.proLeft.canApplyMotion())
@@ -251,16 +251,17 @@ These tests require a running app on iPhone/iPad and manual verification.
 - [ ] A1.1: Select Formation → Twins
 - [ ] A1.2: Select any play (e.g., "6794")
 - [ ] A1.3: Scroll to Y receiver row in assignment table
-- [ ] A1.4: **Verify:** Motion picker is **NOT visible** (Twins doesn't support motion)
-- [ ] A1.5: **Verify:** Below Y route display, a toggle labeled "Y Wheel" is visible (ON/OFF)
-- [ ] A1.6: **Verify:** Toggle is currently OFF (default); Y shows numbered route
-- [ ] A1.7: **Verify:** Y is on the RIGHT side of formation diagram (inside receiver in 2x2)
-- [ ] A1.8: Tap toggle → ON
-- [ ] A1.9: **Verify:** Diagram updates; Y route changes from a number to "Wheel"
-- [ ] A1.10: **Verify:** A yellow arc appears starting from Y's position (right side)
-- [ ] A1.11: **Verify:** Arc curves RIGHT (away from center of field)
-- [ ] A1.12: Tap toggle → OFF
-- [ ] A1.13: **Verify:** Route reverts to number; arc disappears
+- [ ] A1.4: **Verify:** Motion picker is visible, showing [None | Stop | After | Go] (or similar)
+- [ ] A1.5: **Verify:** Motion is set to None (no transformation)
+- [ ] A1.6: **Verify:** Below motion picker, a toggle labeled "Y Wheel" is visible (ON/OFF)
+- [ ] A1.7: **Verify:** Toggle is currently OFF (default); Y shows numbered route
+- [ ] A1.8: **Verify:** Y is on the RIGHT side of formation diagram (inside receiver in 2x2)
+- [ ] A1.9: Tap toggle → ON
+- [ ] A1.10: **Verify:** Diagram updates; Y route changes from a number to "Wheel"
+- [ ] A1.11: **Verify:** A yellow arc appears starting from Y's position (right side)
+- [ ] A1.12: **Verify:** Arc curves RIGHT (away from center of field)
+- [ ] A1.13: Tap toggle → OFF
+- [ ] A1.14: **Verify:** Route reverts to number; arc disappears
 
 **Expected Result:** PASS if all steps succeed; formation remains 2x2; arc curves right.
 
@@ -381,13 +382,14 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 **Test C1: Twins + After Motion (transforms 2x2 → 3x1)**
 
-- [ ] C1.1: Select Formation → Twins, Wheel ON
+- [ ] C1.1: Select Formation → Twins, Motion: None, Wheel ON
 - [ ] C1.2: Observe: Arc curves RIGHT (Y on right, 2x2 formation)
 - [ ] C1.3: Change Motion → After (Y flips to left)
 - [ ] C1.4: **Verify:** Arc has relocated to Y's NEW position on the LEFT side
 - [ ] C1.5: **Verify:** Arc now curves LEFT (away from center in new position)
 - [ ] C1.6: **Verify:** Formation has visually transformed from 2x2 to 3x1 (3 on left, 1 on right)
 - [ ] C1.7: **Verify:** Arc is still visible and smooth
+- [ ] C1.8: **Verify:** Route shows "Wheel" regardless of motion selection
 
 **Expected Result:** PASS if arc relocates, direction reverses, and formation transforms to 3x1.
 
@@ -395,10 +397,11 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 **Test C2: Twins + Go Motion (transforms 2x2 → 3x1)**
 
-- [ ] C2.1: Select Formation → Twins, Wheel ON
+- [ ] C2.1: Select Formation → Twins, Motion: None, Wheel ON
 - [ ] C2.2: Change Motion → Go (Y flips to left, similar to After)
 - [ ] C2.3: **Verify:** Arc curves LEFT (Y on left side after motion)
 - [ ] C2.4: **Verify:** Formation transforms to 3x1 (3 on left, 1 on right)
+- [ ] C2.5: **Verify:** Motion and wheel work together without conflicts
 
 **Expected Result:** PASS if Go motion transforms formation similarly to After.
 
@@ -584,19 +587,21 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 ---
 
-**Test F6: Switch Between Formations With and Without Motion Support**
+**Test F6: Switch Between All Formations (all support motion)**
 
-- [ ] F6.1: Formation: Twins (no motion support), Wheel: ON, Motion: none (grayed out)
-- [ ] F6.2: Change Formation: Twins → Trips Left (motion supported)
-- [ ] F6.3: **Verify:** Motion picker appears and becomes active
-- [ ] F6.4: **Verify:** Wheel toggle still visible and functional
-- [ ] F6.5: Enable Motion: After
-- [ ] F6.6: **Verify:** Arc relocates to Y's new position (left→right transformation)
-- [ ] F6.7: Change Formation: Trips Left → Twins (motion not supported)
-- [ ] F6.8: **Verify:** Motion picker disappears
-- [ ] F6.9: **Verify:** Wheel toggle remains enabled and arc visible
+- [ ] F6.1: Formation: Twins, Wheel: ON, Motion: None
+- [ ] F6.2: **Verify:** Motion picker is visible and active
+- [ ] F6.3: **Verify:** Wheel toggle is visible and enabled
+- [ ] F6.4: Change Formation: Twins → Trips Left
+- [ ] F6.5: **Verify:** Motion picker remains visible
+- [ ] F6.6: **Verify:** Wheel toggle remains visible
+- [ ] F6.7: Enable Motion: After (on Trips Left)
+- [ ] F6.8: **Verify:** Arc relocates to Y's new position (left→right transformation)
+- [ ] F6.9: Change Formation: Trips Left → Twins
+- [ ] F6.10: **Verify:** Motion picker remains visible (Twins supports motion)
+- [ ] F6.11: **Verify:** Wheel toggle remains enabled and arc visible
 
-**Expected Result:** PASS if UI adapts correctly when switching formations with different motion support.
+**Expected Result:** PASS if all formations show motion picker and wheel toggle (all formations support both).
 
 ---
 
