@@ -8,9 +8,13 @@
 
 ## 0. Formation Definitions and Transformations
 
-### Key Principle: Y is Always the Inside Receiver
+### General Principles (Foundation)
 
-Across all formations (Twins, Trips, Pro), **Y is always the inside receiver on its designated side**.
+These principles apply consistently across all formations (Twins, Trips, Pro):
+
+1. **Y is always the inside receiver on its designated side**
+2. **X is always on the left**
+3. **Z is always on the right**
 
 ### Core Formation Definitions
 
@@ -26,10 +30,11 @@ Across all formations (Twins, Trips, Pro), **Y is always the inside receiver on 
 - **Trips Right:** X alone on left; Y (inside), Z (middle), A (outside) on right
 - Motion support (After/Go) available
 
-**Pro Formation (3x1 structure variant):**
-- Similar 3x1 structure to Trips
-- **Pro Left:** 3 receivers on left, 1 on right
-- **Pro Right:** 1 receiver on left, 3 on right
+**Pro Formation (2x1 structure):**
+- 2 receivers on one side, 1 receiver on the other
+- X, Y, Z only (A does NOT appear in Pro)
+- **Pro Left:** X (outside), Y (inside) on left; Z alone on right — 2x1 formation
+- **Pro Right:** X alone on left; Y (inside), Z (outside) on right — 1x2 formation
 - Motion support (After/Go) available
 
 ### Twins Y Motion After/Go Special Case
@@ -48,8 +53,8 @@ When Y Motion is applied as **After** or **Go**, Y flips sides, transforming the
 | Twins (2x2) | After/Go | Trips (3x1) | 2 on right → 1 on right; Y moves to left creating 3 on left, 1 on right |
 | Trips Left (3x1) | After/Go | Twins (2x2) | Y moves to right, pairing with Z, creating 2 on each side |
 | Trips Right (3x1) | After/Go | Twins (2x2) | Y moves to left, pairing with X, creating 2 on each side |
-| Pro Left (3x1) | After/Go | Twins (2x2) | Y moves to right, creating 2 on each side |
-| Pro Right (3x1) | After/Go | Twins (2x2) | Y moves to left, creating 2 on each side |
+| Pro Left (2x1) | After/Go | Twins (2x2) | Y moves to right, creating 2 on each side |
+| Pro Right (1x2) | After/Go | Twins (2x2) | Y moves to left, creating 2 on each side |
 
 ### Concept Matching and Transformed Formations
 
@@ -91,8 +96,8 @@ Y Wheel is available in the following formations:
 | Twins | **Yes** | **Yes** | 2x2; Y motion (After/Go) transforms to 3x1 |
 | Trips Left | **Yes** | **Yes** | 3x1 |
 | Trips Right | **Yes** | **Yes** | 3x1 |
-| Pro Left | **Yes** | **Yes** | 3x1 |
-| Pro Right | **Yes** | **Yes** | 3x1 |
+| Pro Left | **Yes** | **Yes** | 2x1 |
+| Pro Right | **Yes** | **Yes** | 1x2 |
 
 **Important Notes:**
 - **All formations support Y Wheel independently of motion**

@@ -29,6 +29,20 @@ This test plan validates the Y Wheel feature across all supported formations, wi
 
 These checks must pass **before** implementation begins. They verify the foundation is ready and formation definitions are correct.
 
+### Check 0: General Principles Verification
+
+**Foundation Principles (apply to all formations):**
+
+- [ ] **Principle 1:** Y is always the inside receiver on its designated side
+- [ ] **Principle 2:** X is always on the left
+- [ ] **Principle 3:** Z is always on the right
+
+**Verification:**
+- [ ] All formation definitions below adhere to these three principles
+- [ ] No exceptions or violations in any formation
+
+---
+
 ### Check 1: Formation Definitions and Structure
 
 **File:** `SpartansPlaycaller/Models/Formation.swift`
@@ -50,9 +64,17 @@ These checks must pass **before** implementation begins. They verify the foundat
   - Expected: X alone on left; Y (inside), Z (middle), A (outside) on right
   - Expected: `side(for:)` returns `.right` for Y receiver
 
-- [ ] **Step 1.4:** Verify Pro Left and Pro Right formations
-  - Expected: Both exist with Y as inside receiver on their respective sides
-  - Pro Left: Y on left; Pro Right: Y on right
+- [ ] **Step 1.4:** Verify Pro Left formation (2x1 structure)
+  - Expected: `case proLeft = "Pro Left"` exists
+  - Expected: X (outside), Y (inside) on left; Z alone on right
+  - Expected: `side(for:)` returns `.left` for Y receiver
+  - Expected: A does NOT appear in Pro formation
+
+- [ ] **Step 1.5:** Verify Pro Right formation (1x2 structure)
+  - Expected: `case proRight = "Pro Right"` exists
+  - Expected: X alone on left; Y (inside), Z (outside) on right
+  - Expected: `side(for:)` returns `.right` for Y receiver
+  - Expected: A does NOT appear in Pro formation
 
 **Pass Criteria:** All formations define Y as the inside receiver on the correct side.
 
@@ -299,26 +321,31 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 ---
 
-**Test A4: Pro Left (3x1, no motion)**
+**Test A4: Pro Left (2x1, no motion)**
 
 - [ ] A4.1: Select Formation → Pro Left
-- [ ] A4.2: Select play with Y receiver
-- [ ] A4.3: **Verify:** Y is on the LEFT side
-- [ ] A4.4: Set Wheel → ON
-- [ ] A4.5: **Verify:** Arc appears curving LEFT on left side
+- [ ] A4.2: Select play with Y receiver (e.g., "6758")
+- [ ] A4.3: **Verify:** Y is on the LEFT side (inside receiver in 2x1 formation)
+- [ ] A4.4: **Verify:** X is OUTSIDE on left; Z is ALONE on right
+- [ ] A4.5: Set Motion → None, Wheel → ON
+- [ ] A4.6: **Verify:** Arc appears curving LEFT on left side
+- [ ] A4.7: **Verify:** Formation is 2x1 (not 3x1)
 
-**Expected Result:** PASS if toggle visible and arc renders on left.
+**Expected Result:** PASS if toggle visible, arc renders on left, and formation is 2x1.
 
 ---
 
-**Test A5: Pro Right (3x1, no motion)**
+**Test A5: Pro Right (1x2, no motion)**
 
 - [ ] A5.1: Select Formation → Pro Right
-- [ ] A5.2: **Verify:** Y is on the RIGHT side
-- [ ] A5.3: Set Wheel → ON
-- [ ] A5.4: **Verify:** Arc appears curving RIGHT on right side
+- [ ] A5.2: Select play with Y receiver (e.g., "6758")
+- [ ] A5.3: **Verify:** Y is on the RIGHT side (inside receiver in 1x2 formation)
+- [ ] A5.4: **Verify:** X is ALONE on left; Y and Z are on right
+- [ ] A5.5: Set Motion → None, Wheel → ON
+- [ ] A5.6: **Verify:** Arc appears curving RIGHT on right side
+- [ ] A5.7: **Verify:** Formation is 1x2 (not 3x1)
 
-**Expected Result:** PASS if toggle visible and arc renders on right.
+**Expected Result:** PASS if toggle visible, arc renders on right, and formation is 1x2.
 
 ---
 
@@ -586,7 +613,7 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 ---
 
-**Test F6: Switch Between All Formations (all support motion)**
+**Test F6: Switch Between All Formations (all support motion and wheel)**
 
 - [ ] F6.1: Formation: Twins, Wheel: ON, Motion: None
 - [ ] F6.2: **Verify:** Motion picker is visible and active
@@ -596,11 +623,15 @@ These tests require a running app on iPhone/iPad and manual verification.
 - [ ] F6.6: **Verify:** Wheel toggle remains visible
 - [ ] F6.7: Enable Motion: After (on Trips Left)
 - [ ] F6.8: **Verify:** Arc relocates to Y's new position (left→right transformation)
-- [ ] F6.9: Change Formation: Trips Left → Twins
-- [ ] F6.10: **Verify:** Motion picker remains visible (Twins supports motion)
-- [ ] F6.11: **Verify:** Wheel toggle remains enabled and arc visible
+- [ ] F6.9: Change Formation: Trips Left → Pro Left
+- [ ] F6.10: **Verify:** Motion picker remains visible (Pro supports motion)
+- [ ] F6.11: **Verify:** Wheel toggle remains enabled
+- [ ] F6.12: **Verify:** Arc visible on left side (Pro Left is 2x1)
+- [ ] F6.13: Change Formation: Pro Left → Pro Right
+- [ ] F6.14: **Verify:** Arc updates to right side (Pro Right is 1x2)
+- [ ] F6.15: **Verify:** Motion picker and wheel toggle remain available
 
-**Expected Result:** PASS if all formations show motion picker and wheel toggle (all formations support both).
+**Expected Result:** PASS if all formations (Twins, Trips, Pro) show motion picker and wheel toggle without gaps.
 
 ---
 
