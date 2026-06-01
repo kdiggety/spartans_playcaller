@@ -84,7 +84,7 @@ These checks must pass **before** implementation begins. They verify the foundat
 - [ ] **Step 1.5b:** Verify Pro Right Y Motion transformation
   - Expected: With Y Motion After/Go, Pro Right transforms from 1x2 to 2x1
   - Expected: Y flips from right to left side
-  - Expected: LEFT has Y inside + Z outside (2), RIGHT has X alone (1)
+  - Expected: LEFT has Y inside + X outside (2), RIGHT has Z alone (1)
 
 **Pass Criteria:** All formations define Y as the inside receiver on the correct side; Pro transformations flip the 2-receiver side.
 
@@ -491,7 +491,7 @@ These tests require a running app on iPhone/iPad and manual verification.
 - [ ] C6.3: Change Motion → After (Y flips to left)
 - [ ] C6.4: **Verify:** Arc has relocated to Y's NEW position on the LEFT side
 - [ ] C6.5: **Verify:** Arc now curves LEFT (away from center, in Y's new position)
-- [ ] C6.6: **Verify:** Formation has visually transformed from 1x2 to 2x1 (LEFT: Y + X; RIGHT: Z alone)
+- [ ] C6.6: **Verify:** Formation has visually transformed from 1x2 to 2x1 (LEFT: Y inside + X outside; RIGHT: Z alone)
 - [ ] C6.7: **Verify:** Arc is still visible and smooth
 - [ ] C6.8: **Verify:** Route shows "Wheel" regardless of motion selection
 

@@ -54,7 +54,7 @@ When Y Motion is applied as **After** or **Go**, Y flips sides, transforming the
 | Trips Left (3x1) | After/Go | Twins (2x2) | Y moves to right, pairing with Z, creating 2 on each side |
 | Trips Right (3x1) | After/Go | Twins (2x2) | Y moves to left, pairing with X, creating 2 on each side |
 | Pro Left (2x1) | After/Go | 1x2 | Y moves to right: LEFT has X alone (1), RIGHT has Y inside + Z outside (2) |
-| Pro Right (1x2) | After/Go | 2x1 | Y moves to left: LEFT has Y inside + Z outside (2), RIGHT has X alone (1) |
+| Pro Right (1x2) | After/Go | 2x1 | Y moves to left: LEFT has Y inside + X outside (2), RIGHT has Z alone (1) |
 
 ### Concept Matching and Transformed Formations
 
@@ -433,7 +433,7 @@ Pro formations now included with full transformation details.
 **Verification Points:**
 - Arc originates from Y's **post-motion position** (left side), not original right position
 - Arc curves left (away from center in new position)
-- Formation transformation is reflected in receiver layout: LEFT now has Y + X (2), RIGHT has Z alone (1)
+- Formation transformation is reflected in receiver layout: LEFT now has Y (inside) + X (outside) (2), RIGHT has Z alone (1)
 - Motion and wheel work together without conflicts
 - Arc direction reverses from Scenario G (opposite side)
 - Route shows "Wheel" regardless of underlying route number
