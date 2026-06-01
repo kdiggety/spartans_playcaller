@@ -124,6 +124,23 @@ When enabled: Y's numbered route is hidden and replaced with a smooth U-shaped a
 - Twins and Pro: Y Wheel does not apply concept matching logic
 - Y Wheel classification is secondary to standard route identification
 
+## Route Concepts
+
+Named combinations of two (or three) same-side receivers running specific routes.
+Twins has two independent side concepts (left: X+A, right: Y+Z).
+All other formations match one concept per play using receivers on the same side.
+
+| Concept | Receivers | Twins Left (X+A) | Twins Right (Y+Z) | Trips Left | Trips Right | Pro Left | Pro Right |
+|---------|-----------|------------------|------------------|------------|-------------|----------|-----------|
+| **Smash** | 2 (Trips: 3) | X(Curl) + A(Corner) | Y(Corner) + Z(Curl) | X(Curl) + Y(Corner) + A(Dig/In) | Z(Curl) + Y(Corner) + A(Q.Slant) | X(Curl) + Y(Corner) | Y(Corner) + Z(Curl) |
+| **Dagger** | 2 (Trips: 3) | X(Dig/In) + A(Go) | Y(Go) + Z(Dig/In) | X(Q.Out) + Y(Go) + A(Dig/In) | Z(Q.Out) + Y(Go) + A(Dig/In) | X(Dig/In) + Y(Go) | Y(Go) + Z(Dig/In) |
+| **Scissors** | 2 (Trips: 3) | X(Post) + A(Corner) | Y(Corner) + Z(Post) | X(Post) + Y(Corner) + A(Curl) | Z(Post) + Y(Corner) + A(Curl) | X(Post) + Y(Corner) | Y(Corner) + Z(Post) |
+| **Sail** | 2 (Trips: 3) | X(Go) + A(Out) | Y(Out) + Z(Go) | X(Go) + Y(Out) + A(Q.Slant) | Z(Go) + Y(Out) + A(Q.Slant) | X(Go) + Y(Out) | Y(Out) + Z(Go) |
+| **China** | 3 (Trips only) | — | — | X(Curl) + Y(Corner) + A(Curl) | Z(Curl) + Y(Corner) + A(Curl) | — | — |
+
+China is Smash with the third receiver (A) running Curl instead of Dig/In.
+Route semantic names are side-resolved per the Route Nomenclature table above.
+
 ## Architecture
 
 ```
