@@ -37,10 +37,16 @@ enum RouteNumber: Int, CaseIterable, Identifiable {
             )
 
         case .three:
-            return AbsoluteDirectionRouteSemantics(meaning: .out)
+            return SideAwareRouteSemantics(
+                leftMeaning: .out,
+                rightMeaning: .digIn
+            )
 
         case .four:
-            return AbsoluteDirectionRouteSemantics(meaning: .digIn)
+            return SideAwareRouteSemantics(
+                leftMeaning: .digIn,
+                rightMeaning: .out
+            )
 
         case .five:
             return SideAwareRouteSemantics(
@@ -55,10 +61,16 @@ enum RouteNumber: Int, CaseIterable, Identifiable {
             )
 
         case .seven:
-            return AbsoluteDirectionRouteSemantics(meaning: .corner)
+            return SideAwareRouteSemantics(
+                leftMeaning: .corner,
+                rightMeaning: .post
+            )
 
         case .eight:
-            return AbsoluteDirectionRouteSemantics(meaning: .post)
+            return SideAwareRouteSemantics(
+                leftMeaning: .post,
+                rightMeaning: .corner
+            )
 
         case .nine:
             return SideAwareRouteSemantics(
