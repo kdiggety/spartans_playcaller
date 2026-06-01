@@ -469,31 +469,31 @@ These tests require a running app on iPhone/iPad and manual verification.
 
 ---
 
-**Test C3: Pro Left + Y Motion AFTER/GO (transforms 2x1 → 1x2)**
+**Test C5: Pro Left + Y Motion AFTER/GO (transforms 2x1 → 1x2)**
 
-- [ ] C3.1: Select Formation → Pro Left, Wheel ON, Motion: None
-- [ ] C3.2: Observe: Arc curves LEFT (Y on left, 2x1 formation with X outside and Y inside)
-- [ ] C3.3: Change Motion → After (Y flips to right)
-- [ ] C3.4: **Verify:** Arc has relocated to Y's NEW position on the RIGHT side
-- [ ] C3.5: **Verify:** Arc now curves RIGHT (away from center, in Y's new position)
-- [ ] C3.6: **Verify:** Formation has visually transformed from 2x1 to 1x2 (LEFT: X alone; RIGHT: Y + Z)
-- [ ] C3.7: **Verify:** Arc is still visible and smooth
-- [ ] C3.8: **Verify:** Route shows "Wheel" regardless of motion selection
+- [ ] C5.1: Select Formation → Pro Left, Wheel ON, Motion: None
+- [ ] C5.2: Observe: Arc curves LEFT (Y on left, 2x1 formation with X outside and Y inside)
+- [ ] C5.3: Change Motion → After (Y flips to right)
+- [ ] C5.4: **Verify:** Arc has relocated to Y's NEW position on the RIGHT side
+- [ ] C5.5: **Verify:** Arc now curves RIGHT (away from center, in Y's new position)
+- [ ] C5.6: **Verify:** Formation has visually transformed from 2x1 to 1x2 (LEFT: X alone; RIGHT: Y + Z)
+- [ ] C5.7: **Verify:** Arc is still visible and smooth
+- [ ] C5.8: **Verify:** Route shows "Wheel" regardless of motion selection
 
 **Expected Result:** PASS if arc relocates, direction reverses, formation transforms, and 2-receiver side flips.
 
 ---
 
-**Test C4: Pro Right + Y Motion AFTER/GO (transforms 1x2 → 2x1)**
+**Test C6: Pro Right + Y Motion AFTER/GO (transforms 1x2 → 2x1)**
 
-- [ ] C4.1: Select Formation → Pro Right, Wheel ON, Motion: None
-- [ ] C4.2: Observe: Arc curves RIGHT (Y on right, 1x2 formation with Y inside and Z outside)
-- [ ] C4.3: Change Motion → After (Y flips to left)
-- [ ] C4.4: **Verify:** Arc has relocated to Y's NEW position on the LEFT side
-- [ ] C4.5: **Verify:** Arc now curves LEFT (away from center, in Y's new position)
-- [ ] C4.6: **Verify:** Formation has visually transformed from 1x2 to 2x1 (LEFT: Y + X; RIGHT: Z alone)
-- [ ] C4.7: **Verify:** Arc is still visible and smooth
-- [ ] C4.8: **Verify:** Route shows "Wheel" regardless of motion selection
+- [ ] C6.1: Select Formation → Pro Right, Wheel ON, Motion: None
+- [ ] C6.2: Observe: Arc curves RIGHT (Y on right, 1x2 formation with Y inside and Z outside)
+- [ ] C6.3: Change Motion → After (Y flips to left)
+- [ ] C6.4: **Verify:** Arc has relocated to Y's NEW position on the LEFT side
+- [ ] C6.5: **Verify:** Arc now curves LEFT (away from center, in Y's new position)
+- [ ] C6.6: **Verify:** Formation has visually transformed from 1x2 to 2x1 (LEFT: Y + X; RIGHT: Z alone)
+- [ ] C6.7: **Verify:** Arc is still visible and smooth
+- [ ] C6.8: **Verify:** Route shows "Wheel" regardless of motion selection
 
 **Expected Result:** PASS if arc relocates, direction reverses, formation transforms, and 2-receiver side flips to left.
 
