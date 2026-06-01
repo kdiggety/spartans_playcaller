@@ -104,30 +104,24 @@ struct DiagramRenderer {
             return [startPosition, shortStem]
 
         case .one:
-            // LEFT: Quick Out (break left quickly)
-            // RIGHT: Quick Slant (break inward quickly)
+            // Quick Out: perpendicular break (90°) — breaks away from center on both sides
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
             if side == .left {
-                // Quick out breaks LEFT (toward sideline for left-side receiver)
                 let breakPoint = CGPoint(x: shortStem.x - breakLen, y: shortStem.y)
                 return [startPosition, shortStem, breakPoint]
             } else {
-                // Quick slant breaks inward (toward center)
-                let breakPoint = CGPoint(x: shortStem.x - breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
+                let breakPoint = CGPoint(x: shortStem.x + breakLen, y: shortStem.y)
                 return [startPosition, shortStem, breakPoint]
             }
 
         case .two:
-            // LEFT: Quick Slant (break inward)
-            // RIGHT: Quick Out (break right quickly)
+            // Quick Slant: diagonal break (~45°) — breaks away from center on both sides
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
             if side == .left {
-                // Quick slant breaks inward (toward center)
-                let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
+                let breakPoint = CGPoint(x: shortStem.x - breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
                 return [startPosition, shortStem, breakPoint]
             } else {
-                // Quick out breaks RIGHT (toward sideline for right-side receiver)
-                let breakPoint = CGPoint(x: shortStem.x + breakLen, y: shortStem.y)
+                let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
                 return [startPosition, shortStem, breakPoint]
             }
 
