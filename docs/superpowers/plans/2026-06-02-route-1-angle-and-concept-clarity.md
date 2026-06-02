@@ -80,8 +80,8 @@ Expected output: Either lists one or more test files, or empty (no existing rout
 - [ ] **Step 2: If route 1 geometry tests exist, update them**
 
 If Step 1 found test files containing `.one` route tests, open the file and look for any assertions testing the breakPoint for route 1. Update the expected values:
-- Old expectation: `breakPoint.x ≈ -breakLen, breakPoint.y ≈ 0`
-- New expectation: `breakPoint.x ≈ -breakLen * 0.7, breakPoint.y ≈ -breakLen * 0.5`
+- Old expectation: `breakPoint.x ≈ -breakLen, breakPoint.y ≈ 0` (90° perpendicular)
+- New expectation: `breakPoint.x ≈ -breakLen * 0.7, breakPoint.y ≈ -breakLen * 0.5` (45° diagonal, matching Route 2 direction but opposite side)
 
 Example fix (if test exists):
 ```swift
@@ -163,18 +163,22 @@ Read `SpartansPlaycaller/Services/ConceptLibrary.swift` and examine the concept 
 
 Verify that all receiver combinations match PROJECT_CONTEXT.md enumeration (no discrepancies).
 
-- [ ] **Step 3: Check if concept matching tests cover all enumerated combinations**
+- [ ] **Step 3: Check if concept matching tests cover Trips formations**
 
 Run:
 ```bash
-grep -n "Trips" SpartansPlaycallerTests/ConceptMatcherTests.swift | head -20
+grep -n "Trips\|tripsLeft\|tripsRight" SpartansPlaycallerTests/ConceptMatcherTests.swift | head -20
 ```
 
-Look for test cases covering:
-- Trips Left: A+X, A+Y, X+Y combinations
-- Trips Right: Y+Z, Y+A, Z+A combinations
+Look for test cases that verify concept matching for Trips formations. Specifically:
+- Identify whether tests validate **named concepts** (Smash, China, Dagger, Scissors, Sail) for Trips Left and Trips Right
+- Note whether tests verify that unmatched receiver combinations return `nil` (valid but unclassified)
 
-If tests are missing any combination, note it (don't fix yet—just assess).
+Expected: Test suite should confirm that:
+- All named concepts for Trips formations correctly match their template routes
+- Unmatched 2-receiver combinations return `nil` (not matched to a named concept)
+
+(Per PROJECT_CONTEXT §129, arbitrary 2-receiver combinations are valid but need not be pre-defined templates.)
 
 - [ ] **Step 4: If concept matching logic is incomplete for enumerated combinations, update ConceptMatcher.swift**
 
@@ -217,7 +221,9 @@ Locate the concept definitions section in `SpartansPlaycaller/Services/ConceptLi
 // - Trips Left: {A+X, A+Y, X+Y} on left side
 // - Trips Right: {Y+Z, Y+A, Z+A} on right side
 // Named concepts (Smash, Dagger, Scissors, Sail, China) are well-known playbook combinations.
-// Concept matching evaluates all receiver pairs; if no named concept matches, the route is unclassified.
+// Concept matching evaluates receiver route combinations against known templates.
+// If a set of routes matches a named concept template, that concept is returned.
+// Otherwise, the route combination is valid but unclassified (returns nil).
 ```
 
 - [ ] **Step 7: Commit**
