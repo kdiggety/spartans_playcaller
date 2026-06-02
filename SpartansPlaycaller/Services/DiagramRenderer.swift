@@ -104,10 +104,11 @@ struct DiagramRenderer {
             return [startPosition, shortStem]
 
         case .one:
-            // Quick Out / Quick Slant: ALWAYS breaks LEFT visually (90° perpendicular)
+            // Quick Out / Quick Slant: ALWAYS breaks LEFT visually (~45° diagonal)
             // Semantic meaning varies: LEFT=quickOut, RIGHT=quickSlant
+            // Matches route 2's 45° angle formula: (-breakLen * 0.7, -breakLen * 0.5)
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            let breakPoint = CGPoint(x: shortStem.x - breakLen, y: shortStem.y)
+            let breakPoint = CGPoint(x: shortStem.x - breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
             return [startPosition, shortStem, breakPoint]
 
         case .two:
