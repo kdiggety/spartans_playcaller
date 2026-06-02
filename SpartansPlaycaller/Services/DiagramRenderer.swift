@@ -303,25 +303,7 @@ struct DiagramRenderer {
         let endPoint: CGPoint
 
         if side == .left {
-            // Left-side: arc curves left and back, then returns
-            // Control Point 1: curves down and left at 40% depth
-            controlPoint1 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.4
-            )
-            // Control Point 2: deepest point of arc at 80% depth
-            controlPoint2 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.8
-            )
-            // Endpoint: tilted arc (different X than start)
-            // Returns leftward but less than max extent (30% of sideOffset)
-            endPoint = CGPoint(
-                x: yPosition.x - sideOffset * 0.3,
-                y: yPosition.y + loopDepth * endpointFraction
-            )
-        } else {
-            // Right-side: arc curves right and back, then returns
+            // Left-side: arc curves RIGHT (toward center, behind other receivers), then sweeps up left sideline
             // Control Point 1: curves down and right at 40% depth
             controlPoint1 = CGPoint(
                 x: yPosition.x + sideOffset,
@@ -336,6 +318,24 @@ struct DiagramRenderer {
             // Returns rightward but less than max extent (30% of sideOffset)
             endPoint = CGPoint(
                 x: yPosition.x + sideOffset * 0.3,
+                y: yPosition.y + loopDepth * endpointFraction
+            )
+        } else {
+            // Right-side: arc curves LEFT (toward center, behind other receivers), then sweeps up right sideline
+            // Control Point 1: curves down and left at 40% depth
+            controlPoint1 = CGPoint(
+                x: yPosition.x - sideOffset,
+                y: yPosition.y + loopDepth * 0.4
+            )
+            // Control Point 2: deepest point of arc at 80% depth
+            controlPoint2 = CGPoint(
+                x: yPosition.x - sideOffset,
+                y: yPosition.y + loopDepth * 0.8
+            )
+            // Endpoint: tilted arc (different X than start)
+            // Returns leftward but less than max extent (30% of sideOffset)
+            endPoint = CGPoint(
+                x: yPosition.x - sideOffset * 0.3,
                 y: yPosition.y + loopDepth * endpointFraction
             )
         }
