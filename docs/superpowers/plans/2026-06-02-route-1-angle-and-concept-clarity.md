@@ -66,29 +66,30 @@ diagonal geometry. Both quick routes use ~45° angle, differing only in directio
 ## Task 2: Verify Route 1 Geometry Tests
 
 **Files:**
-- Test: `SpartansPlaycallerTests/DiagramRendererTests.swift`
+- Test: `SpartansPlaycallerTests/DiagramRenderer*Tests.swift` (varies by project state)
 
-- [ ] **Step 1: Search for existing route 1 geometry tests**
+- [ ] **Step 1: Check for existing route 1 geometry tests**
 
 Run:
 ```bash
-grep -n "\.one" SpartansPlaycallerTests/DiagramRendererTests.swift
+find SpartansPlaycallerTests -name '*DiagramRenderer*.swift' -exec grep -l "\.one" {} \;
 ```
 
-Look for any tests that assert `breakPoint.x == -breakLen` (old 90° formula). These will fail with the new geometry and need updating.
+Expected output: Either lists one or more test files, or empty (no existing route 1 tests).
 
 - [ ] **Step 2: If route 1 geometry tests exist, update them**
 
-For any test asserting route 1's breakPoint, update the expected values:
+If Step 1 found test files containing `.one` route tests, open the file and look for any assertions testing the breakPoint for route 1. Update the expected values:
 - Old expectation: `breakPoint.x ≈ -breakLen, breakPoint.y ≈ 0`
 - New expectation: `breakPoint.x ≈ -breakLen * 0.7, breakPoint.y ≈ -breakLen * 0.5`
 
 Example fix (if test exists):
 ```swift
 func testRoute1BreakpointGeometry() {
-    let assignment = RouteAssignment(receiver: .X, routeNumber: .one, side: .left, motion: nil)
+    let assignment = RouteAssignment(receiver: .X, routeNumber: .one, side: .left, initialMeaning: .quickOut, motion: nil)
     let startPos = CGPoint(x: 100, y: 100)
     let config = DiagramConfig.standard(for: CGSize(width: 400, height: 800))
+    let renderer = DiagramRenderer()
     
     let path = renderer.routePath(for: assignment, startPosition: startPos, side: .left, config: config)
     
@@ -109,23 +110,30 @@ func testRoute1BreakpointGeometry() {
 }
 ```
 
+If no existing route 1 tests are found, add the above test to an appropriate diagram test file (e.g., `DiagramRendererYWheelTests.swift` or create a new `DiagramRendererTests.swift`).
+
 - [ ] **Step 3: Run all diagram renderer tests**
 
 Run:
 ```bash
-xcodebuild test -scheme SpartansPlaycaller -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing SpartansPlaycallerTests/DiagramRendererTests
+xcodebuild test -scheme SpartansPlaycaller -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
-Expected: All tests pass (any that were checking old 90° formula have been updated in Step 2).
+Filter output for diagram tests:
+```bash
+xcodebuild test -scheme SpartansPlaycaller -destination 'platform=iOS Simulator,name=iPhone 17' | grep -E "(Diagram|Route1|PASSED|FAILED)"
+```
+
+Expected: All tests pass (any that were checking old 90° formula have been updated or new test verifies correct angle).
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add SpartansPlaycallerTests/DiagramRendererTests.swift
-git commit -m "test: Update route 1 geometry test expectations for 45° angle
+git add SpartansPlaycallerTests/
+git commit -m "test: Add/update route 1 geometry test for 45° diagonal angle
 
-Route 1 breakPoint now expects (-breakLen * 0.7, -breakLen * 0.5) offset
-instead of (-breakLen, 0). Test assertions updated to match new diagonal geometry."
+Route 1 breakPoint now uses (-breakLen * 0.7, -breakLen * 0.5) offset
+instead of (-breakLen, 0). Test added or updated to verify new diagonal geometry matches route 2 angle."
 ```
 
 ---
