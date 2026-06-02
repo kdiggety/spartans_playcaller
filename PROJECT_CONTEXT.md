@@ -94,7 +94,7 @@ Concept matching after motion always evaluates each side independently based on 
 ## Y Wheel
 
 Y Wheel is an independent toggle that works with any motion (None, Stop, After/Go).
-When enabled: Y's numbered route is hidden and replaced with a smooth U-shaped arc.
+When enabled: Y's numbered route is hidden and replaced with a smooth U-shaped arc that curves away from the LOS toward Y's final side.
 
 **Arc direction rule:** Arc always curves toward Y's FINAL side (after motion is applied).
 
