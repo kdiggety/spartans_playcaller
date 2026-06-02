@@ -3,6 +3,16 @@ import Foundation
 /// The concept library holds all known concept templates.
 /// It provides lookup by formation and concept, and supports
 /// both generation (concept → digits) and identification (digits → concept).
+///
+/// Concept matching note:
+/// Any 2 receivers on the same side can form a valid route concept.
+/// Trips formations with 3 receivers on one side have C(3,2)=3 possible pairings:
+/// - Trips Left: {A+X, A+Y, X+Y} on left side
+/// - Trips Right: {Y+Z, Y+A, Z+A} on right side
+/// Named concepts (Smash, Dagger, Scissors, Sail, China) are well-known playbook combinations.
+/// Concept matching evaluates receiver route combinations against known templates.
+/// If a set of routes matches a named concept template, that concept is returned.
+/// Otherwise, the route combination is valid but unclassified (returns nil).
 struct ConceptLibrary {
 
     /// All registered concept templates
