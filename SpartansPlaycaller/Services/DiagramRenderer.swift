@@ -290,85 +290,38 @@ struct DiagramRenderer {
             side = initialSide
         }
 
-        // Arc geometry per specification:
-        // - loopDepth: how far back the arc curves (into backfield) — 25% of field height
-        // - sideOffset: how far to the side the arc curves away from LOS — 30% of field width
-        // - endpointFraction: endpoint at 55% of loopDepth
-        let loopDepth = config.fieldHeight * 0.25       // 25% of field height
-        let sideOffset = config.fieldWidth * 0.30       // 30% of field width
-        let endpointFraction: CGFloat = 0.55            // Endpoint 55% of the way down
+        // Determine which route to use based on Y's final side:
+        // - Y on LEFT: use Route 2 (breaks RIGHT at 45°, which is inward/toward center)
+        // - Y on RIGHT: use Route 1 (breaks LEFT at 45°, which is inward/toward center)
+        let routeToUse: RouteNumber = (side == .left) ? .two : .one
 
-        let controlPoint1: CGPoint
-        let controlPoint2: CGPoint
-        let endPoint: CGPoint
+        // Get the semantic meaning for this route on the given side
+        let initialMeaning = routeToUse.meaning(on: side)
 
-        if side == .left {
-            // Left-side: arc curves RIGHT (toward center, behind other receivers), then sweeps up left sideline
-            // Control Point 1: curves down and right at 40% depth
-            controlPoint1 = CGPoint(
-                x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth * 0.4
-            )
-            // Control Point 2: deepest point of arc at 80% depth
-            controlPoint2 = CGPoint(
-                x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth * 0.8
-            )
-            // Endpoint: tilted arc (different X than start)
-            // Returns rightward but less than max extent (30% of sideOffset)
-            endPoint = CGPoint(
-                x: yPosition.x + sideOffset * 0.3,
-                y: yPosition.y + loopDepth * endpointFraction
-            )
-        } else {
-            // Right-side: arc curves LEFT (toward center, behind other receivers), then sweeps up right sideline
-            // Control Point 1: curves down and left at 40% depth
-            controlPoint1 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.4
-            )
-            // Control Point 2: deepest point of arc at 80% depth
-            controlPoint2 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.8
-            )
-            // Endpoint: tilted arc (different X than start)
-            // Returns leftward but less than max extent (30% of sideOffset)
-            endPoint = CGPoint(
-                x: yPosition.x - sideOffset * 0.3,
-                y: yPosition.y + loopDepth * endpointFraction
-            )
-        }
+        // Create a synthetic route assignment for Y using the selected route
+        let yRouteAssignment = RouteAssignment(
+            receiver: .Y,
+            routeNumber: routeToUse,
+            side: side,
+            initialMeaning: initialMeaning,
+            motion: nil  // Y Wheel itself handles motion; don't apply it again
+        )
 
-        // Sample points along curve using cubic Bézier formula
-        // Use dense sampling (0.02 stride = 50 points) for smooth visual rendering
-        // This ensures the line segments connecting sampled points appear as a smooth curve
-        var pathPoints: [CGPoint] = [yPosition]
-        for t in stride(from: CGFloat(0.02), through: CGFloat(1.0), by: 0.02) {
-            let mt = 1 - t
-            let mt2 = mt * mt
-            let mt3 = mt2 * mt
-            let t2 = t * t
-            let t3 = t2 * t
+        // Call routePath() to get the rendered path points
+        let pathPoints = routePath(
+            for: yRouteAssignment,
+            startPosition: yPosition,
+            side: side,
+            config: config
+        )
 
-            // Cubic Bézier: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
-            let point = CGPoint(
-                x: mt3 * yPosition.x + 3 * mt2 * t * controlPoint1.x + 3 * mt * t2 * controlPoint2.x + t3 * endPoint.x,
-                y: mt3 * yPosition.y + 3 * mt2 * t * controlPoint1.y + 3 * mt * t2 * controlPoint2.y + t3 * endPoint.y
-            )
-            pathPoints.append(point)
-        }
-        // Always append the exact endpoint
-        if pathPoints.last != endPoint {
-            pathPoints.append(endPoint)
-        }
-
-        // Build path from sampled points by connecting with line segments
-        // This approach matches the motion path rendering and ensures consistent visual quality
+        // Build path from points by connecting with line segments
         var path = Path()
-        path.move(to: pathPoints[0])
-        for i in 1..<pathPoints.count {
-            path.addLine(to: pathPoints[i])
+        if pathPoints.count >= 2 {
+            path.move(to: pathPoints[0])
+            for i in 1..<pathPoints.count {
+                path.addLine(to: pathPoints[i])
+            }
         }
 
         return (path, pathPoints, .yellow)
