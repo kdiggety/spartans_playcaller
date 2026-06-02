@@ -345,4 +345,90 @@ final class RouteDiagramViewTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - Route 1 Geometry Tests (45° Diagonal)
+
+@MainActor func testRoute1BreakpointGeometry45Degrees() {
+        // Route 1 breakpoint should be at 45° diagonal: (-breakLen * 0.7, -breakLen * 0.5)
+        // This is the same angle as Route 2 but in opposite directions
+        let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
+        let renderer = DiagramRenderer()
+
+        // Test Route 1 from left side (Trips Left formation)
+        if case .success(let playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
+            let positions = renderer.receiverPositions(formation: playCall.formation, config: config)
+
+            if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
+                guard let yPos = positions[.Y] else { return XCTFail("Y position not found") }
+
+                let routePath = renderer.routePath(
+                    for: yAssignment,
+                    startPosition: yPos,
+                    side: yAssignment.motionFinalSide,
+                    config: config
+                )
+
+                // Path should have 3 points: start, shortStem, breakPoint
+                XCTAssertEqual(routePath.count, 3, "Route 1 should have 3 path points")
+
+                let shortStem = routePath[1]
+                let breakPoint = routePath[2]
+
+                // Verify shortStem is at 25% of stemLength upfield (negative Y direction)
+                let expectedStemY = yPos.y - config.routeLength * 0.25
+                XCTAssertEqual(shortStem.y, expectedStemY, accuracy: 0.5, "Short stem should be at 25% of route length")
+
+                // Verify breakPoint uses 45° diagonal geometry
+                let expectedBreakX = shortStem.x - config.breakLength * 0.7
+                let expectedBreakY = shortStem.y - config.breakLength * 0.5
+                XCTAssertEqual(breakPoint.x, expectedBreakX, accuracy: 0.5, "Break point X should use 0.7 * breakLength offset")
+                XCTAssertEqual(breakPoint.y, expectedBreakY, accuracy: 0.5, "Break point Y should use 0.5 * breakLength offset")
+            }
+        }
+    }
+
+@MainActor func testRoute1And2Geometry45DegreeSymmetry() {
+        // Route 1 and Route 2 should form a symmetric 45° pair:
+        // Route 1: (-0.7 * breakLen, -0.5 * breakLen) LEFT
+        // Route 2: (+0.7 * breakLen, -0.5 * breakLen) RIGHT
+        let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
+        let renderer = DiagramRenderer()
+        let testPos = CGPoint(x: 250, y: 300)
+
+        // Create Route 1 assignment
+        let route1 = RouteAssignment(receiver: .Y, routeNumber: .one, side: .left, initialMeaning: .quickOut, motion: nil)
+        let route1Path = renderer.routePath(
+            for: route1,
+            startPosition: testPos,
+            side: .left,
+            config: config
+        )
+
+        // Create Route 2 assignment
+        let route2 = RouteAssignment(receiver: .Y, routeNumber: .two, side: .right, initialMeaning: .quickOut, motion: nil)
+        let route2Path = renderer.routePath(
+            for: route2,
+            startPosition: testPos,
+            side: .right,
+            config: config
+        )
+
+        guard route1Path.count >= 3, route2Path.count >= 3 else {
+            return XCTFail("Both routes should have 3 path points")
+        }
+
+        let route1Break = route1Path[2]
+        let route2Break = route2Path[2]
+        let stemPoint = route1Path[1] // Both have same stem
+
+        // X coordinates should be symmetric (opposite signs)
+        let route1OffsetX = route1Break.x - stemPoint.x
+        let route2OffsetX = route2Break.x - stemPoint.x
+        XCTAssertEqual(route1OffsetX, -route2OffsetX, accuracy: 0.5, "Route 1 and 2 X offsets should be symmetric")
+
+        // Y coordinates should be identical (same upfield angle)
+        let route1OffsetY = route1Break.y - stemPoint.y
+        let route2OffsetY = route2Break.y - stemPoint.y
+        XCTAssertEqual(route1OffsetY, route2OffsetY, accuracy: 0.5, "Route 1 and 2 Y offsets should be identical")
+    }
 }
