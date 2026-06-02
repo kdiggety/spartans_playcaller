@@ -37,7 +37,7 @@ Every route has an **absolute visual direction** (always breaks the same screen 
 | Route | Stem | Visual Direction | LEFT Semantic | RIGHT Semantic |
 |-------|------|-----------------|--------------|---------------|
 | 0 | Short (30%) DOWN | Short stem into backfield, no break | Hitch | Hitch |
-| 1 | Short (25%) | Always LEFT 90° | Quick Out | Quick Slant |
+| 1 | Short (25%) | Always LEFT 45° | Quick Out | Quick Slant |
 | 2 | Short (25%) | Always RIGHT 45° | Quick Slant | Quick Out |
 | 3 | Full (100%) | Always LEFT 90° | Out | Dig/In |
 | 4 | Full (100%) | Always RIGHT 90° | Dig/In | Out |
