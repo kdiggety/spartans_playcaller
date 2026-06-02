@@ -126,20 +126,41 @@ When enabled: Y's numbered route is hidden and replaced with a smooth U-shaped a
 
 ## Route Concepts
 
-Named combinations of two (or three) same-side receivers running specific routes.
-Twins has two independent side concepts (left: X+A, right: Y+Z).
-All other formations match one concept per play using receivers on the same side.
+**Principle:** Any 2 receivers on the same side can form a route concept by combining their individual routes. Named concepts (Smash, Dagger, etc.) are well-known combinations from the playbook; arbitrary 2-receiver combinations are also valid.
 
-| Concept | Receivers | Twins Left (X+A) | Twins Right (Y+Z) | Trips Left | Trips Right | Pro Left | Pro Right |
-|---------|-----------|------------------|------------------|------------|-------------|----------|-----------|
-| **Smash** | 2 (Trips: 3) | X(Curl) + A(Corner) | Y(Corner) + Z(Curl) | X(Curl) + Y(Corner) + A(Dig/In) | Z(Curl) + Y(Corner) + A(Q.Slant) | X(Curl) + Y(Corner) | Y(Corner) + Z(Curl) |
-| **Dagger** | 2 (Trips: 3) | X(Dig/In) + A(Go) | Y(Go) + Z(Dig/In) | X(Q.Out) + Y(Go) + A(Dig/In) | Z(Q.Out) + Y(Go) + A(Dig/In) | X(Dig/In) + Y(Go) | Y(Go) + Z(Dig/In) |
-| **Scissors** | 2 (Trips: 3) | X(Post) + A(Corner) | Y(Corner) + Z(Post) | X(Post) + Y(Corner) + A(Curl) | Z(Post) + Y(Corner) + A(Curl) | X(Post) + Y(Corner) | Y(Corner) + Z(Post) |
-| **Sail** | 2 (Trips: 3) | X(Go) + A(Out) | Y(Out) + Z(Go) | X(Go) + Y(Out) + A(Q.Slant) | Z(Go) + Y(Out) + A(Q.Slant) | X(Go) + Y(Out) | Y(Out) + Z(Go) |
-| **China** | 3 (Trips only) | — | — | X(Curl) + Y(Corner) + A(Curl) | Z(Curl) + Y(Corner) + A(Curl) | — | — |
+### Possible 2-Receiver Combinations by Formation
 
-China is Smash with the third receiver (A) running Curl instead of Dig/In.
-Route semantic names are side-resolved per the Route Nomenclature table above.
+**Twins (2×2, one pairing per side):**
+- Left side: X + A (1 combination)
+- Right side: Y + Z (1 combination)
+
+**Trips Left (3×1, three pairings on the left):**
+- A + X, A + Y, X + Y (any pair from {A, X, Y})
+- Right: Z (isolated, no pairing)
+
+**Trips Right (1×3, three pairings on the right):**
+- Left: X (isolated, no pairing)
+- Y + Z, Y + A, Z + A (any pair from {Y, Z, A})
+
+**Pro Left (2×1, one pairing on the left):**
+- Left side: X + Y (1 combination)
+- Right: Z (isolated, no pairing)
+
+**Pro Right (1×2, one pairing on the right):**
+- Left: X (isolated, no pairing)
+- Right side: Y + Z (1 combination)
+
+### Named Concepts in the Playbook
+
+| Concept | Structure | Twins Left | Twins Right | Trips Left | Trips Right | Pro Left | Pro Right |
+|---------|-----------|-----------|-----------|-----------|-----------|---------|-----------|
+| **Smash** | X/Z + Y/A (Curl + Corner) | X(Curl) + A(Corner) | Y(Corner) + Z(Curl) | X(Curl) + Y(Corner) [+A(Dig/In)] | Y(Corner) + Z(Curl) [+A(Q.Slant)] | X(Curl) + Y(Corner) | Y(Corner) + Z(Curl) |
+| **Dagger** | X/Z + Y/A (Dig/In + Go) | X(Dig/In) + A(Go) | Y(Go) + Z(Dig/In) | X(Q.Out) + Y(Go) [+A(Dig/In)] | Z(Q.Out) + Y(Go) [+A(Dig/In)] | X(Dig/In) + Y(Go) | Y(Go) + Z(Dig/In) |
+| **Scissors** | X/Z + Y/A (Post + Corner) | X(Post) + A(Corner) | Y(Corner) + Z(Post) | X(Post) + Y(Corner) [+A(Curl)] | Y(Corner) + Z(Post) [+A(Curl)] | X(Post) + Y(Corner) | Y(Corner) + Z(Post) |
+| **Sail** | X/Z + Y/A (Go + Out) | X(Go) + A(Out) | Y(Out) + Z(Go) | X(Go) + Y(Out) [+A(Q.Slant)] | Z(Go) + Y(Out) [+A(Q.Slant)] | X(Go) + Y(Out) | Y(Out) + Z(Go) |
+| **China** | Trips 3-receiver (Smash variant) | — | — | X(Curl) + Y(Corner) + A(Curl) | Y(Corner) + Z(Curl) + A(Curl) | — | — |
+
+**Note:** Route semantic names (Curl, Corner, Go, etc.) are side-resolved per the Route Nomenclature table—the route digit is constant, but the name label flips for side-aware routes (1–8). Square brackets `[+A(·)]` indicate third-receiver routes in Trips formations (concept matching for Trips evaluates all three receivers; for non-Trips, only the primary pairing is matched).
 
 ## Architecture
 
