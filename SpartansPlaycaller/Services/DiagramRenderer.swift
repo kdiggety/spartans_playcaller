@@ -202,8 +202,10 @@ struct DiagramRenderer {
         switch formation {
         case .twins:
             distanceMultiplier = 0.5  // Move 0.5x the base distance (between A and center, closer to center than A)
-        case .tripsLeft, .tripsRight, .proLeft, .proRight:
-            distanceMultiplier = 2.5  // Keep existing far-out motion
+        case .tripsLeft, .tripsRight:
+            distanceMultiplier = 2.5  // Far-out motion for Trips
+        case .proLeft, .proRight:
+            distanceMultiplier = 1.5  // Proportional to Pro's smaller slot base distance (0.75x)
         }
 
         let finalDistance = baseDistance * distanceMultiplier
