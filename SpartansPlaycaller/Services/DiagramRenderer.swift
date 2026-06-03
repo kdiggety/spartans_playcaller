@@ -194,10 +194,20 @@ struct DiagramRenderer {
 
         let baseDistance = abs(yBasePos.x - centerX)
 
-        // Y After/Go: moves dramatically past tackle on opposite side
-        // Double the distance for dramatic effect
-        let dramaticDistance = baseDistance * 2.5
-        let finalX = (finalSide == .right) ? centerX + dramaticDistance : centerX - dramaticDistance
+        // Y After/Go: moves to opposite side
+        // Distance multiplier depends on formation:
+        // - Twins: Y moves 1.0x base distance (lands between A and center)
+        // - Trips/Pro: Y moves 2.5x base distance (far-out motion)
+        let distanceMultiplier: CGFloat
+        switch formation {
+        case .twins:
+            distanceMultiplier = 1.0  // Move 1x the base distance (between A and center)
+        case .tripsLeft, .tripsRight, .proLeft, .proRight:
+            distanceMultiplier = 2.5  // Keep existing far-out motion
+        }
+
+        let finalDistance = baseDistance * distanceMultiplier
+        let finalX = (finalSide == .right) ? centerX + finalDistance : centerX - finalDistance
         return CGPoint(x: finalX, y: losY)
     }
 
