@@ -196,8 +196,9 @@ struct DiagramRenderer {
 
         // Y After/Go: moves to opposite side
         // Distance multiplier depends on formation:
-        // - Twins: Y moves 0.75x base distance (lands between A and center)
-        // - Trips/Pro: Y moves 2.5x base distance (far-out motion)
+        // - Twins: Y moves 0.5x base distance (lands between A and center)
+        // - Trips: Y moves 2.5x base distance (far-out motion)
+        // - Pro: Y moves 1.5x base distance (proportional to smaller slot distance)
         let distanceMultiplier: CGFloat
         switch formation {
         case .twins:
