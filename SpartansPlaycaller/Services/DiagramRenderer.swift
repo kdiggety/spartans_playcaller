@@ -23,7 +23,7 @@ struct DiagramConfig {
             breakLength: height * 0.15,
             receiverRadius: 12,
             footballSize: 10,
-            receiverSpacing: width * 0.17,
+            receiverSpacing: width * 0.16,
             sideMargin: width * 0.08
         )
     }
