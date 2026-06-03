@@ -291,9 +291,9 @@ struct DiagramRenderer {
         }
 
         // Determine which route to use based on Y's final side:
-        // - Y on LEFT: use Route 2 (breaks RIGHT at 45°, which is inward/toward center)
-        // - Y on RIGHT: use Route 1 (breaks LEFT at 45°, which is inward/toward center)
-        let routeToUse: RouteNumber = (side == .left) ? .two : .one
+        // - Y on LEFT: use Route 1 (breaks LEFT at 45°, which is toward left sideline)
+        // - Y on RIGHT: use Route 2 (breaks RIGHT at 45°, which is toward right sideline)
+        let routeToUse: RouteNumber = (side == .left) ? .one : .two
 
         // Get the semantic meaning for this route on the given side
         let initialMeaning = routeToUse.meaning(on: side)
@@ -315,15 +315,23 @@ struct DiagramRenderer {
             config: config
         )
 
-        // Build path from points by connecting with line segments
+        // Invert Y coordinates vertically so the arc goes DOWN the field (toward backfield)
+        // instead of UP the field (toward goal line). Mirror about yPosition.y (the LOS).
+        var invertedPoints: [CGPoint] = []
+        for point in pathPoints {
+            let invertedY = yPosition.y + (yPosition.y - point.y)
+            invertedPoints.append(CGPoint(x: point.x, y: invertedY))
+        }
+
+        // Build path from inverted points by connecting with line segments
         var path = Path()
-        if pathPoints.count >= 2 {
-            path.move(to: pathPoints[0])
-            for i in 1..<pathPoints.count {
-                path.addLine(to: pathPoints[i])
+        if invertedPoints.count >= 2 {
+            path.move(to: invertedPoints[0])
+            for i in 1..<invertedPoints.count {
+                path.addLine(to: invertedPoints[i])
             }
         }
 
-        return (path, pathPoints, .yellow)
+        return (path, invertedPoints, .yellow)
     }
 }
