@@ -158,7 +158,7 @@ final class PlayCallerViewModel: ObservableObject {
     }
 
     /// Apply motion to the current play call and re-identify concepts per side
-    private func applyMotion() {
+    func applyMotion() {
         guard let playCall = currentPlayCall else {
             currentPlayCallWithMotion = nil
             leftSideConcept = nil
