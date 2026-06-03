@@ -23,7 +23,7 @@ struct DiagramConfig {
             breakLength: height * 0.15,
             receiverRadius: 12,
             footballSize: 10,
-            receiverSpacing: width * 0.16,
+            receiverSpacing: width * 0.20,
             sideMargin: width * 0.08
         )
     }
@@ -196,12 +196,12 @@ struct DiagramRenderer {
 
         // Y After/Go: moves to opposite side
         // Distance multiplier depends on formation:
-        // - Twins: Y moves 1.0x base distance (lands between A and center)
+        // - Twins: Y moves 0.75x base distance (lands between A and center)
         // - Trips/Pro: Y moves 2.5x base distance (far-out motion)
         let distanceMultiplier: CGFloat
         switch formation {
         case .twins:
-            distanceMultiplier = 1.0  // Move 1x the base distance (between A and center)
+            distanceMultiplier = 0.75  // Move 0.75x the base distance (between A and center, closer to center than A)
         case .tripsLeft, .tripsRight, .proLeft, .proRight:
             distanceMultiplier = 2.5  // Keep existing far-out motion
         }
