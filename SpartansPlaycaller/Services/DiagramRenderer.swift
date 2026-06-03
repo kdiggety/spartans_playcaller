@@ -201,7 +201,7 @@ struct DiagramRenderer {
         let distanceMultiplier: CGFloat
         switch formation {
         case .twins:
-            distanceMultiplier = 0.75  // Move 0.75x the base distance (between A and center, closer to center than A)
+            distanceMultiplier = 0.5  // Move 0.5x the base distance (between A and center, closer to center than A)
         case .tripsLeft, .tripsRight, .proLeft, .proRight:
             distanceMultiplier = 2.5  // Keep existing far-out motion
         }
