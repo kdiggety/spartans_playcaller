@@ -143,7 +143,7 @@ final class RouteDiagramViewTests: XCTestCase {
             let view = RouteDiagramView(playCall: playCall)
             XCTAssertNotNil(view)
 
-            // Twins: X, Y on left; Z, A on right
+            // Twins: X, A on left; Y, Z on right
             let leftReceivers = playCall.assignments.filter { playCall.formation.side(for: $0.receiver) == .left }
             let rightReceivers = playCall.assignments.filter { playCall.formation.side(for: $0.receiver) == .right }
 
@@ -269,12 +269,13 @@ final class RouteDiagramViewTests: XCTestCase {
     }
 
 @MainActor func testYRouteSideInterpretationChangesWithMotion() {
-        // Trips Left, route "1", no motion: Y on left, route "1" = Quick Out (breaks left)
-        // Trips Left, route "1", Y After: Y flipped to right, route "1" = Quick Slant (breaks inward)
+        // Routes 1 and 2 use absolute directions:
+        // Route "1" ALWAYS breaks LEFT regardless of receiver side
+        // Route "2" ALWAYS breaks RIGHT regardless of receiver side
         let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
         let renderer = DiagramRenderer()
 
-        // First: No motion case
+        // First: Route 1 on left (no motion) - should break LEFT
         if case .success(let playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
             if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
                 XCTAssertEqual(yAssignment.side, .left)
@@ -291,19 +292,19 @@ final class RouteDiagramViewTests: XCTestCase {
                     config: config
                 )
 
-                // Route "1" on left should break LEFT (Quick Out)
+                // Route "1" ALWAYS breaks LEFT (absolute direction)
                 // Path should have 3 points: start, stem end, break point
-                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Quick Out route should have break point")
+                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Route 1 should have break point")
                 if routePath.count >= 3 {
                     let breakPoint = routePath[2]
                     // Break point X should be less than stem (going left)
                     let stemPoint = routePath[1]
-                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Quick Out breaks left")
+                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Route 1 always breaks left")
                 }
             }
         }
 
-        // Second: Y After motion case
+        // Second: Route 1 on right (with Y After motion) - should STILL break LEFT
         if case .success(var playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
             if let yIndex = playCall.assignments.firstIndex(where: { $0.receiver == .Y }) {
                 playCall.assignments[yIndex].motion = .after
@@ -332,20 +333,102 @@ final class RouteDiagramViewTests: XCTestCase {
                     config: config
                 )
 
-                // Route "1" on right should be Quick Slant (breaks inward/toward center)
+                // Route "1" ALWAYS breaks LEFT (absolute direction, even when receiver is on right)
                 // Path should have 3 points: start, stem end, break point
-                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Quick Slant route should have break point")
+                XCTAssertGreaterThanOrEqual(routePath.count, 3, "Route 1 should have break point")
                 if routePath.count >= 3 {
                     let breakPoint = routePath[2]
                     let stemPoint = routePath[1]
-                    // Break point X should be less than stem X (inward/toward center from right side)
-                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Quick Slant breaks inward from right side")
-                    // But not as far left as Pure Quick Out would go
-                    // This is harder to test precisely, but we can verify the break is smaller
-                    let breakDistance = abs(breakPoint.x - stemPoint.x)
-                    XCTAssertLessThan(breakDistance, 30, "Quick Slant break is more modest than Quick Out")
+                    // Break point X should be less than stem X (LEFT, absolute direction)
+                    XCTAssertLessThan(breakPoint.x, stemPoint.x, "Route 1 always breaks left even from right side")
                 }
             }
         }
+    }
+
+    // MARK: - Route 1 Geometry Tests (45° Diagonal)
+
+@MainActor func testRoute1BreakpointGeometry45Degrees() {
+        // Route 1 breakpoint should be at 45° diagonal: (-breakLen * 0.7, -breakLen * 0.5)
+        // This is the same angle as Route 2 but in opposite directions
+        let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
+        let renderer = DiagramRenderer()
+
+        // Test Route 1 from left side (Trips Left formation)
+        if case .success(let playCall) = interpreter.interpret(digits: "1111", formation: .tripsLeft) {
+            let positions = renderer.receiverPositions(formation: playCall.formation, config: config)
+
+            if let yAssignment = playCall.assignments.first(where: { $0.receiver == .Y }) {
+                guard let yPos = positions[.Y] else { return XCTFail("Y position not found") }
+
+                let routePath = renderer.routePath(
+                    for: yAssignment,
+                    startPosition: yPos,
+                    side: yAssignment.motionFinalSide,
+                    config: config
+                )
+
+                // Path should have 3 points: start, shortStem, breakPoint
+                XCTAssertEqual(routePath.count, 3, "Route 1 should have 3 path points")
+
+                let shortStem = routePath[1]
+                let breakPoint = routePath[2]
+
+                // Verify shortStem is at 25% of stemLength upfield (negative Y direction)
+                let expectedStemY = yPos.y - config.routeLength * 0.25
+                XCTAssertEqual(shortStem.y, expectedStemY, accuracy: 0.5, "Short stem should be at 25% of route length")
+
+                // Verify breakPoint uses 45° diagonal geometry
+                let expectedBreakX = shortStem.x - config.breakLength * 0.7
+                let expectedBreakY = shortStem.y - config.breakLength * 0.5
+                XCTAssertEqual(breakPoint.x, expectedBreakX, accuracy: 0.5, "Break point X should use 0.7 * breakLength offset")
+                XCTAssertEqual(breakPoint.y, expectedBreakY, accuracy: 0.5, "Break point Y should use 0.5 * breakLength offset")
+            }
+        }
+    }
+
+@MainActor func testRoute1And2Geometry45DegreeSymmetry() {
+        // Route 1 and Route 2 should form a symmetric 45° pair:
+        // Route 1: (-0.7 * breakLen, -0.5 * breakLen) LEFT
+        // Route 2: (+0.7 * breakLen, -0.5 * breakLen) RIGHT
+        let config = DiagramConfig.standard(for: CGSize(width: 500, height: 600))
+        let renderer = DiagramRenderer()
+        let testPos = CGPoint(x: 250, y: 300)
+
+        // Create Route 1 assignment
+        let route1 = RouteAssignment(receiver: .Y, routeNumber: .one, side: .left, initialMeaning: .quickOut, motion: nil)
+        let route1Path = renderer.routePath(
+            for: route1,
+            startPosition: testPos,
+            side: .left,
+            config: config
+        )
+
+        // Create Route 2 assignment
+        let route2 = RouteAssignment(receiver: .Y, routeNumber: .two, side: .right, initialMeaning: .quickOut, motion: nil)
+        let route2Path = renderer.routePath(
+            for: route2,
+            startPosition: testPos,
+            side: .right,
+            config: config
+        )
+
+        guard route1Path.count >= 3, route2Path.count >= 3 else {
+            return XCTFail("Both routes should have 3 path points")
+        }
+
+        let route1Break = route1Path[2]
+        let route2Break = route2Path[2]
+        let stemPoint = route1Path[1] // Both have same stem
+
+        // X coordinates should be symmetric (opposite signs)
+        let route1OffsetX = route1Break.x - stemPoint.x
+        let route2OffsetX = route2Break.x - stemPoint.x
+        XCTAssertEqual(route1OffsetX, -route2OffsetX, accuracy: 0.5, "Route 1 and 2 X offsets should be symmetric")
+
+        // Y coordinates should be identical (same upfield angle)
+        let route1OffsetY = route1Break.y - stemPoint.y
+        let route2OffsetY = route2Break.y - stemPoint.y
+        XCTAssertEqual(route1OffsetY, route2OffsetY, accuracy: 0.5, "Route 1 and 2 Y offsets should be identical")
     }
 }

@@ -3,6 +3,16 @@ import Foundation
 /// The concept library holds all known concept templates.
 /// It provides lookup by formation and concept, and supports
 /// both generation (concept → digits) and identification (digits → concept).
+///
+/// Concept matching note:
+/// Any 2 receivers on the same side can form a valid route concept.
+/// Trips formations with 3 receivers on one side have C(3,2)=3 possible pairings:
+/// - Trips Left: {A+X, A+Y, X+Y} on left side
+/// - Trips Right: {Y+Z, Y+A, Z+A} on right side
+/// Named concepts (Smash, Dagger, Scissors, Sail, China) are well-known playbook combinations.
+/// Concept matching evaluates receiver route combinations against known templates.
+/// If a set of routes matches a named concept template, that concept is returned.
+/// Otherwise, the route combination is valid but unclassified (returns nil).
 struct ConceptLibrary {
 
     /// All registered concept templates
@@ -30,59 +40,59 @@ struct ConceptLibrary {
         var templates: [ConceptTemplate] = []
 
         // ──────────────────────────────────────────────
-        // TWINS LEFT (X and Y on left side)
+        // TWINS LEFT (X and A on left side)
         // ──────────────────────────────────────────────
 
         templates.append(ConceptTemplate(
             concept: .smash,
             formationContext: .twinsLeft,
-            receiverRoutes: [.X: .six, .Y: .seven]
+            receiverRoutes: [.X: .six, .A: .seven]
         ))
 
         templates.append(ConceptTemplate(
             concept: .dagger,
             formationContext: .twinsLeft,
-            receiverRoutes: [.X: .four, .Y: .nine]
+            receiverRoutes: [.X: .four, .A: .nine]
         ))
 
         templates.append(ConceptTemplate(
             concept: .scissors,
             formationContext: .twinsLeft,
-            receiverRoutes: [.X: .eight, .Y: .seven]
+            receiverRoutes: [.X: .eight, .A: .seven]
         ))
 
         templates.append(ConceptTemplate(
             concept: .sail,
             formationContext: .twinsLeft,
-            receiverRoutes: [.X: .nine, .Y: .three]
+            receiverRoutes: [.X: .nine, .A: .three]
         ))
 
         // ──────────────────────────────────────────────
-        // TWINS RIGHT (Z and A on right side)
+        // TWINS RIGHT (Y and Z on right side)
         // ──────────────────────────────────────────────
 
         templates.append(ConceptTemplate(
             concept: .smash,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .eight, .A: .five]
+            receiverRoutes: [.Y: .eight, .Z: .five]
         ))
 
         templates.append(ConceptTemplate(
             concept: .dagger,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .nine, .A: .three]
+            receiverRoutes: [.Y: .nine, .Z: .three]
         ))
 
         templates.append(ConceptTemplate(
             concept: .scissors,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .eight, .A: .seven]
+            receiverRoutes: [.Y: .eight, .Z: .seven]
         ))
 
         templates.append(ConceptTemplate(
             concept: .sail,
             formationContext: .twinsRight,
-            receiverRoutes: [.Z: .four, .A: .nine]
+            receiverRoutes: [.Y: .four, .Z: .nine]
         ))
 
         // ──────────────────────────────────────────────

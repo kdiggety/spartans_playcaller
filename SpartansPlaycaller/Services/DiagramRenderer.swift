@@ -41,12 +41,12 @@ struct DiagramRenderer {
 
         switch formation {
         case .twins:
-            // Left: X, Y (Y inside X)
+            // Left: X (outside), A (inside)
             positions[.X] = CGPoint(x: centerX - config.receiverSpacing * 2, y: losY)
-            positions[.Y] = CGPoint(x: centerX - config.receiverSpacing, y: losY)
-            // Right: Z, A (A outside Z)
-            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing, y: losY)
-            positions[.A] = CGPoint(x: centerX + config.receiverSpacing * 2, y: losY)
+            positions[.A] = CGPoint(x: centerX - config.receiverSpacing, y: losY)
+            // Right: Y (inside), Z (outside)
+            positions[.Y] = CGPoint(x: centerX + config.receiverSpacing, y: losY)
+            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 2, y: losY)
 
         case .tripsLeft:
             // A (outside), X, Y (inside) on left; Z isolated right
@@ -63,15 +63,15 @@ struct DiagramRenderer {
             positions[.A] = CGPoint(x: centerX + config.receiverSpacing * 2.5, y: losY)
 
         case .proLeft:
-            // X far left, Y slot left, Z far right — wider spread than Trips
-            positions[.X] = CGPoint(x: centerX - config.receiverSpacing * 2.8, y: losY)
+            // X far left, Y slot left, Z far right — matches Trips proportions
+            positions[.X] = CGPoint(x: centerX - config.receiverSpacing * 2.2, y: losY)
             positions[.Y] = CGPoint(x: centerX - config.receiverSpacing * 0.75, y: losY)
-            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 2.8, y: losY)
+            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 2.2, y: losY)
 
         case .proRight:
-            // X far left, Z far right, Y slot right — wider spread than Trips
-            positions[.X] = CGPoint(x: centerX - config.receiverSpacing * 2.8, y: losY)
-            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 2.8, y: losY)
+            // X far left, Z far right, Y slot right — matches Trips proportions
+            positions[.X] = CGPoint(x: centerX - config.receiverSpacing * 2.2, y: losY)
+            positions[.Z] = CGPoint(x: centerX + config.receiverSpacing * 2.2, y: losY)
             positions[.Y] = CGPoint(x: centerX + config.receiverSpacing * 0.75, y: losY)
         }
 
@@ -99,37 +99,24 @@ struct DiagramRenderer {
 
         switch assignment.routeNumber {
         case .zero:
-            // Hitch: short stem only
-            let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.3)
+            // Hitch: short stem straight DOWN into backfield (away from LOS)
+            let shortStem = CGPoint(x: startPosition.x, y: startPosition.y + stemLength * 0.3)
             return [startPosition, shortStem]
 
         case .one:
-            // LEFT: Quick Out (break left quickly)
-            // RIGHT: Quick Slant (break inward quickly)
+            // Quick Out / Quick Slant: ALWAYS breaks LEFT visually (~45° diagonal)
+            // Semantic meaning varies: LEFT=quickOut, RIGHT=quickSlant
+            // Matches route 2's 45° angle formula: (-breakLen * 0.7, -breakLen * 0.5)
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            if side == .left {
-                // Quick out breaks LEFT (toward sideline for left-side receiver)
-                let breakPoint = CGPoint(x: shortStem.x - breakLen, y: shortStem.y)
-                return [startPosition, shortStem, breakPoint]
-            } else {
-                // Quick slant breaks inward (toward center)
-                let breakPoint = CGPoint(x: shortStem.x - breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
-                return [startPosition, shortStem, breakPoint]
-            }
+            let breakPoint = CGPoint(x: shortStem.x - breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
+            return [startPosition, shortStem, breakPoint]
 
         case .two:
-            // LEFT: Quick Slant (break inward)
-            // RIGHT: Quick Out (break right quickly)
+            // Quick Slant / Quick Out: ALWAYS breaks RIGHT visually (~45° diagonal)
+            // Semantic meaning varies: LEFT=quickSlant, RIGHT=quickOut
             let shortStem = CGPoint(x: startPosition.x, y: startPosition.y - stemLength * 0.25)
-            if side == .left {
-                // Quick slant breaks inward (toward center)
-                let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
-                return [startPosition, shortStem, breakPoint]
-            } else {
-                // Quick out breaks RIGHT (toward sideline for right-side receiver)
-                let breakPoint = CGPoint(x: shortStem.x + breakLen, y: shortStem.y)
-                return [startPosition, shortStem, breakPoint]
-            }
+            let breakPoint = CGPoint(x: shortStem.x + breakLen * 0.7, y: shortStem.y - breakLen * 0.5)
+            return [startPosition, shortStem, breakPoint]
 
         case .three:
             // ALWAYS breaks LEFT at 90 degrees (Out route breaking left)
@@ -142,26 +129,16 @@ struct DiagramRenderer {
             return [startPosition, stemEnd, breakPoint]
 
         case .five:
-            // LEFT: Comeback (stem up, break back down-left)
-            // RIGHT: Curl (stem up, curl back down toward center)
-            if side == .left {
-                let breakPoint = CGPoint(x: stemEnd.x - breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
-                return [startPosition, stemEnd, breakPoint]
-            } else {
-                let breakPoint = CGPoint(x: stemEnd.x - breakLen * 0.3, y: stemEnd.y + breakLen * 0.4)
-                return [startPosition, stemEnd, breakPoint]
-            }
+            // Comeback / Curl: ALWAYS breaks back down-LEFT
+            // LEFT=Comeback (back toward sideline), RIGHT=Curl (back toward center)
+            let breakPoint = CGPoint(x: stemEnd.x - breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
+            return [startPosition, stemEnd, breakPoint]
 
         case .six:
-            // LEFT: Curl (stem up, curl back down toward center)
-            // RIGHT: Comeback (stem up, break back down-right)
-            if side == .left {
-                let breakPoint = CGPoint(x: stemEnd.x + breakLen * 0.3, y: stemEnd.y + breakLen * 0.4)
-                return [startPosition, stemEnd, breakPoint]
-            } else {
-                let breakPoint = CGPoint(x: stemEnd.x + breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
-                return [startPosition, stemEnd, breakPoint]
-            }
+            // Curl / Comeback: ALWAYS breaks back down-RIGHT
+            // LEFT=Curl (back toward center), RIGHT=Comeback (back toward sideline)
+            let breakPoint = CGPoint(x: stemEnd.x + breakLen * 0.4, y: stemEnd.y + breakLen * 0.5)
+            return [startPosition, stemEnd, breakPoint]
 
         case .seven:
             // ALWAYS angles top-left (Corner route)
@@ -217,10 +194,23 @@ struct DiagramRenderer {
 
         let baseDistance = abs(yBasePos.x - centerX)
 
-        // Y After/Go: moves dramatically past tackle on opposite side
-        // Double the distance for dramatic effect
-        let dramaticDistance = baseDistance * 2.5
-        let finalX = (finalSide == .right) ? centerX + dramaticDistance : centerX - dramaticDistance
+        // Y After/Go: moves to opposite side
+        // Distance multiplier depends on formation:
+        // - Twins: Y moves 0.5x base distance (lands between A and center)
+        // - Trips: Y moves 2.5x base distance (far-out motion)
+        // - Pro: Y moves 1.5x base distance (proportional to smaller slot distance)
+        let distanceMultiplier: CGFloat
+        switch formation {
+        case .twins:
+            distanceMultiplier = 0.5  // Move 0.5x the base distance (between A and center, closer to center than A)
+        case .tripsLeft, .tripsRight:
+            distanceMultiplier = 2.5  // Far-out motion for Trips
+        case .proLeft, .proRight:
+            distanceMultiplier = 1.5  // Proportional to Pro's smaller slot base distance (0.75x)
+        }
+
+        let finalDistance = baseDistance * distanceMultiplier
+        let finalX = (finalSide == .right) ? centerX + finalDistance : centerX - finalDistance
         return CGPoint(x: finalX, y: losY)
     }
 
@@ -271,81 +261,90 @@ struct DiagramRenderer {
     }
 
     /// Compute Y wheel arc path: U-shaped loop that starts at Y, goes back, then returns.
+    /// Arc geometry:
+    /// - Starts at Y's position on the line of scrimmage
+    /// - Curves downward and to the side (away from LOS, into the backfield)
+    /// - Smooth rounded bottom (not sharp V)
+    /// - Curves back upward (returning toward the LOS)
+    /// - Ends at DIFFERENT X than start (tilted arc, not symmetric U)
+    /// - Final segment angles ~45° back toward LOS
+    /// - Arrow points back at line of scrimmage
+    /// - Smooth curved path (cubic Bézier)
+    ///
     /// - Parameters:
     ///   - playCall: The play call containing formation and route assignments
     ///   - config: Diagram configuration
     /// - Returns: A tuple of (path, points for arrow, color)
     func yWheelArcPath(for playCall: PlayCall, config: DiagramConfig) -> (Path, [CGPoint], Color) {
         let positions = receiverPositions(formation: playCall.formation, config: config)
-        guard let yPosition = positions[.Y] else {
+        guard let initialYPosition = positions[.Y] else {
             return (Path(), [], .yellow)
         }
 
         let yAssignment = playCall.assignments.first { $0.receiver == .Y }
-        let side = yAssignment?.side ?? playCall.formation.side(for: .Y)
+        let initialSide = yAssignment?.side ?? playCall.formation.side(for: .Y)
 
-        var path = Path()
-        path.move(to: yPosition)
+        // If Y has motion, compute final position after motion is applied
+        let yPosition: CGPoint
+        let side: FieldSide
 
-        // U-shaped arc: starts at Y, goes back deeper, then comes back to near start
-        let loopDepth = config.fieldHeight * 0.15  // How far back the U goes
-        let sideOffset = config.fieldWidth * 0.06  // Offset to side for shape
-
-        let controlPoint1: CGPoint
-        let controlPoint2: CGPoint
-        let endPoint: CGPoint
-
-        if side == .left {
-            // Left-side: U loops back and returns on left side
-            controlPoint1 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth
+        if let motion = yAssignment?.motion {
+            let finalSide = motion.finalSide(originalSide: initialSide)
+            yPosition = yFinalPosition(
+                initialSide: initialSide,
+                finalSide: finalSide,
+                motion: motion,
+                formation: playCall.formation,
+                config: config
             )
-            controlPoint2 = CGPoint(
-                x: yPosition.x - sideOffset,
-                y: yPosition.y + loopDepth * 0.6
-            )
-            endPoint = CGPoint(
-                x: yPosition.x,
-                y: yPosition.y + loopDepth * 0.5  // Deeper endpoint for visible U
-            )
+            side = finalSide
         } else {
-            // Right-side: U loops back and returns on right side
-            controlPoint1 = CGPoint(
-                x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth
-            )
-            controlPoint2 = CGPoint(
-                x: yPosition.x + sideOffset,
-                y: yPosition.y + loopDepth * 0.6
-            )
-            endPoint = CGPoint(
-                x: yPosition.x,
-                y: yPosition.y + loopDepth * 0.5  // Deeper endpoint for visible U
-            )
+            yPosition = initialYPosition
+            side = initialSide
         }
 
-        // Draw cubic Bézier curve for U-shaped arc
-        path.addCurve(
-            to: endPoint,
-            control1: controlPoint1,
-            control2: controlPoint2
+        // Determine which route to use based on Y's final side:
+        // - Y on LEFT: use Route 1 (breaks LEFT at 45°, which is toward left sideline)
+        // - Y on RIGHT: use Route 2 (breaks RIGHT at 45°, which is toward right sideline)
+        let routeToUse: RouteNumber = (side == .left) ? .one : .two
+
+        // Get the semantic meaning for this route on the given side
+        let initialMeaning = routeToUse.meaning(on: side)
+
+        // Create a synthetic route assignment for Y using the selected route
+        let yRouteAssignment = RouteAssignment(
+            receiver: .Y,
+            routeNumber: routeToUse,
+            side: side,
+            initialMeaning: initialMeaning,
+            motion: nil  // Y Wheel itself handles motion; don't apply it again
         )
 
-        // Sample points along curve for arrow placement
-        var pathPoints: [CGPoint] = [yPosition]
-        for t in stride(from: CGFloat(0.1), through: CGFloat(1), by: 0.1) {
-            let mt = 1 - t
-            let mt2 = mt * mt
-            let t2 = t * t
-            let point = CGPoint(
-                x: mt2 * mt2 * yPosition.x + 4 * mt2 * mt * t * controlPoint1.x + 6 * mt2 * t2 * controlPoint2.x + t2 * t * endPoint.x,
-                y: mt2 * mt2 * yPosition.y + 4 * mt2 * mt * t * controlPoint1.y + 6 * mt2 * t2 * controlPoint2.y + t2 * t * endPoint.y
-            )
-            pathPoints.append(point)
-        }
-        pathPoints.append(endPoint)
+        // Call routePath() to get the rendered path points
+        let pathPoints = routePath(
+            for: yRouteAssignment,
+            startPosition: yPosition,
+            side: side,
+            config: config
+        )
 
-        return (path, pathPoints, .yellow)
+        // Invert Y coordinates vertically so the arc goes DOWN the field (toward backfield)
+        // instead of UP the field (toward goal line). Mirror about yPosition.y (the LOS).
+        var invertedPoints: [CGPoint] = []
+        for point in pathPoints {
+            let invertedY = yPosition.y + (yPosition.y - point.y)
+            invertedPoints.append(CGPoint(x: point.x, y: invertedY))
+        }
+
+        // Build path from inverted points by connecting with line segments
+        var path = Path()
+        if invertedPoints.count >= 2 {
+            path.move(to: invertedPoints[0])
+            for i in 1..<invertedPoints.count {
+                path.addLine(to: invertedPoints[i])
+            }
+        }
+
+        return (path, invertedPoints, .yellow)
     }
 }

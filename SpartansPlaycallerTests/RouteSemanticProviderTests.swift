@@ -51,30 +51,30 @@ class RouteSemanticProviderComprehensiveTests: XCTestCase {
         XCTAssertEqual(meaning, .quickOut, "Route 2 right = Quick Out")
     }
 
-    // Route 3: Always breaks left (absolute direction)
+    // Route 3: Always breaks left (visual: LEFT 90°), side-aware semantics
     func testRoute3LeftSide() {
-        let semantics = AbsoluteDirectionRouteSemantics(meaning: .out)
+        let semantics = SideAwareRouteSemantics(leftMeaning: .out, rightMeaning: .digIn)
         let meaning = semantics.meaning(on: .left)
-        XCTAssertEqual(meaning, .out, "Route 3 always breaks left")
+        XCTAssertEqual(meaning, .out, "Route 3 left = Out")
     }
 
     func testRoute3RightSide() {
-        let semantics = AbsoluteDirectionRouteSemantics(meaning: .out)
+        let semantics = SideAwareRouteSemantics(leftMeaning: .out, rightMeaning: .digIn)
         let meaning = semantics.meaning(on: .right)
-        XCTAssertEqual(meaning, .out, "Route 3 always breaks left (absolute)")
+        XCTAssertEqual(meaning, .digIn, "Route 3 right = Dig/In")
     }
 
-    // Route 4: Always breaks right (absolute direction)
+    // Route 4: Always breaks right (visual: RIGHT 90°), side-aware semantics
     func testRoute4LeftSide() {
-        let semantics = AbsoluteDirectionRouteSemantics(meaning: .digIn)
+        let semantics = SideAwareRouteSemantics(leftMeaning: .digIn, rightMeaning: .out)
         let meaning = semantics.meaning(on: .left)
-        XCTAssertEqual(meaning, .digIn, "Route 4 always breaks right")
+        XCTAssertEqual(meaning, .digIn, "Route 4 left = Dig/In")
     }
 
     func testRoute4RightSide() {
-        let semantics = AbsoluteDirectionRouteSemantics(meaning: .digIn)
+        let semantics = SideAwareRouteSemantics(leftMeaning: .digIn, rightMeaning: .out)
         let meaning = semantics.meaning(on: .right)
-        XCTAssertEqual(meaning, .digIn, "Route 4 always breaks right (absolute)")
+        XCTAssertEqual(meaning, .out, "Route 4 right = Out")
     }
 
     // Route 5: Comeback (left) / Curl (right)
@@ -103,30 +103,30 @@ class RouteSemanticProviderComprehensiveTests: XCTestCase {
         XCTAssertEqual(meaning, .comeback, "Route 6 right = Comeback")
     }
 
-    // Route 7: Always angles top-left (absolute direction)
+    // Route 7: Always angles top-left (visual: top-LEFT 45°), side-aware semantics
     func testRoute7LeftSide() {
-        let semantics = AbsoluteDirectionRouteSemantics(meaning: .corner)
+        let semantics = SideAwareRouteSemantics(leftMeaning: .corner, rightMeaning: .post)
         let meaning = semantics.meaning(on: .left)
-        XCTAssertEqual(meaning, .corner, "Route 7 always angles top-left")
+        XCTAssertEqual(meaning, .corner, "Route 7 left = Corner")
     }
 
     func testRoute7RightSide() {
-        let semantics = AbsoluteDirectionRouteSemantics(meaning: .corner)
+        let semantics = SideAwareRouteSemantics(leftMeaning: .corner, rightMeaning: .post)
         let meaning = semantics.meaning(on: .right)
-        XCTAssertEqual(meaning, .corner, "Route 7 always angles top-left (absolute)")
+        XCTAssertEqual(meaning, .post, "Route 7 right = Post")
     }
 
-    // Route 8: Always angles top-right (absolute direction)
+    // Route 8: Always angles top-right (visual: top-RIGHT 45°), side-aware semantics
     func testRoute8LeftSide() {
-        let semantics = AbsoluteDirectionRouteSemantics(meaning: .post)
+        let semantics = SideAwareRouteSemantics(leftMeaning: .post, rightMeaning: .corner)
         let meaning = semantics.meaning(on: .left)
-        XCTAssertEqual(meaning, .post, "Route 8 always angles top-right")
+        XCTAssertEqual(meaning, .post, "Route 8 left = Post")
     }
 
     func testRoute8RightSide() {
-        let semantics = AbsoluteDirectionRouteSemantics(meaning: .post)
+        let semantics = SideAwareRouteSemantics(leftMeaning: .post, rightMeaning: .corner)
         let meaning = semantics.meaning(on: .right)
-        XCTAssertEqual(meaning, .post, "Route 8 always angles top-right (absolute)")
+        XCTAssertEqual(meaning, .corner, "Route 8 right = Corner")
     }
 
     // Route 9: Go/Fade (same both sides)

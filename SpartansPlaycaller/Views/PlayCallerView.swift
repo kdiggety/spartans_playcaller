@@ -223,6 +223,9 @@ struct PlayCallerView: View {
                 onMotionChange: viewModel.setYMotion,
                 isMotionEnabled: viewModel.selectedFormation.canApplyMotion()
             )
+            .onChange(of: viewModel.yWheelEnabled) { _, _ in
+                viewModel.applyMotion()
+            }
         }
     }
 }
