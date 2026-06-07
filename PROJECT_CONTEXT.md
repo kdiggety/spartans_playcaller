@@ -172,12 +172,90 @@ SpartansPlaycaller/
 └── Views/           # SwiftUI views including Canvas route diagram
 ```
 
-## Future Expansion (architected for, not yet implemented)
+## Completed Features
 
-- Additional formations and motion
-- Protection schemes and run concepts
-- Wristband generation
-- PDF playbook export
-- Animated route playback
-- AirPlay coaching mode
-- Drag/drop route editing
+**Y Wheel Arc & Formation Spacing (2026-06-07):** Y Wheel toggle renders smooth U-shaped arc curving toward Y's final side. Formation receiver spacing tuned (0.16w) for visual balance and Y motion separation. Y After/Go multipliers: Twins 0.5x, Trips 2.5x, Pro 1.5x. All tests passing (92 Y motion tests, 18 diagram tests).
+
+See: `docs/retrospectives/2026-06-07-y-wheel-spacing-retro.md`
+
+---
+
+## Future Expansion & Roadmap
+
+### Immediate (Next 2 Weeks) — CRITICAL & HIGH ROI
+
+**1. Wristband Export (Epic 3.1) — CRITICAL for game-day deployment**
+- Multi-select plays from app
+- Export to PDF (single-page grid or per-card format)
+- Print or share via email/Files app
+- Unblocks production deployment and coaching adoption
+- Effort: 20–24 hours
+- **Status:** Ready to spec
+
+**2. Empty Formation (Epic 2.1) — Highest ROI formation**
+- Modern 4-wide pass formation (X far left, Y slot-left, Z slot-right, A far right)
+- Enable 6–8 Empty-specific concepts (Stick, Double Slant, Dig Cross, etc.)
+- Support Y motion in Empty (spacing allows)
+- Effort: 8–12 hours
+- **Status:** Ready to implement
+
+**3. Twins Chips UI (Epic 3.6) — Feature design complete**
+- Independent concept selection for left and right sides
+- Coach validation + implementation
+- Allows mixed concepts (e.g., Smash left + Scissors right)
+- Effort: 8–12 hours
+- **Status:** Design spec exists; ready for validation
+
+### Near-term (Weeks 3–4)
+
+**4. Route Interpretation Strategy (Epic 1.1)**
+- Extract side-aware route logic into pluggable protocol
+- Unblocks custom routes and future extensibility
+- Effort: 6–8 hours
+
+**5. Route Interpretation Regression Tests (Epic 1.4)**
+- Comprehensive test coverage: all 30 route × side permutations
+- Protects against regressions when adding formations
+- Effort: 1 day
+
+### Medium-term (Month 2)
+
+**6. ConceptLibrary Data Migration (Epic 1.2)**
+- Migrate 214 lines of hardcoded templates to data-driven format
+- Reduces friction when adding new formations
+- Effort: 8–10 hours
+
+**7. Motion Diagram Clarity (Epic 3.3)**
+- Label motion arcs, highlight Y final position
+- Improve readability for high-motion plays
+- Effort: 8–10 hours
+
+**8. Concept Discovery & Learning (Epic 3.2)**
+- Add concept glossary modal with descriptions
+- Formation context hints on selection change
+- First-launch onboarding tour
+- Effort: 12–16 hours
+
+### Later (Month 2+)
+
+- Pro Concepts validation
+- Route Modifiers (step, read, option variants)
+- Y Wheel motion research & planning
+- TemplateQuery DSL (composition pattern for concept queries)
+- Receiver table UX (responsive cards on small screens)
+- Error feedback expansion
+- Localization & string constants
+
+---
+
+## Known Limitations & Process Notes
+
+**Agent Spatial Reasoning:** AI agents have limited ability to interpret spatial geometry from verbal + visual descriptions. Visual/spatial features may require extended iteration or accept early compromise. See `.claude/rules/project-process.md` § Visual and Spatial Features for decision tree.
+
+---
+
+## Reference
+
+- **Comprehensive backlog:** `docs/backlog/IMPROVEMENT-BACKLOG.md` (all epics, stories, AC, effort estimates)
+- **Process guide:** `.claude/rules/project-process.md` (visual features strategy, iteration signals)
+- **Retrospective & learnings:** `docs/retrospectives/2026-06-07-y-wheel-spacing-retro.md` (Y Wheel findings, action items)
