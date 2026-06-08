@@ -29,13 +29,30 @@
 		A10000020 /* ReceiverMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020 /* ReceiverMotion.swift */; };
 		A10000021 /* RouteAssignmentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000021 /* RouteAssignmentError.swift */; };
 		A10000022 /* ConceptBadgeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000022 /* ConceptBadgeRow.swift */; };
-		A10000028 /* RouteSemanticProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000028 /* RouteSemanticProvider.swift */; };
 		A10000023 /* PlayCallerViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000023 /* PlayCallerViewModelTests.swift */; };
 		A10000024 /* ConceptMatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000024 /* ConceptMatcherTests.swift */; };
 		A10000025 /* RouteInterpreterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000025 /* RouteInterpreterTests.swift */; };
 		A10000026 /* RouteDiagramViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000026 /* RouteDiagramViewTests.swift */; };
 		A10000027 /* ReceiverMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000027 /* ReceiverMotionTests.swift */; };
+		A10000028 /* RouteSemanticProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000028 /* RouteSemanticProvider.swift */; };
 		A10000029 /* RouteSemanticProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000029 /* RouteSemanticProviderTests.swift */; };
+		A10000030 /* SavedPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030 /* SavedPlay.swift */; };
+		A10000031 /* PlayLibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000031 /* PlayLibraryStore.swift */; };
+		A10000032 /* ExportCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000032 /* ExportCard.swift */; };
+		A10000033 /* DiagramRenderer+CGContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000033 /* DiagramRenderer+CGContext.swift */; };
+		A10000034 /* DiagramConfig+CardScale.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000034 /* DiagramConfig+CardScale.swift */; };
+		A10000035 /* WristbandCardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000035 /* WristbandCardConfig.swift */; };
+		A10000036 /* WristbandPDFGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000036 /* WristbandPDFGenerator.swift */; };
+		A10000037 /* CatalogCardConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000037 /* CatalogCardConfig.swift */; };
+		A10000038 /* CatalogPDFGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000038 /* CatalogPDFGenerator.swift */; };
+		A10000039 /* PlayLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000039 /* PlayLibraryView.swift */; };
+		A10000040 /* SavedPlayCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040 /* SavedPlayCodableTests.swift */; };
+		A10000041 /* PlayLibraryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000041 /* PlayLibraryStoreTests.swift */; };
+		A10000042 /* LibraryPersistenceIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000042 /* LibraryPersistenceIntegrationTests.swift */; };
+		A10000043 /* ExportCardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000043 /* ExportCardTests.swift */; };
+		A10000044 /* DiagramRendererCGContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000044 /* DiagramRendererCGContextTests.swift */; };
+		A10000045 /* WristbandPDFGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000045 /* WristbandPDFGeneratorTests.swift */; };
+		A10000046 /* CatalogPDFGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000046 /* CatalogPDFGeneratorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,13 +88,30 @@
 		A20000020 /* ReceiverMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverMotion.swift; sourceTree = "<group>"; };
 		A20000021 /* RouteAssignmentError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAssignmentError.swift; sourceTree = "<group>"; };
 		A20000022 /* ConceptBadgeRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptBadgeRow.swift; sourceTree = "<group>"; };
-		A20000028 /* RouteSemanticProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSemanticProvider.swift; sourceTree = "<group>"; };
 		A20000023 /* PlayCallerViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayCallerViewModelTests.swift; sourceTree = "<group>"; };
 		A20000024 /* ConceptMatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConceptMatcherTests.swift; sourceTree = "<group>"; };
 		A20000025 /* RouteInterpreterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInterpreterTests.swift; sourceTree = "<group>"; };
 		A20000026 /* RouteDiagramViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteDiagramViewTests.swift; sourceTree = "<group>"; };
 		A20000027 /* ReceiverMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiverMotionTests.swift; sourceTree = "<group>"; };
+		A20000028 /* RouteSemanticProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSemanticProvider.swift; sourceTree = "<group>"; };
 		A20000029 /* RouteSemanticProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSemanticProviderTests.swift; sourceTree = "<group>"; };
+		A20000030 /* SavedPlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPlay.swift; sourceTree = "<group>"; };
+		A20000031 /* PlayLibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayLibraryStore.swift; sourceTree = "<group>"; };
+		A20000032 /* ExportCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportCard.swift; sourceTree = "<group>"; };
+		A20000033 /* DiagramRenderer+CGContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiagramRenderer+CGContext.swift"; sourceTree = "<group>"; };
+		A20000034 /* DiagramConfig+CardScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DiagramConfig+CardScale.swift"; sourceTree = "<group>"; };
+		A20000035 /* WristbandCardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WristbandCardConfig.swift; sourceTree = "<group>"; };
+		A20000036 /* WristbandPDFGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WristbandPDFGenerator.swift; sourceTree = "<group>"; };
+		A20000037 /* CatalogCardConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogCardConfig.swift; sourceTree = "<group>"; };
+		A20000038 /* CatalogPDFGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogPDFGenerator.swift; sourceTree = "<group>"; };
+		A20000039 /* PlayLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayLibraryView.swift; sourceTree = "<group>"; };
+		A20000040 /* SavedPlayCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedPlayCodableTests.swift; sourceTree = "<group>"; };
+		A20000041 /* PlayLibraryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayLibraryStoreTests.swift; sourceTree = "<group>"; };
+		A20000042 /* LibraryPersistenceIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryPersistenceIntegrationTests.swift; sourceTree = "<group>"; };
+		A20000043 /* ExportCardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportCardTests.swift; sourceTree = "<group>"; };
+		A20000044 /* DiagramRendererCGContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagramRendererCGContextTests.swift; sourceTree = "<group>"; };
+		A20000045 /* WristbandPDFGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WristbandPDFGeneratorTests.swift; sourceTree = "<group>"; };
+		A20000046 /* CatalogPDFGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogPDFGeneratorTests.swift; sourceTree = "<group>"; };
 		A30000001 /* SpartansPlaycaller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpartansPlaycaller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A30000002 /* SpartansPlaycallerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpartansPlaycallerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -136,6 +170,11 @@
 				A20000012 /* RouteConcept.swift */,
 				A20000013 /* ConceptTemplate.swift */,
 				A20000028 /* RouteSemanticProvider.swift */,
+				A20000030 /* SavedPlay.swift */,
+				A20000032 /* ExportCard.swift */,
+				A20000034 /* DiagramConfig+CardScale.swift */,
+				A20000035 /* WristbandCardConfig.swift */,
+				A20000037 /* CatalogCardConfig.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -148,6 +187,10 @@
 				A20000016 /* ConceptMatcher.swift */,
 				A20000017 /* RouteInterpreter.swift */,
 				A20000018 /* DiagramRenderer.swift */,
+				A20000031 /* PlayLibraryStore.swift */,
+				A20000033 /* DiagramRenderer+CGContext.swift */,
+				A20000036 /* WristbandPDFGenerator.swift */,
+				A20000038 /* CatalogPDFGenerator.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -167,6 +210,7 @@
 				A20000003 /* RouteDiagramView.swift */,
 				A20000004 /* ReceiverAssignmentView.swift */,
 				A20000022 /* ConceptBadgeRow.swift */,
+				A20000039 /* PlayLibraryView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -189,6 +233,13 @@
 				A20000026 /* RouteDiagramViewTests.swift */,
 				A20000027 /* ReceiverMotionTests.swift */,
 				A20000029 /* RouteSemanticProviderTests.swift */,
+				A20000040 /* SavedPlayCodableTests.swift */,
+				A20000041 /* PlayLibraryStoreTests.swift */,
+				A20000042 /* LibraryPersistenceIntegrationTests.swift */,
+				A20000043 /* ExportCardTests.swift */,
+				A20000044 /* DiagramRendererCGContextTests.swift */,
+				A20000045 /* WristbandPDFGeneratorTests.swift */,
+				A20000046 /* CatalogPDFGeneratorTests.swift */,
 			);
 			path = SpartansPlaycallerTests;
 			sourceTree = "<group>";
@@ -238,7 +289,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
-				LastUpgradeCheck = 1540;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					A60000001 = {
 						CreatedOnToolsVersion = 15.4;
@@ -305,6 +356,16 @@
 				A10000021 /* RouteAssignmentError.swift in Sources */,
 				A10000022 /* ConceptBadgeRow.swift in Sources */,
 				A10000028 /* RouteSemanticProvider.swift in Sources */,
+				A10000030 /* SavedPlay.swift in Sources */,
+				A10000031 /* PlayLibraryStore.swift in Sources */,
+				A10000032 /* ExportCard.swift in Sources */,
+				A10000033 /* DiagramRenderer+CGContext.swift in Sources */,
+				A10000034 /* DiagramConfig+CardScale.swift in Sources */,
+				A10000035 /* WristbandCardConfig.swift in Sources */,
+				A10000036 /* WristbandPDFGenerator.swift in Sources */,
+				A10000037 /* CatalogCardConfig.swift in Sources */,
+				A10000038 /* CatalogPDFGenerator.swift in Sources */,
+				A10000039 /* PlayLibraryView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,6 +379,13 @@
 				A10000026 /* RouteDiagramViewTests.swift in Sources */,
 				A10000027 /* ReceiverMotionTests.swift in Sources */,
 				A10000029 /* RouteSemanticProviderTests.swift in Sources */,
+				A10000040 /* SavedPlayCodableTests.swift in Sources */,
+				A10000041 /* PlayLibraryStoreTests.swift in Sources */,
+				A10000042 /* LibraryPersistenceIntegrationTests.swift in Sources */,
+				A10000043 /* ExportCardTests.swift in Sources */,
+				A10000044 /* DiagramRendererCGContextTests.swift in Sources */,
+				A10000045 /* WristbandPDFGeneratorTests.swift in Sources */,
+				A10000046 /* CatalogPDFGeneratorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -367,6 +435,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = J866SFQLL4;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -390,6 +459,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -430,6 +500,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = J866SFQLL4;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -446,6 +517,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -456,6 +528,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = J866SFQLL4;
@@ -472,6 +545,7 @@
 				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.spartans.playcaller;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -485,6 +559,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = J866SFQLL4;
@@ -501,6 +576,7 @@
 				MARKETING_VERSION = 1.2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.spartans.playcaller;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -515,7 +591,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -540,7 +615,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

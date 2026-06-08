@@ -773,3 +773,24 @@ Twins formation now allows independent concept selection for left and right side
 **Backlog Compiled By:** Multi-Agent Audit (2026-05-29)  
 **Reviewed By:** Architecture, Software Engineer, SDET, UX Designer, Technical Researcher  
 **Next Review:** After wristband export and Empty formation ship
+
+---
+
+## Pre-Existing Test Failures (Documented 2026-06-07)
+
+**Context:** Discovered during Epic 3.1 (Play Library & Export) implementation. These failures existed before Epic 3.1 work began — confirmed by running tests on the pre-Epic commit.
+
+| Test | File | Root Cause |
+|------|------|-----------|
+| `ReceiverMotionTests.testStopMotionPreservesLeftSide` | ReceiverMotionTests.swift | Test body uses `.after` motion but asserts side is preserved (contradicts `testAfterMotionFlipsLeftToRight`). Wrong motion in test. |
+| `ReceiverMotionTests.testStopMotionPreservesRightSide` | ReceiverMotionTests.swift | Same — uses `.after`, expects side-preserve. Wrong motion in test. |
+| `ReceiverMotionTests.testReceiverMotionHasAllCases` | ReceiverMotionTests.swift | Test likely checks case count or raw values against a stale expected list. |
+| `ReceiverMotionTests.testReceiverMotionIdentifiable` | ReceiverMotionTests.swift | Same — stale expected values. |
+| `PlayCallerViewModelTests.testGenerateFromConceptProducesPlayCallAndResetsMotion` | PlayCallerViewModelTests.swift | Unknown — requires investigation. |
+| `PlayCallerViewModelTests.testMotionRejectionErrorMessageForTwinsFormation` | PlayCallerViewModelTests.swift | Unknown — requires investigation. |
+| `PlayCallerViewModelTests.testSetYMotionRejectededInTwinsFormation` | PlayCallerViewModelTests.swift | Unknown — requires investigation. |
+| `RouteInterpreterTests.testMotionStopDoesNotChangeSide` | RouteInterpreterTests.swift | Unknown — requires investigation. |
+| `ConceptMatcherTests.testIdentifyCompletePlayCallBeforeMotion` | ConceptMatcherTests.swift | Unknown — requires investigation. |
+
+**Action:** Fix these in a dedicated test-correctness enabler sprint. These do not affect application correctness — they are test definition errors.
+

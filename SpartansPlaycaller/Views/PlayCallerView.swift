@@ -7,6 +7,11 @@ import UIKit
 struct PlayCallerView: View {
     @StateObject private var viewModel = PlayCallerViewModel()
     @FocusState private var digitFieldFocused: Bool
+    @EnvironmentObject private var libraryStore: PlayLibraryStore
+    @State private var showLibrary = false
+    @State private var showQuickExportSheet = false
+    @State private var quickExportError: String? = nil
+    @State private var isQuickExporting = false
 
     var body: some View {
         NavigationStack {
@@ -28,11 +33,110 @@ struct PlayCallerView: View {
             }
             .navigationTitle("Spartans Playcaller")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    // Share (quick export)
+                    Button {
+                        showQuickExportSheet = true
+                    } label: {
+                        if isQuickExporting {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    }
+                    .disabled(!viewModel.canExport || isQuickExporting)
+                    .accessibilityLabel("Export current play")
+
+                    // Save Play
+                    Button {
+                        let playCall = viewModel.currentPlayCallWithMotion ?? viewModel.currentPlayCall
+                        if let playCall {
+                            libraryStore.save(playCall, motion: viewModel.yMotion, yWheelEnabled: viewModel.yWheelEnabled)
+                            viewModel.confirmSave()
+                        }
+                    } label: {
+                        Image(systemName: viewModel.saveConfirmed ? "checkmark" : "bookmark")
+                            .symbolEffect(.bounce, value: viewModel.saveConfirmed)
+                    }
+                    .disabled(!viewModel.canSave)
+                    .accessibilityLabel(viewModel.saveConfirmed ? "Saved" : "Save Play")
+
+                    // Library
+                    Button {
+                        showLibrary = true
+                    } label: {
+                        Image(systemName: "books.vertical")
+                    }
+                    .accessibilityLabel("Open Play Library")
+
+                    // Reset
                     Button("Reset", action: viewModel.reset)
                         .font(.subheadline)
                 }
             }
+            .sheet(isPresented: $showLibrary) {
+                PlayLibraryView()
+                    .environmentObject(libraryStore)
+            }
+            .confirmationDialog("Export Current Play", isPresented: $showQuickExportSheet, titleVisibility: .visible) {
+                Button("Play Catalog") { quickExport(mode: .catalog) }
+                Button("Wristband Cards") { quickExport(mode: .wristband) }
+                Button("Cancel", role: .cancel) {}
+            }
+            .alert("Export Failed", isPresented: Binding(get: { quickExportError != nil }, set: { if !$0 { quickExportError = nil } })) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(quickExportError ?? "Could not generate PDF.")
+            }
+        }
+    }
+
+    private func quickExport(mode: ExportMode) {
+        guard let playCall = viewModel.currentPlayCallWithMotion ?? viewModel.currentPlayCall else { return }
+        isQuickExporting = true
+
+        let card = ExportCard.from(playCall: playCall, motion: viewModel.yMotion, playNumber: 1)
+
+        Task {
+            let data: Data?
+            switch mode {
+            case .catalog: data = CatalogPDFGenerator.generate(cards: [card])
+            case .wristband: data = WristbandPDFGenerator.generate(cards: [card])
+            }
+
+            await MainActor.run {
+                isQuickExporting = false
+                guard let pdfData = data else {
+                    quickExportError = "Could not generate PDF. Please try again."
+                    return
+                }
+                presentShareSheet(pdfData: pdfData, card: card, mode: mode)
+            }
+        }
+    }
+
+    private func presentShareSheet(pdfData: Data, card: ExportCard, mode: ExportMode) {
+        let modeSuffix = mode == .catalog ? "catalog" : "wristband"
+        let filename = "\(UUID().uuidString)-1-play-\(modeSuffix).pdf"
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+
+        do {
+            try pdfData.write(to: tempURL, options: .completeFileProtection)
+        } catch {
+            quickExportError = "Could not write PDF."
+            return
+        }
+
+        let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
+        activityVC.completionWithItemsHandler = { _, _, _, _ in
+            try? FileManager.default.removeItem(at: tempURL)
+        }
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let root = windowScene.windows.first?.rootViewController {
+            var presenter = root
+            while let presented = presenter.presentedViewController { presenter = presented }
+            presenter.present(activityVC, animated: true)
         }
     }
 
