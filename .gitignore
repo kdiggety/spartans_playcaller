@@ -25,3 +25,4 @@ Pods/
 
 # Project context (optional — remove this line to track)
 # PROJECT_CONTEXT.md
+.derived/
