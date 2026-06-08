@@ -89,3 +89,32 @@ When facilitating retros on spatial features:
 2. Celebrate the pragmatism: "We shipped a working feature rather than iterate endlessly."
 3. Flag the backlog: "We documented the compromise; we can refine later if needed."
 4. Plan for the next visual feature: Use this decision tree earlier to avoid repeated surprises.
+
+---
+
+## Swift `@MainActor` Isolation in Test Files
+
+**Rule:** Any `XCTestCase` class that instantiates or calls methods on an `@MainActor`-isolated type must be annotated `@MainActor` at the class level.
+
+**`@MainActor`-isolated types in this codebase:**
+- `PlayLibraryStore` (`@MainActor final class`)
+- `PlayCallerViewModel` (`@MainActor final class`)
+- Any `ObservableObject` with `@MainActor`-isolated `@Published` mutations
+
+**Correct pattern:**
+```swift
+@MainActor
+final class PlayLibraryStoreTests: XCTestCase {
+    var store: PlayLibraryStore!
+    override func setUp() {
+        super.setUp()
+        store = PlayLibraryStore(fileURL: tempURL)
+    }
+    func testSave() {
+        store.save(playCall, motion: nil, yWheelEnabled: false) // safe
+        XCTAssertEqual(store.plays.count, 1)
+    }
+}
+```
+
+**Why it matters:** Without `@MainActor`, Swift concurrency produces compile-time isolation errors when calling actor-isolated methods. Discovered during Epic 3.1 — two generated test files required `@MainActor` annotation that the software-engineer agent omitted. The SDET agent should verify this pattern when reviewing generated test files for any new `ObservableObject` service or ViewModel.
