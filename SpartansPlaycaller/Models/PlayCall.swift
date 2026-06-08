@@ -14,6 +14,27 @@ struct PlayCall: Identifiable {
         "\(formation.rawValue) \(routeDigits)"
     }
 
+    /// Return a new PlayCall with motion applied to Y receiver.
+    /// Replicates the logic from PlayCallerViewModel.applyMotion() so both
+    /// the ViewModel and ExportCard construction share the same code path.
+    static func applying(_ motion: ReceiverMotion?, yWheelEnabled: Bool, to playCall: PlayCall) -> PlayCall {
+        let updatedAssignments = playCall.assignments.map { assignment -> RouteAssignment in
+            if assignment.receiver == .Y && motion != nil {
+                var updated = assignment
+                updated.motion = motion
+                return updated
+            }
+            return assignment
+        }
+        return PlayCall(
+            formation: playCall.formation,
+            routeDigits: playCall.routeDigits,
+            assignments: updatedAssignments,
+            concept: playCall.concept,
+            yWheelEnabled: yWheelEnabled
+        )
+    }
+
     init(
         formation: Formation,
         routeDigits: String,

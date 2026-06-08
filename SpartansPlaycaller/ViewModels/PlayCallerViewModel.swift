@@ -166,27 +166,9 @@ final class PlayCallerViewModel: ObservableObject {
             return
         }
 
-        // Create new RouteAssignments with motion applied to Y
-        let updatedAssignments = playCall.assignments.map { assignment -> RouteAssignment in
-            if assignment.receiver == .Y && yMotion != nil {
-                var updated = assignment
-                updated.motion = yMotion
-                return updated
-            }
-            return assignment
-        }
+        currentPlayCallWithMotion = PlayCall.applying(yMotion, yWheelEnabled: yWheelEnabled, to: playCall)
 
-        // Create derived PlayCall with original concept preserved
-        // (View layer decides whether to display it based on motion state)
-        currentPlayCallWithMotion = PlayCall(
-            formation: playCall.formation,
-            routeDigits: playCall.routeDigits,
-            assignments: updatedAssignments,
-            concept: playCall.concept,
-            yWheelEnabled: yWheelEnabled
-        )
-
-        // Re-match concepts for left and right sides independently
+        let updatedAssignments = currentPlayCallWithMotion!.assignments
         reidentifyConceptsBySide(assignments: updatedAssignments, formation: playCall.formation)
     }
 
