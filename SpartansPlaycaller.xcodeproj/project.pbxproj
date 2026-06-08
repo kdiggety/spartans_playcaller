@@ -53,6 +53,8 @@
 		A10000044 /* DiagramRendererCGContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000044 /* DiagramRendererCGContextTests.swift */; };
 		A10000045 /* WristbandPDFGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000045 /* WristbandPDFGeneratorTests.swift */; };
 		A10000046 /* CatalogPDFGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000046 /* CatalogPDFGeneratorTests.swift */; };
+		A10000047 /* PDFCardHeaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000047 /* PDFCardHeaderTests.swift */; };
+		A10000048 /* DiagramRendererReceiverLabelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000048 /* DiagramRendererReceiverLabelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +114,8 @@
 		A20000044 /* DiagramRendererCGContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagramRendererCGContextTests.swift; sourceTree = "<group>"; };
 		A20000045 /* WristbandPDFGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WristbandPDFGeneratorTests.swift; sourceTree = "<group>"; };
 		A20000046 /* CatalogPDFGeneratorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogPDFGeneratorTests.swift; sourceTree = "<group>"; };
+		A20000047 /* PDFCardHeaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFCardHeaderTests.swift; sourceTree = "<group>"; };
+		A20000048 /* DiagramRendererReceiverLabelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagramRendererReceiverLabelTests.swift; sourceTree = "<group>"; };
 		A30000001 /* SpartansPlaycaller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpartansPlaycaller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A30000002 /* SpartansPlaycallerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpartansPlaycallerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -240,6 +244,8 @@
 				A20000044 /* DiagramRendererCGContextTests.swift */,
 				A20000045 /* WristbandPDFGeneratorTests.swift */,
 				A20000046 /* CatalogPDFGeneratorTests.swift */,
+				A20000047 /* PDFCardHeaderTests.swift */,
+				A20000048 /* DiagramRendererReceiverLabelTests.swift */,
 			);
 			path = SpartansPlaycallerTests;
 			sourceTree = "<group>";
@@ -386,6 +392,8 @@
 				A10000044 /* DiagramRendererCGContextTests.swift in Sources */,
 				A10000045 /* WristbandPDFGeneratorTests.swift in Sources */,
 				A10000046 /* CatalogPDFGeneratorTests.swift in Sources */,
+				A10000047 /* PDFCardHeaderTests.swift in Sources */,
+				A10000048 /* DiagramRendererReceiverLabelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
