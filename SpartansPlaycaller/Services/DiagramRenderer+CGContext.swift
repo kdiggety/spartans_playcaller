@@ -21,7 +21,7 @@ extension DiagramRenderer {
             drawWheelCG(context, playCall: playCall, config: config)
         }
         drawRoutesCG(context, assignments: playCall.assignments, positions: positions, playCall: playCall, config: config)
-        drawReceiversCG(context, assignments: playCall.assignments, positions: positions, config: config)
+        drawReceiversCG(context, assignments: playCall.assignments, positions: positions, playCall: playCall, config: config)
 
         context.restoreGState()
     }
@@ -147,18 +147,59 @@ extension DiagramRenderer {
         }
     }
 
-    private func drawReceiversCG(_ context: CGContext, assignments: [RouteAssignment], positions: [Receiver: CGPoint], config: DiagramConfig) {
+    private func drawReceiversCG(_ context: CGContext, assignments: [RouteAssignment], positions: [Receiver: CGPoint], playCall: PlayCall, config: DiagramConfig) {
+        let r = config.receiverRadius
+        let fontSize = min(r * 1.5, 8.0)
+        let labelFont = UIFont.systemFont(ofSize: fontSize, weight: .semibold)
+        let labelStyle: NSMutableParagraphStyle = {
+            let s = NSMutableParagraphStyle()
+            s.alignment = .center
+            return s
+        }()
+
         for assignment in assignments {
-            guard let pos = positions[assignment.receiver] else { continue }
-            let r = config.receiverRadius
+            guard let initialPos = positions[assignment.receiver] else { continue }
+
+            // For Y with After/Go motion, label renders at the post-motion position
+            // (where the route starts from), consistent with drawRoutesCG behavior.
+            let pos: CGPoint
+            if assignment.receiver == .Y, assignment.motion != nil {
+                pos = yFinalPosition(
+                    initialSide: assignment.side,
+                    finalSide: assignment.motionFinalSide,
+                    motion: assignment.motion,
+                    formation: playCall.formation,
+                    config: config
+                )
+            } else {
+                pos = initialPos
+            }
+
             let rect = CGRect(x: pos.x - r, y: pos.y - r, width: r * 2, height: r * 2)
             let color = UIColor(cgColor: receiverCGColor(for: assignment.receiver))
 
-            context.setFillColor(color.withAlphaComponent(0.2).cgColor)
+            // Fill (alpha raised to 0.3 for legibility with letter overlay)
+            context.setFillColor(color.withAlphaComponent(0.3).cgColor)
             context.fillEllipse(in: rect)
+            // Stroke
             context.setStrokeColor(color.cgColor)
             context.setLineWidth(1.0)
             context.strokeEllipse(in: rect)
+            // Letter label — drawn on top of the dot
+            let labelAttrs: [NSAttributedString.Key: Any] = [
+                .font: labelFont,
+                .foregroundColor: color,
+                .paragraphStyle: labelStyle
+            ]
+            // Y-down re-flip: same technique as WristbandPDFPage.drawText
+            context.saveGState()
+            context.translateBy(x: rect.minX, y: rect.maxY)
+            context.scaleBy(x: 1, y: -1)
+            (assignment.receiver.rawValue as NSString).draw(
+                in: CGRect(x: 0, y: 0, width: rect.width, height: rect.height),
+                withAttributes: labelAttrs
+            )
+            context.restoreGState()
         }
     }
 

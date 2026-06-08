@@ -40,26 +40,14 @@ final class CatalogPDFPage: PDFPage {
 
         var y = origin.y + inset
 
-        // Row 1: Play number (left) + Formation (right)
-        drawTextLeft("\(card.playNumber).", in: CGRect(x: origin.x + inset, y: y, width: usableWidth * 0.25, height: 14),
-                     font: UIFont.systemFont(ofSize: config.playNumberFontSize, weight: .bold), into: context)
-        drawTextRight(card.formationName, in: CGRect(x: origin.x + inset, y: y, width: usableWidth, height: 14),
-                      font: UIFont.systemFont(ofSize: config.formationFontSize, weight: .semibold), into: context)
+        // Row 1: Combined play call — "N. Formation Digits" (e.g., "1. Twins 6794")
+        drawTextLeft(card.combinedHeaderString,
+                     in: CGRect(x: origin.x + inset, y: y, width: usableWidth, height: 14),
+                     font: UIFont.systemFont(ofSize: config.formationFontSize, weight: .semibold),
+                     into: context)
         y += 16
 
-        // Row 2: Route digits
-        drawTextCenter(card.routeDigits, in: CGRect(x: origin.x + inset, y: y, width: usableWidth, height: 13),
-                       font: UIFont.monospacedSystemFont(ofSize: config.digitsFontSize, weight: .medium), into: context)
-        y += 13
-
-        // Row 3: Receiver labels
-        let labelCount = card.routeDigits.count
-        let receiverLabels = Array(["X", "Y", "Z", "A", "H"].prefix(labelCount)).joined(separator: "   ")
-        drawTextCenter(receiverLabels, in: CGRect(x: origin.x + inset, y: y, width: usableWidth, height: 11),
-                       font: UIFont.monospacedSystemFont(ofSize: config.receiverLabelFontSize, weight: .regular), into: context)
-        y += 12
-
-        // Row 4: Concept + Motion (conditional)
+        // Row 2: Concept + Motion (conditional)
         if card.conceptName != nil || card.motionLabel != nil {
             if let concept = card.conceptName {
                 drawTextLeft(concept, in: CGRect(x: origin.x + inset, y: y, width: usableWidth * 0.6, height: 13),
