@@ -1,6 +1,6 @@
-# Architecture Design Spec: Epic 3.1 — Wristband Export
+# Architecture Design Spec: Epic 3.1 — Play Library, Play Catalog & Wristband Export
 
-**Date:** 2026-06-07
+**Date:** 2026-06-07 (revised — full scope update)
 **Author:** Architecture & System Design
 **Status:** READY FOR IMPLEMENTATION PLAN
 **Spec reference:** `docs/superpowers/specs/2026-06-07-wristband-export-spec.md`
@@ -9,756 +9,894 @@
 **Test strategy:** `docs/test-plans/wristband-export-test-strategy.md`
 **Performance assessment:** `docs/test-plans/wristband-export-performance-assessment.md`
 
+**Revision note:** This document supersedes the original 2026-06-07 wristband-only spec in full. The original spec's wristband pipeline decisions, security requirements (REQ-SEC-1 through REQ-SEC-4), and vector-rendering approach (Option B) are preserved and extended here. The scope now covers three stories: Story 3.0 (Play Library / Persistence), Story 3.1 (Play Catalog Export), and Story 3.2 (Wristband Export). Open questions NQ-1 and NQ-2 from the revised product spec are resolved here by Ken's confirmation: **9-up (3×3) landscape**.
+
 ---
 
 ## 1. Overview
 
-Wristband Export converts the Spartans Playcaller from a play-design tool into a game-day coaching system by producing a printable PDF wristband card from any play currently displayed on screen. When a coach taps the share button, the app captures the current play call state (formation, route digits, concept if matched, Y motion if applied, Y Wheel if enabled), generates a US Letter PDF containing a 2x2 grid of four identical wristband cards (each 3.5"x2.5" with a mini route diagram), and hands that PDF to the iOS system share sheet — enabling AirPrint, Save to Files, email, and AirDrop with zero additional infrastructure. The pipeline is entirely on-device, synchronous within a background `Task`, and leaves no persistent state behind. In V1 the exported card always represents the single currently-displayed play; multi-play selection and play persistence are out of scope and must not be conflated with this feature.
+This epic converts Spartans Playcaller from a design-time tool into a game-day coaching system by adding three capabilities:
+
+**Story 3.0 — Play Library.** Coaches save plays during the week to an in-app library that persists across launches as a flat JSON file in the app sandbox. No CoreData, no iCloud. A lightweight Codable DTO (`SavedPlay`) wraps the display fields needed for export without requiring full `PlayCall` Codable conformance.
+
+**Story 3.1 — Play Catalog Export.** From the library, coaches select plays and export a dense landscape PDF: 9 plays per page in a 3×3 grid (Ken confirmed), one or more pages depending on selection size. Coaches print this on plain paper and use it as a sideline reference sheet.
+
+**Story 3.2 — Wristband Export.** From the library, coaches select plays and export cut-ready lamination cards: 4 identical copies of each play per portrait page, one page per play. Players wear these cards on their forearms.
+
+Both export modes share a common data model (`ExportCard`), a common mini-diagram rendering seam (`DiagramRenderer.draw(into:playCall:config:in:)`), and the same security/temp-file pipeline. The export entry points support both a quick single-play path (no library required) and a multi-play library path. Multi-select is V1; play ordering and drag-reorder are V2.
+
+### Mental model
+
+The data flows in one direction: the coach builds a play in `PlayCallerViewModel` → saves it to `PlayLibraryStore` (which persists to JSON) → opens `PlayLibraryView` → selects plays → triggers an export → `CatalogPDFGenerator` or `WristbandPDFGenerator` renders `ExportCard` values into a PDF → `UIActivityViewController` delivers the PDF. No state flows backward from export into the library or play-caller. Export is a pure read operation on library data.
 
 ---
 
-## 2. Architecture
+## 2. New Component: PlayLibrary
 
-### 2.1 New Components
+### 2.1 Codable feasibility assessment
 
-#### `WristbandCard` (value type — struct)
+Before deciding between a `SavedPlay` DTO and full `PlayCall` Codable conformance, we must assess whether `PlayCall` and its dependencies are Codable.
 
-**Location:** `SpartansPlaycaller/Models/WristbandCard.swift`
+**Type inventory:**
 
-A pure data model representing the content of one wristband card. Constructed from a `PlayCall` by `WristbandPDFGenerator`. Holds no references to views or renderers.
+| Type | Kind | Codable feasibility |
+|------|------|-------------------|
+| `PlayCall` | struct | Has `let id = UUID()` (auto-synthesized OK), references enum and struct types below |
+| `Formation` | `String` raw-value enum | Trivially Codable — raw value synthesis |
+| `RouteAssignment` | struct | Has `let id = UUID()` (OK), references enums below |
+| `Receiver` | enum (assumed String raw value) | Trivially Codable |
+| `RouteNumber` | `Int` raw-value enum | Trivially Codable |
+| `FieldSide` | `String` raw-value enum | Trivially Codable |
+| `RouteMeaning` | enum (assumed String raw value) | Trivially Codable |
+| `ReceiverMotion` | `String` raw-value enum (`stop`, `after`, `go`) | Trivially Codable |
+| `RouteConcept` | `String` raw-value enum | Trivially Codable |
 
-```
-WristbandCard {
-    playNumber: Int            // V1: always 1; V2: sequential from selection order
-    formationName: String      // PlayCall.formation.rawValue
-    routeDigits: String        // PlayCall.routeDigits (raw digit string, e.g. "6794")
-    receiverLabels: [String]   // Fixed: ["X", "Y", "Z", "A", "H"] — always 5 labels
-    conceptName: String?       // PlayCall.concept?.rawValue; nil when no concept matched
-    motionLabel: String?       // nil when no Y motion; "Y Stop" / "Y Go" when present
-    playCall: PlayCall         // Retained for diagram rendering; not displayed as text
+**Assessment:** No closures, no non-Codable computed-only storage. All types are raw-value enums or simple structs. Making `PlayCall` itself `Codable` is technically feasible and would require adding `Codable` conformance to `RouteAssignment` (which carries `initialMeaning: RouteMeaning` — needs `RouteMeaning` to be Codable) and confirming `Receiver` and `RouteMeaning` carry raw values. This is low-risk invasive work touching four model files.
+
+**Architectural decision: Use `SavedPlay` DTO instead of making `PlayCall` Codable.**
+
+Rationale:
+
+1. `PlayCall` carries behavioral data (`yWheelEnabled`, the full `assignments` array with `motionFinalSide` computed properties) that is needed at display time but not at persistence time. Encoding the full computed graph is wasteful.
+2. Cards at export time need only five display fields (formation name, digit string, concept name, motion label, Y Wheel flag). A DTO captures exactly these.
+3. Avoiding Codable conformance on `PlayCall` keeps the model layer free of persistence concerns — a clean boundary.
+4. If full `PlayCall` reconstruction is ever needed (e.g., re-editing a saved play), the digit string + formation name stored in `SavedPlay` can be re-parsed via the existing `RouteInterpreter`. This round-trip path works because `routeDigits` is the source of truth.
+
+**Downside (owned):** Diagram rendering at export time requires re-running `PlayCallParser`/`RouteInterpreter` from the saved digit string. This adds ~5–15ms per play at export time — well within the 500ms budget. The alternative (caching a pre-rendered diagram as PNG data in `SavedPlay`) is feasible but premature: PNG data per play would significantly increase library file size (tens of KB per play vs. a few hundred bytes per JSON record), and the performance budget is not threatened.
+
+### 2.2 `SavedPlay` — value type (struct)
+
+**Location:** `SpartansPlaycaller/Models/SavedPlay.swift`
+
+```swift
+struct SavedPlay: Codable, Identifiable {
+    let id: UUID                    // Stable identity for SwiftUI List and deletion
+    let savedAt: Date               // For display ordering (newest-last in V1)
+    let formationName: String       // Formation.rawValue — e.g., "Twins"
+    let routeDigits: String         // Raw digit string — e.g., "6794"
+    let conceptName: String?        // RouteConcept.rawValue if matched; nil otherwise
+    let motionLabel: String?        // "Y Stop", "Y After", or "Y Go" if motion present; nil otherwise
+    let yWheelEnabled: Bool         // Whether Y Wheel was active
 }
 ```
 
-Invariants:
-- `conceptName` is nil (never an empty string) when `PlayCall.concept == nil`
-- `motionLabel` is nil (never an empty string) when no Y motion is applied
-- `receiverLabels` is always the full 5-element array regardless of how many receivers the formation uses; unused positions are printed but may be visually subdued (implementation detail)
-- `playCall` carries `yWheelEnabled` and any motion-applied assignments; it is the post-motion state
+**Construction from `PlayCall` + ViewModel state:**
 
-**Y Motion label mapping (resolved):**
-- `ReceiverMotion.stop` → `"Y Stop"`
-- `ReceiverMotion.after` (Go) → `"Y Go"`
-- `nil` → `motionLabel = nil` (no field rendered on card)
-
-**Play number (resolved):**
-- V1: always `1`. The field is parameterizable so V2 multi-select can pass any integer. A nil/blank option is not implemented in V1 — the number `1` prints. Ken may hand-annotate a different number if needed.
-
-#### `WristbandCardConfig` (value type — struct)
-
-**Location:** `SpartansPlaycaller/Models/WristbandCardConfig.swift`
-
-Layout constants for a single card. All measurements are in PDF points (1 pt = 1/72 inch). Computed once and shared across all four cells in the 4-up grid.
-
-```
-WristbandCardConfig {
-    // Card outer dimensions (matching physical 3.5" x 2.5" at 72 dpi)
-    cardWidth: CGFloat = 252.0    // 3.5" x 72 pt/in
-    cardHeight: CGFloat = 180.0   // 2.5" x 72 pt/in
-
-    // Internal margins
-    cardInset: CGFloat = 6.0      // ~0.083" inset on all sides
-
-    // Text zone: from top inset to divider line
-    textZoneHeight: CGFloat       // cardHeight * 0.60 = 108.0 pt
-
-    // Diagram zone: below divider, to bottom inset
-    diagramZoneHeight: CGFloat    // cardHeight * 0.40 = 72.0 pt
-
-    // Diagram zone rect (origin relative to card origin)
-    diagramZoneRect: CGRect       // x=cardInset, y=textZoneHeight, width=cardWidth-2*cardInset, height=diagramZoneHeight-cardInset
-
-    // Font sizes (points at 72 dpi — equivalent to printed pt size)
-    playNumberFontSize: CGFloat = 18.0
-    formationFontSize: CGFloat = 14.0
-    digitsFontSize: CGFloat = 14.0
-    receiverLabelFontSize: CGFloat = 9.0
-    conceptFontSize: CGFloat = 12.0
-    motionFontSize: CGFloat = 11.0
-    notesLabelFontSize: CGFloat = 8.0
-    diagramLabelFontSize: CGFloat = 8.0
-
-    // DiagramConfig parameters for card scale
-    diagramConfig: DiagramConfig   // see Section 2.1 DiagramConfig factory below
+```swift
+extension SavedPlay {
+    static func from(
+        playCall: PlayCall,
+        motion: ReceiverMotion?,
+        yWheelEnabled: Bool
+    ) -> SavedPlay {
+        SavedPlay(
+            id: UUID(),
+            savedAt: Date(),
+            formationName: playCall.formation.rawValue,
+            routeDigits: playCall.routeDigits,
+            conceptName: playCall.concept?.rawValue,
+            motionLabel: motion?.rawValue,   // ReceiverMotion.rawValue = "Y Stop" / "Y After" / "Y Go"
+            yWheelEnabled: yWheelEnabled
+        )
+    }
 }
 ```
 
-`WristbandCardConfig` exposes a single static factory:
+**Invariants:**
+- `conceptName` is nil (never empty string) when no concept matched.
+- `motionLabel` is nil (never empty string) when no motion was applied. The raw value of `ReceiverMotion` is already the display label ("Y Stop", "Y After", "Y Go"), so no mapping is needed on read.
+- `routeDigits` is the canonical digit string as entered/generated; it is sufficient to reconstruct a `PlayCall` via `RouteInterpreter` at export time.
+
+**Motion label note:** The previous spec used "Y Go" for `ReceiverMotion.after`. Reading the actual `ReceiverMotion` source reveals three cases: `.stop` (rawValue "Y Stop"), `.after` (rawValue "Y After"), and `.go` (rawValue "Y Go"). The `SavedPlay` stores `motion?.rawValue` directly, so display labels are exactly "Y Stop", "Y After", and "Y Go" — matching the raw values.
+
+**Duplicate handling (resolved per spec NQ-4 default):** Each save creates a new `SavedPlay` with a new UUID. If the coach saves the same formation+digits combination twice, two entries appear in the library. The coach decides which to keep. No de-duplication logic is implemented in V1.
+
+### 2.3 `PlayLibraryStore` — service (class)
+
+**Location:** `SpartansPlaycaller/Services/PlayLibraryStore.swift`
 
 ```swift
-static func cardScale() -> WristbandCardConfig
-```
+@MainActor
+final class PlayLibraryStore: ObservableObject {
+    @Published private(set) var plays: [SavedPlay] = []
 
-This is the only `WristbandCardConfig` instance used in V1. The factory encapsulates all the point-size constants so the implementing engineer has one authoritative source of truth.
+    private let fileURL: URL = {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("play-library.json")
+    }()
 
-#### Card-Scale `DiagramConfig` Factory
+    init() {
+        load()
+    }
 
-**Location:** Extension on `DiagramConfig` in `SpartansPlaycaller/Models/DiagramConfig+CardScale.swift` (new file, or added to `DiagramRenderer.swift` as a static method)
+    func save(_ playCall: PlayCall, motion: ReceiverMotion?, yWheelEnabled: Bool)
+    func delete(at offsets: IndexSet)
+    func deleteAll()
 
-The existing `DiagramConfig.standard(for:)` is parameterized for a ~320pt tall on-screen canvas with a `receiverRadius` of 12pt. At card scale the diagram zone is approximately 240pt wide x 58pt tall (at 72 dpi for the diagram zone within `WristbandCardConfig`). Receiver dots at 12pt radius would overflow the zone.
-
-The card-scale factory produces:
-
-```swift
-static func cardScale(for diagramZoneSize: CGSize) -> DiagramConfig {
-    let width = diagramZoneSize.width
-    let height = diagramZoneSize.height
-    return DiagramConfig(
-        fieldWidth: width,
-        fieldHeight: height,
-        lineOfScrimmageY: height * 0.50,   // LOS at vertical midpoint (zone is landscape)
-        routeLength: height * 0.35,
-        breakLength: height * 0.25,
-        receiverRadius: 4.0,               // 4pt radius for legibility at card scale
-        footballSize: 6.0,
-        receiverSpacing: width * 0.14,
-        sideMargin: width * 0.06
-    )
+    private func load()
+    private func persist()
 }
 ```
 
-Rationale for parameter changes from `standard()`:
-- `lineOfScrimmageY` moves from 60% to 50% of height: the diagram zone is landscape (wide and shallow), so centering the LOS vertically gives equal space above and below for route paths and receiver alignment.
-- `routeLength` reduced to 35% of height (was 25% of a tall canvas): preserves route visibility in a compressed vertical space.
-- `breakLength` reduced to 25% of height for the same reason.
-- `receiverRadius` reduced to 4pt: the UX consultation specifies approximately 4-5pt; 4pt is the floor above which dots remain visible after lamination.
-- `receiverSpacing` narrowed from 16% to 14% of width: card zone is narrower in proportion to the number of receivers.
-- `sideMargin` narrowed from 8% to 6% of width: consistent with narrower receiver spacing.
+**Persistence detail:**
 
-These parameters must be validated visually by Ken during Story 3.1.5. They are calibrated estimates, not pixel-perfect values.
+- `load()` reads `play-library.json` from the Documents directory, decodes `[SavedPlay]` with `JSONDecoder`, and sets `plays`. If the file does not exist, `plays` remains empty (not an error). If decoding fails, log the error and set `plays = []` — do not crash.
+- `persist()` encodes `plays` to JSON with `JSONEncoder` and writes to `fileURL` with `.completeFileProtection` (REQ-SEC-5). This is called after every `save` and `delete` operation. Since `plays` never exceeds a few hundred entries and each entry is ~200 bytes, total file size is under 50KB — write latency is negligible.
+- `save(_:motion:yWheelEnabled:)` appends a new `SavedPlay` (constructed via `SavedPlay.from(...)`) to `plays` and calls `persist()`.
+- `delete(at:)` removes entries at the given `IndexSet` and calls `persist()`.
+- `deleteAll()` sets `plays = []` and calls `persist()`.
 
-#### `WristbandPDFGenerator` (struct)
+**Persistence location — Documents directory (intentional):** The spec's Appendix B notes the Documents directory is user-visible in the Files app. This is intentional: coaches may want to back up or copy their library. If this creates operational issues (e.g., library shows up as a clutter item), the alternative is the Application Support directory (`applicationSupportDirectory`). Architecture's recommendation is Documents for V1 as specified; the engineer can escalate if Ken wants to change this.
 
-**Location:** `SpartansPlaycaller/Services/WristbandPDFGenerator.swift`
+**Injection:** `PlayLibraryStore` is injected as an `@EnvironmentObject` into the SwiftUI view hierarchy at the root level (in the App struct), so both `PlayCallerView` and `PlayLibraryView` can access the same store instance.
 
-The central service. Takes a `[PlayCall]` array and produces a `Data` value containing a valid PDF. Accepts an array even in V1 (which always passes a single-element array) so V2 multi-play export requires no signature change.
+**State isolation:** `PlayLibraryStore` state is fully independent of `PlayCallerViewModel` state. A `save` call on the store does not modify any ViewModel state. A `reset()` on the ViewModel does not affect the store. The only coupling is through the `save` action in `PlayCallerViewModel.saveCurrentPlay()`, which reads ViewModel state and delegates to the store — a one-directional dependency.
+
+---
+
+## 3. New Component: ExportCard (data model)
+
+**Location:** `SpartansPlaycaller/Models/ExportCard.swift`
+
+`ExportCard` replaces the previous spec's `WristbandCard`. It is the shared value type used by both `CatalogPDFGenerator` and `WristbandPDFGenerator`. It is constructed at export time from a `SavedPlay` (library path) or from the current `PlayCall` (quick-export path).
 
 ```swift
-struct WristbandPDFGenerator {
-    /// Generate a wristband PDF from one or more play calls.
-    /// V1: array always contains exactly one element.
-    /// V2: array contains selected plays; four cards per PDF page.
-    ///
-    /// Runs synchronously. Call from a background Task.
-    /// Returns nil if generation fails (e.g., PDFKit returns nil data).
-    static func generate(playCalls: [PlayCall]) -> Data?
+struct ExportCard {
+    let playNumber: Int             // 1-based index in selection order
+    let formationName: String       // e.g., "Twins"
+    let routeDigits: String         // e.g., "6794"
+    let conceptName: String?        // nil when no concept matched
+    let motionLabel: String?        // "Y Stop" / "Y After" / "Y Go" / nil
+    let yWheelEnabled: Bool
+    let playCall: PlayCall          // Reconstructed at export time for diagram rendering
 }
 ```
 
-Internal responsibilities (in order of execution):
-1. Map each `PlayCall` to a `WristbandCard` using the Y motion and concept state already embedded in the `PlayCall`.
-2. Instantiate `WristbandCardConfig.cardScale()`.
-3. Compute the 4-up page layout (see Section 5).
-4. For each unique `PlayCall` in the array, render one diagram image using `DiagramRenderer`'s CGContext draw method (see Section 4). In V1 this is one render call; the same image is positioned in all four cells.
-5. Create a `PDFDocument`, add a single `PDFPage` subclass instance that draws all four cards.
-6. Set `documentAttributes` per REQ-SEC-1.
-7. Return `PDFDocument.dataRepresentation()`.
+**Construction paths:**
 
-**Error boundary:** If `PDFDocument.dataRepresentation()` returns nil, `generate` returns nil. The caller (ViewModel) catches nil and presents an error alert. The generator does not throw — it returns Optional to keep the call site simple and avoid force-unwrap patterns in the ViewModel.
-
-#### Share Coordinator (ViewModel method + View wiring)
-
-The share coordinator is not a separate type. It lives as two additions to existing types:
-
-- `PlayCallerViewModel.exportCurrentPlay()` — async method that dispatches PDF generation to a background `Task`, manages `isExporting` state, writes the temp file, presents `UIActivityViewController` via a UIKit bridge, and cleans up.
-- `PlayCallerView` — adds the share button to `.toolbar`, observes `viewModel.isExporting` for the spinner, presents the action sheet using `.confirmationDialog`.
-
-No separate coordinator object is warranted: the share flow is a single linear sequence with no branching state machine complex enough to justify its own type.
-
-### 2.2 Modified Components
-
-#### `DiagramRenderer` — new `draw(into:playCall:config:)` method
-
-See Section 4 for the full justification. In summary: a new method is added that accepts a `CGContext` and issues Core Graphics draw calls using the existing geometry methods. The existing API surface is untouched.
-
-#### `PlayCallerViewModel` — two additions
-
+Path A (from `SavedPlay` in library export):
 ```swift
-// Computed property — no new @Published state needed
-var canExport: Bool {
-    currentPlayCallWithMotion != nil || currentPlayCall != nil
-}
-
-// Export state — drives spinner and disables button during generation
-@Published var isExporting: Bool = false
-
-// Entry point called by the View's "Export as PDF" action sheet option
-func exportCurrentPlay() async
-```
-
-`exportCurrentPlay()` logic:
-1. Guard `canExport == true` (defensive; button should already be disabled).
-2. Capture `playCall = currentPlayCallWithMotion ?? currentPlayCall` (post-motion preferred).
-3. Set `isExporting = true`.
-4. In a detached `Task` with `.userInitiated` priority: call `WristbandPDFGenerator.generate(playCalls: [playCall])`.
-5. On return to `@MainActor`: set `isExporting = false`.
-6. On nil result: set `errorMessage = "Could not generate wristband. Please try again."`. Return.
-7. On success: write temp file (REQ-SEC-2, REQ-SEC-3), present `UIActivityViewController` (REQ-SEC-4).
-
-The `reset()` method needs no modification — resetting `currentPlayCall` and `currentPlayCallWithMotion` to nil makes `canExport` false automatically.
-
-#### `PlayCallerView` — toolbar and action sheet additions
-
-```swift
-// Toolbar: replace single ToolbarItem with ToolbarItemGroup
-ToolbarItemGroup(placement: .topBarTrailing) {
-    // Share button (left of Reset per UX consultation Section 2.1)
-    Button {
-        showExportActionSheet = true
-    } label: {
-        if viewModel.isExporting {
-            ProgressView().controlSize(.small)
-        } else {
-            Image(systemName: "square.and.arrow.up")
+extension ExportCard {
+    static func from(
+        savedPlay: SavedPlay,
+        playNumber: Int,
+        interpreter: RouteInterpreter
+    ) -> ExportCard? {
+        // 1. Recover Formation from rawValue
+        guard let formation = Formation(rawValue: savedPlay.formationName) else { return nil }
+        // 2. Re-parse digit string to get assignments + concept
+        guard case .success(let playCall) = interpreter.interpret(
+            digits: savedPlay.routeDigits,
+            formation: formation
+        ) else { return nil }
+        // 3. Re-apply motion if present (only .stop changes diagram; .after/.go do too)
+        var finalPlayCall = playCall
+        if let motionLabel = savedPlay.motionLabel,
+           let motion = ReceiverMotion(rawValue: motionLabel) {
+            // Re-run applyMotion logic to get the post-motion PlayCall
+            finalPlayCall = applyMotion(motion, to: playCall)
         }
-    }
-    .disabled(!viewModel.canExport || viewModel.isExporting)
-    .opacity(viewModel.canExport ? 1.0 : 0.35)
-    .accessibilityLabel("Export wristband card")
-    .accessibilityHint("Exports the current play as a printable PDF")
-    .accessibilityValue(viewModel.canExport ? "" : "Unavailable — no play call loaded")
-
-    Button("Reset", action: viewModel.reset)
-        .font(.subheadline)
-}
-
-// State
-@State private var showExportActionSheet = false
-
-// confirmationDialog modifier on NavigationStack or ScrollView
-.confirmationDialog(
-    "Export Wristband Card",
-    isPresented: $showExportActionSheet,
-    titleVisibility: .visible
-) {
-    Button("Export as PDF") {
-        Task { await viewModel.exportCurrentPlay() }
-    }
-    Button("Cancel", role: .cancel) { }
-} message: {
-    if let playCall = viewModel.currentPlayCallWithMotion ?? viewModel.currentPlayCall {
-        Text(playCall.displayName)   // "Twins 6794" — resolved open question OQ-3 default
+        // 4. Apply yWheelEnabled flag
+        finalPlayCall = PlayCall(
+            formation: finalPlayCall.formation,
+            routeDigits: finalPlayCall.routeDigits,
+            assignments: finalPlayCall.assignments,
+            concept: finalPlayCall.concept,
+            yWheelEnabled: savedPlay.yWheelEnabled
+        )
+        return ExportCard(
+            playNumber: playNumber,
+            formationName: savedPlay.formationName,
+            routeDigits: savedPlay.routeDigits,
+            conceptName: savedPlay.conceptName,
+            motionLabel: savedPlay.motionLabel,
+            yWheelEnabled: savedPlay.yWheelEnabled,
+            playCall: finalPlayCall
+        )
     }
 }
 ```
 
-**UIActivityViewController presentation:** SwiftUI has no native wrapper for `UIActivityViewController`. Use `UIApplication.shared.connectedScenes` to find the active `UIWindowScene` and present from its `rootViewController`. This is the standard UIKit bridge pattern for this class.
+Path B (from current `PlayCall` in quick export):
+```swift
+extension ExportCard {
+    static func from(playCall: PlayCall, motion: ReceiverMotion?, playNumber: Int) -> ExportCard {
+        ExportCard(
+            playNumber: playNumber,
+            formationName: playCall.formation.rawValue,
+            routeDigits: playCall.routeDigits,
+            conceptName: playCall.concept?.rawValue,
+            motionLabel: motion?.rawValue,
+            yWheelEnabled: playCall.yWheelEnabled,
+            playCall: playCall  // already post-motion if currentPlayCallWithMotion was used
+        )
+    }
+}
+```
+
+**Invariants:**
+- `conceptName` is nil (never empty) when no concept matched.
+- `motionLabel` is nil (never empty) when no motion was applied.
+- `playCall` is always the post-motion state — the diagram renders the execution state, not the pre-snap alignment.
+- `playNumber` is 1-based and reflects the order in which plays were selected in the export flow.
+
+**Diagram reconstruction note:** Re-parsing via `RouteInterpreter` at export time takes ~5–15ms per play. For 9 plays on one page this is 45–135ms — within budget. The interpreter is a pure function (no shared mutable state), so it is safe to call from a background task. The engineer does not need to cache or pre-warm the interpreter.
+
+**`applyMotion` helper:** The static helper `applyMotion(_:to:)` in the `ExportCard` extension replicates the logic in `PlayCallerViewModel.applyMotion()`. This logic should be extracted into a free function or a method on `PlayCall` to avoid duplication. Preferred location: a static method on `PlayCall` (`PlayCall.applying(_ motion: ReceiverMotion?) -> PlayCall`). This is a refactor the implementing engineer should make as part of Story 3.0 to keep the motion application logic in one place. If the refactor is out of scope, the duplication is acceptable in V1 with a backlog note.
 
 ---
 
-## 3. Data Flow
+## 4. Catalog PDF Generator (new — Story 3.1)
 
-The full pipeline from coach tap to share sheet, with component boundaries:
+### 4.1 Layout: 9-up, 3×3, landscape (Ken confirmed)
+
+**Page dimensions:** US Letter landscape — 792pt wide × 612pt tall (11" × 8.5" at 72pt/inch).
+
+**Margins:** 36pt (0.5") on all sides.
+
+**Available area:** 792 − 72 = 720pt wide; 612 − 72 = 540pt tall.
+
+**Grid:** 3 columns × 3 rows.
+
+**Gutter between cells:** 8pt horizontal and vertical.
+
+**Cell size calculation:**
+- Column width: (720 − 2 × 8) / 3 = (720 − 16) / 3 = 234.67pt → floor to **234pt** (total used: 234×3 + 8×2 = 718pt, leaving 2pt of rounding slack absorbed by centering)
+- Row height: (540 − 2 × 8) / 3 = (540 − 16) / 3 = 174.67pt → floor to **174pt** (total used: 174×3 + 8×2 = 538pt, leaving 2pt absorbed by centering)
+- Effective card dimensions: **234pt × 174pt** (approx. 3.25" × 2.42")
+
+**Cell origins (top-left of each cell, in screen coordinates after coordinate flip):**
+
+The grid starts at x=36, y=36 (top-left margin). Column stride = 234 + 8 = 242pt. Row stride = 174 + 8 = 182pt.
+
+| Cell (row, col) | X origin | Y origin |
+|-----------------|---------|---------|
+| (0,0) | 36pt | 36pt |
+| (0,1) | 278pt | 36pt |
+| (0,2) | 520pt | 36pt |
+| (1,0) | 36pt | 218pt |
+| (1,1) | 278pt | 218pt |
+| (1,2) | 520pt | 218pt |
+| (2,0) | 36pt | 400pt |
+| (2,1) | 278pt | 400pt |
+| (2,2) | 520pt | 400pt |
+
+**Internal card padding:** 5pt on all sides (tighter than wristband to preserve diagram space at the smaller card size).
+
+**Page count:** `ceil(selectedPlays.count / 9)`. For 9 plays → 1 page. For 10 plays → 2 pages (first page has 9, second has 1). The generator must not crash or leave blank-card artifacts for partial last pages — empty cells simply are not drawn.
+
+### 4.2 Catalog card content layout
+
+Within each cell (234pt × 174pt, padding 5pt on all sides; usable area 224pt × 164pt):
 
 ```
-1. [PlayCallerView] Coach taps share icon in nav bar trailing area
-        |
-        v
-2. [PlayCallerView] .confirmationDialog presents action sheet
-   Title: "Export Wristband Card"
-   Message: viewModel.currentPlayCallWithMotion?.displayName ?? viewModel.currentPlayCall?.displayName
-        |
-        v (coach taps "Export as PDF")
-3. [PlayCallerView] Task { await viewModel.exportCurrentPlay() }
-        |
-        v
-4. [PlayCallerViewModel] Captures playCall = currentPlayCallWithMotion ?? currentPlayCall
-   Sets isExporting = true (View immediately shows spinner on share button)
-        |
-        v (dispatched to background Task, .userInitiated priority)
-5. [WristbandPDFGenerator] generate(playCalls: [playCall])
-   5a. Maps PlayCall → WristbandCard (motion labels, concept name, play number)
-   5b. Instantiates WristbandCardConfig.cardScale()
-   5c. Calls DiagramRenderer.draw(into:playCall:config:) → diagram drawn into PDF CGContext
-   5d. Draws text fields (play number, formation, digits, concept, motion) into CGContext
-   5e. PDFDocument.dataRepresentation() → Data
-        |
-        v (returns Data to @MainActor)
-6. [PlayCallerViewModel] isExporting = false
-   Writes Data to FileManager.temporaryDirectory/[UUID]-[formation]-[digits]-wristband.pdf
-   with .completeFileProtection option (REQ-SEC-2, REQ-SEC-3)
-        |
-        v
-7. [PlayCallerViewModel] Sets documentAttributes on PDFDocument (REQ-SEC-1)
-   NOTE: attributes are set before dataRepresentation() in Step 5e, not here —
-         this annotation clarifies the intent; see Section 7 for exact placement.
-        |
-        v
-8. [PlayCallerViewModel] Presents UIActivityViewController(activityItems: [tempFileURL])
-   completionWithItemsHandler: { try? FileManager.default.removeItem(at: tempURL) } (REQ-SEC-4)
-        |
-        v
-9. [iOS System] UIActivityViewController handles: AirPrint / Save to Files / Email / AirDrop
-        |
-        v
-10. [PlayCallerViewModel] completionHandler fires → temp file deleted
-    isExporting remains false; app state is unchanged
+Row 1 — Play number + Formation (y: 5pt, height: ~16pt)
+  Play number: left-aligned, 10pt bold
+  Formation name: right-aligned, 10pt semibold
+
+Row 2 — Route digits (y: ~23pt, height: ~14pt)
+  Monospaced digit string, 9pt medium
+
+Row 3 — Receiver labels (y: ~39pt, height: ~11pt)
+  "X  Y  Z  A  H" (or subset for 4-digit plays), 8pt regular, monospaced
+
+Row 4 — Concept + Motion (y: ~52pt, height: ~13pt, conditional)
+  Concept name: left-aligned, 8pt semibold — omitted if nil
+  Motion label: right-aligned, 8pt regular — omitted if nil
+  If both nil: row absent (no blank space)
+
+Divider (y: ~67pt)
+  0.35pt hairline across usable width
+
+Diagram zone (y: ~70pt to ~159pt, height: ~89pt)
+  CGRect(x: 5pt, y: 70pt, width: 224pt, height: 89pt)
+  DiagramRenderer.draw(into:playCall:config:in:) called here
+
+(No notes line on catalog cards — omitted per spec NQ-5 default resolution)
 ```
 
-**Data objects crossing component boundaries:**
-- Step 4→5: `PlayCall` struct (value type, copied)
-- Step 5→6: `Data` value (PDF bytes)
-- Step 6→8: `URL` to temp file (passed by value)
-- No play-caller state is mutated by the export pipeline. `currentPlayCall`, `currentPlayCallWithMotion`, formation, digits — all unchanged after export completes.
+**Font size rationale:** Catalog cards are smaller than wristband cards (174pt tall vs. 180pt tall for wristband, but 9-up vs. 4-up means much smaller per-card area). Fonts are reduced to 8–10pt to fit the required fields. These are printed sizes — at 300 dpi, 8pt is ~33 pixels, legible on a plain-paper printout held at normal reading distance. Catalog sheets are not laminated and are read at normal viewing distance (clipboard or tabletop), not arm's length like wristband cards, so the smaller font floor is acceptable.
 
----
+### 4.3 `CatalogCardConfig` — value type (struct)
 
-## 4. DiagramRenderer Reuse Strategy
+**Location:** `SpartansPlaycaller/Models/CatalogCardConfig.swift`
 
-### Decision: Option B — PDFPage subclass with direct CGContext draw calls (vector path)
-
-**Rationale:**
-
-The existing `DiagramRenderer` is a pure geometry struct — its methods compute `[CGPoint]` arrays and `Path` values but perform no rendering themselves. All actual drawing occurs in `RouteDiagramView` via SwiftUI `Canvas`. This means `DiagramRenderer` already has a clean separation between geometry computation and render context.
-
-The relevant question is therefore not "can we reuse the exact draw logic" — the draw logic lives in the view, not in `DiagramRenderer`. The question is: "what is the least disruptive way to produce an equivalent rendered diagram in a PDF context?"
-
-**Option A (UIGraphicsImageRenderer + embedded bitmap):**
-- Requires a new CGContext-based draw implementation regardless — the SwiftUI Canvas draw calls in `RouteDiagramView` are not callable from a `UIGraphicsImageRenderer` context.
-- Produces a raster image embedded in the PDF. At 2x scale the bitmap is ~504x144px for the diagram zone, which PDFKit serializes as a compressed image stream. The image is finite-resolution — if the coach zooms the PDF in Preview before printing, it will show pixelation (though not at normal viewing distances).
-- The performance assessment's 300 dpi print quality goal is met at 2x scale (72 dpi logical × 2 = 144 effective dpi in the PDF, below 300 dpi print standard). To reach 300 dpi equivalent the scale factor would need to be ~4.17x, increasing bitmap size and compression cost.
-- Simpler implementation path for the engineer writing the PDF page draw code, but the quality ceiling is lower.
-
-**Option B (PDFPage subclass + direct CGContext):**
-- Also requires new CGContext-based draw code — the same implementation effort as Option A.
-- Produces a true vector PDF: every route line, receiver dot, and arc is a scalable `CGPath`. The PDF renders at full printer DPI regardless of zoom or print scale. This directly satisfies the spec's "300 dpi minimum equivalent" requirement without any bitmap resolution arithmetic.
-- Eliminates the intermediate bitmap allocation entirely (~700KB at 2x, per performance assessment Section 4). No bitmap means no compression cost — the CGPath streams serialize faster.
-- The SDET's note that `PDFPage.string` extraction fails for Core Graphics text is a known limitation already documented in the test strategy (Section 5.5). The prescribed mitigation is geometry-based assertions in `WristbandPDFContentTests`. This is not a blocking concern — the assertions remain valid and the test coverage is equivalent.
-- No change to `RouteDiagramView` or its existing Canvas draw path. The new CGContext code lives only in `WristbandPDFGenerator` and a `DiagramRenderer` extension.
-
-**Performance engineer alignment:** The performance assessment explicitly recommends the vector path (Section 5.4): "The direct CGContext (vector PDF) path is preferred if architecture approves the draw-call adaptation. It eliminates the intermediate bitmap entirely, reducing memory allocation and compression cost."
-
-**Selected approach: Option B.**
-
-### What changes in `DiagramRenderer`
-
-A new method is added. No existing methods are modified or removed. All 18 existing test files remain unaffected because no existing API surface changes.
+Analogous to the wristband `WristbandCardConfig`. Holds all layout constants for a 9-up catalog card.
 
 ```swift
-extension DiagramRenderer {
-    /// Draw the full route diagram into an arbitrary CGContext.
-    /// Used by WristbandPDFGenerator to produce vector diagram content
-    /// inside a PDFPage subclass. The CGContext is provided by PDFKit's
-    /// draw(with:to:) callback.
-    ///
-    /// - Parameters:
-    ///   - context: The CGContext to draw into (from PDFKit or UIGraphicsImageRenderer).
-    ///   - playCall: The play call to render (should be post-motion state).
-    ///   - config: A DiagramConfig scaled for the card diagram zone.
-    ///   - rect: The bounding rect in the context's coordinate system to draw within.
-    func draw(into context: CGContext, playCall: PlayCall, config: DiagramConfig, in rect: CGRect)
+struct CatalogCardConfig {
+    let cardWidth: CGFloat = 234.0
+    let cardHeight: CGFloat = 174.0
+    let cardInset: CGFloat = 5.0
+    let playNumberFontSize: CGFloat = 10.0
+    let formationFontSize: CGFloat = 10.0
+    let digitsFontSize: CGFloat = 9.0
+    let receiverLabelFontSize: CGFloat = 8.0
+    let conceptFontSize: CGFloat = 8.0
+    let motionFontSize: CGFloat = 8.0
+    let diagramZoneY: CGFloat = 70.0      // top of diagram zone within card
+    let dividerY: CGFloat = 67.0
+    let diagramLabelFontSize: CGFloat = 7.0
+
+    static func standard() -> CatalogCardConfig { CatalogCardConfig() }
 }
 ```
 
-This method replicates the drawing logic from `RouteDiagramView`'s `Canvas` block using Core Graphics primitives (`CGContext.addPath`, `CGContext.strokePath`, `CGContext.fillEllipse`, `CGContext.setStrokeColor`, etc.). It uses `DiagramRenderer`'s existing geometry methods (`receiverPositions`, `routePath`, `motionPath`, `yWheelArcPath`) to compute all coordinates, then issues CGContext draw calls.
+### 4.4 `CatalogPDFGenerator` — struct
 
-**Text labels in the diagram (receiver dots labeled X/Y/Z/A/H):** Use `NSAttributedString` drawn via `CTFramesetter` or `NSString.draw(in:withAttributes:)` in the CGContext. This is the standard Core Graphics text pattern. These labels will NOT appear in `PDFPage.string` extraction (per SDET caveat in test strategy Section 5.5) — they are Core Graphics text primitives, not PDFKit text objects. The test strategy already accounts for this with geometry-based assertions.
-
-**Regression protection:** `DiagramRendererOffScreenTests.swift` (new test file per SDET Section 8) will call `DiagramRenderer.draw(into:playCall:config:in:)` with a `UIGraphicsImageRenderer`-backed context to verify the method produces non-crashing output. Existing tests in `DiagramRendererWheelRenderingTests.swift`, `DiagramRendererYWheelTests.swift`, and all Y Wheel test files remain untouched.
-
-### What the `WristbandPDFPage` subclass does
+**Location:** `SpartansPlaycaller/Services/CatalogPDFGenerator.swift`
 
 ```swift
-final class WristbandPDFPage: PDFPage {
-    let cards: [WristbandCard]
-    let config: WristbandCardConfig
-    let cardOrigins: [CGPoint]    // precomputed from page layout (Section 5)
+struct CatalogPDFGenerator {
+    /// Generate a catalog PDF from an ordered array of ExportCards.
+    /// Returns nil if PDFKit returns nil data (internal PDFKit failure).
+    /// Runs synchronously. Call from a background Task.
+    static func generate(cards: [ExportCard]) -> Data?
+}
+```
+
+Internal responsibilities:
+1. Partition `cards` into pages of 9 (`cards.chunks(ofCount: 9)` or a manual stride).
+2. For each page, instantiate a `CatalogPDFPage` subclass with the card slice, config, and precomputed cell origins.
+3. Create a `PDFDocument`, set `documentAttributes` per REQ-SEC-1.
+4. Add all pages to the document.
+5. Return `PDFDocument.dataRepresentation()`.
+
+### 4.5 `CatalogPDFPage` — PDFPage subclass
+
+```swift
+final class CatalogPDFPage: PDFPage {
+    let cards: [ExportCard]         // 1–9 cards for this page
+    let config: CatalogCardConfig
+    let cellOrigins: [CGPoint]      // 9 origins; indices 0–8 map to grid positions
 
     override func draw(with box: PDFDisplayBox, to context: CGContext) {
         super.draw(with: box, to: context)
-        // Flip coordinate system (PDF origin is bottom-left; CG draws top-left)
+        // Flip coordinate system (PDF origin is bottom-left → screen-style top-left)
         let mediaBox = bounds(for: box)
         context.translateBy(x: 0, y: mediaBox.height)
         context.scaleBy(x: 1, y: -1)
 
         for (i, card) in cards.enumerated() {
-            drawCard(card, origin: cardOrigins[i], into: context)
+            drawCard(card, origin: cellOrigins[i], into: context)
         }
     }
 
-    private func drawCard(_ card: WristbardCard, origin: CGPoint, into context: CGContext) {
-        // 1. Draw card border (thin stroke rect)
-        // 2. Draw text fields (play number, formation, digits, labels, concept, motion)
-        // 3. Draw horizontal divider between text zone and diagram zone
-        // 4. Draw mini diagram via DiagramRenderer.draw(into:playCall:config:in:)
-        // 5. Draw notes rule line at card bottom
-    }
+    private func drawCard(_ card: ExportCard, origin: CGPoint, into context: CGContext)
 }
 ```
 
-**Coordinate system note:** PDFKit's `draw(with:to:)` provides a CGContext in PDF coordinate space (origin bottom-left, Y increases upward). The diagram renderer and layout math use screen coordinates (origin top-left, Y increases downward). The single coordinate flip (`translateBy` + `scaleBy`) at the start of `draw(with:to:)` converts the entire context to screen-style coordinates, so all subsequent draw calls use the same coordinate system as `DiagramRenderer`.
+**Page media box:** Set to 792pt × 612pt (landscape US Letter).
+
+**No cut guides on catalog pages.** Coaches read the catalog sheet whole; it is not cut. The cell borders (thin stroke around each card) serve as visual separators and do not require cut guides.
 
 ---
 
-## 5. PDF Layout (4-Up Grid)
+## 5. Wristband PDF Generator (updated — Story 3.2)
 
-### Page dimensions
+The wristband generator from the original spec is preserved with two changes: (a) it now accepts `[ExportCard]` instead of `[PlayCall]`, and (b) it supports multi-play export (one page per card, not one page total).
 
-US Letter portrait: 612pt x 792pt (8.5" x 11" at 72pt/inch).
+### 5.1 `WristbandCardConfig` — value type (struct)
 
-**Rationale for portrait over landscape:** A 2x2 grid of 3.5"x2.5" cards fits cleanly on both orientations, but portrait is the standard print orientation for coaches printing a single sheet. Portrait also ensures the iOS print dialog defaults to the expected orientation without the coach needing to rotate.
+**Location:** `SpartansPlaycaller/Models/WristbandCardConfig.swift`
 
-### Grid layout algorithm
+Preserved from the original spec. No changes needed. (See original spec Section 2.1 for full constant table.)
 
-```
-Page margin (all sides): 0.25" = 18pt
-Gutter between cards (horizontal and vertical): 0.125" = 9pt
+**Card dimensions:** 252pt × 180pt (3.5" × 2.5" at 72pt/inch).
 
-Card width:  3.5" = 252pt
-Card height: 2.5" = 180pt
+**Page:** US Letter portrait — 612pt × 792pt.
 
-Total width used:  2 * 252 + 1 * 9 + 2 * 18 = 549pt  (fits in 612pt)
-Total height used: 2 * 180 + 1 * 9 + 2 * 18 = 405pt  (fits in 792pt)
+**Grid:** 2×2 — 4 identical copies of the same `ExportCard` per page.
 
-Horizontal centering offset: (612 - 549) / 2 = 31.5pt
-Vertical centering offset:   (792 - 405) / 2 = 193.5pt
-(centering places the grid visually centered on the page, with more blank space above and below)
-```
+**Grid layout math (preserved):**
+- Margin: 18pt. Gutter: 9pt.
+- Total width used: 2×252 + 9 + 2×18 = 549pt (fits 612pt). Centering offset: 31.5pt.
+- Total height used: 2×180 + 9 + 2×18 = 405pt (fits 792pt). Centering offset: 193.5pt.
+- Card origins (screen coords): (49.5, 211.5), (310.5, 211.5), (49.5, 400.5), (310.5, 400.5).
 
-**Card origins (top-left corner of each card, in screen coordinates after coordinate flip):**
+### 5.2 `WristbandPDFGenerator` — struct (updated signature)
 
-```
-Cell [0,0] — top-left card:
-    x = 31.5 + 18 = 49.5pt
-    y = 193.5 + 18 = 211.5pt
+**Location:** `SpartansPlaycaller/Services/WristbandPDFGenerator.swift`
 
-Cell [0,1] — top-right card:
-    x = 49.5 + 252 + 9 = 310.5pt
-    y = 211.5pt
-
-Cell [1,0] — bottom-left card:
-    x = 49.5pt
-    y = 211.5 + 180 + 9 = 400.5pt
-
-Cell [1,1] — bottom-right card:
-    x = 310.5pt
-    y = 400.5pt
+```swift
+struct WristbandPDFGenerator {
+    /// Generate a wristband PDF from an ordered array of ExportCards.
+    /// One PDF page per ExportCard; each page contains 4 identical copies.
+    /// Runs synchronously. Call from a background Task.
+    /// Returns nil if generation fails.
+    static func generate(cards: [ExportCard]) -> Data?
+}
 ```
 
-**V1 behavior:** All four cells render the same `WristbandCard`. The card is computed once from the single `PlayCall` in the array; the same `WristbandCard` value is passed to `drawCard` four times with different origin points. The diagram is drawn by calling `DiagramRenderer.draw(into:...)` once per cell (four total calls). Because the diagram is vector paths written directly into the PDF context, there is no bitmap to cache — each draw call is fast (geometry computation + path stroking) and produces identical vector content at each cell position.
+**Multi-play behavior:**
+- N cards → N PDF pages.
+- Each page is a `WristbandPDFPage` subclass instance containing 4 copies of the same card.
+- The page count matches the card count; no grid-packing across plays.
+- `ExportCard.playNumber` appears on each card — sequential from the selection order in the export flow.
 
-**V2 compatibility:** The layout algorithm takes `[WristbandCard]` as input. When the array contains more than 4 elements, the generator adds additional PDF pages, filling each page with 4 cards. The card origins array is computed per-page. No V2-specific implementation is required in V1 — only that the generator function signature accepts `[PlayCall]` (already specified) and that the layout function is written as a loop over pages, not as a hardcoded 4-position array.
+**Cut guides:** Thin hairline (0.25pt) at vertical and horizontal gutter center lines, drawn outside card borders within the gutter space. These are printing aids for physical card separation.
 
-### Card internal layout
+**Notes line:** One blank hairline rule with "Notes:" label at 8pt, at the card bottom edge. Present on wristband cards; absent on catalog cards.
 
-Within each card rect (origin at card top-left, size 252pt x 180pt):
-
-```
-Inset on all sides: 6pt
-
-Row 1 — Play number + Formation name (y: inset = 6pt, height: ~22pt)
-  Play number: left-aligned at (inset, inset), font 18pt bold
-  Formation name: right-aligned at (cardWidth - inset, inset), font 14pt semibold
-
-Row 2 — Route digits (y: ~30pt, height: ~20pt)
-  Monospaced digit string, left-aligned at (inset, 30pt), font 14pt medium
-
-Row 3 — Receiver labels (y: ~52pt, height: ~14pt)
-  "X   Y   Z   A   H", monospaced, left-aligned at (inset, 52pt), font 9pt regular
-  Spacing matches digit column widths above
-
-Row 4 — Concept + Y Motion (y: ~68pt, height: ~18pt, conditional)
-  Concept name: left-aligned at (inset, 68pt), font 12pt semibold — omitted if nil
-  Y Motion label: right-aligned at (cardWidth - inset, 68pt), font 11pt — omitted if nil
-  If both nil: this row is absent (no blank space reserved)
-
-Divider line (y: ~90pt)
-  Thin horizontal rule at 40% of card height (0.5pt stroke weight)
-  Spans full card width minus insets
-
-Diagram zone (y: 90pt to 168pt, height: ~78pt)
-  CGRect(x: inset, y: 90pt, width: cardWidth - 2*inset, height: 78pt - inset)
-  DiagramRenderer.draw(into:playCall:config:in:) called with this rect
-
-Notes line (y: ~170pt — 10pt from bottom)
-  Single hairline rule across full card width minus insets
-  "Notes:" label at 8pt, left-aligned, 2pt above the rule
-```
-
-**Note on row 4 spacing:** When concept and/or motion are absent, rows below do not reflow — the divider and diagram zone maintain their fixed y positions. Only the conditional row's text is omitted; the vertical rhythm is preserved. This avoids layout recalculation and ensures the diagram always occupies a predictable zone.
-
-### Cut guides
-
-The spec's 0.25" page margin and 0.125" gutter mean the grid sits flush with simple cut lines. The implementation should draw a thin (0.25pt) cut guide line at the vertical center of the gutter (between cards) and at the horizontal center of the gutter. These are cosmetic printer aids, not part of the card content. Cut guide lines are drawn outside the card rect, within the gutter space.
+**Wristband card internal layout:** Preserved from original spec Section 5. Uses `WristbandCardConfig` font sizes: play number 18pt bold, formation 14pt semibold, digits 14pt medium, receiver labels 9pt, concept 12pt semibold, motion 11pt, diagram ~40% of card area, notes rule at bottom.
 
 ---
 
-## 6. State Isolation Strategy
+## 6. DiagramRenderer Reuse Strategy
 
-This is an iOS app with no IaC or multi-environment concern. This section documents state isolation in the coaching-workflow sense: how the export pipeline interacts with (or more precisely, does not interact with) the play-caller state.
+**Decision: Option B — PDFPage subclass with direct CGContext draw calls (vector path). Preserved from original spec.**
 
-**Export state is fully isolated from play-caller state:**
+This decision is unchanged. The rationale:
+- Vector paths produce resolution-independent output satisfying the 300 dpi print quality requirement unconditionally.
+- `DiagramRenderer` already separates geometry computation from rendering context, so adding a CGContext draw method requires only a new extension, not refactoring of existing methods.
+- The same `DiagramRenderer.draw(into:playCall:config:in:)` method serves both catalog and wristband generators — only the `DiagramConfig` parameters differ (reflecting the different diagram zone sizes).
 
-1. `WristbandPDFGenerator.generate(playCalls:)` is a pure function — it takes value-type inputs (`[PlayCall]`) and returns `Data?`. It holds no mutable state, writes no properties, and touches no `@Published` values. It cannot corrupt ViewModel state regardless of where it is called from.
+### 6.1 What changes in `DiagramRenderer`
 
-2. The only state mutation during an export is `isExporting: Bool` in `PlayCallerViewModel`. This property is read only by the View (to show/hide the spinner and disable the button) and is reset to `false` on both success and failure paths. It does not affect `currentPlayCall`, `currentPlayCallWithMotion`, `selectedFormation`, or any other play-caller state.
+One new method added as an extension. No existing methods are modified.
 
-3. The temp file written to `FileManager.temporaryDirectory` is ephemeral and scoped to the share sheet session. It is deleted in `UIActivityViewController.completionWithItemsHandler` regardless of whether the coach completed a share action or cancelled. If PDF generation fails before the share sheet is presented, the temp file is deleted in the error-handling path using a `defer` block. No PDF file persists to the Documents directory, iCloud, or any user-visible location.
+```swift
+extension DiagramRenderer {
+    /// Draw the full route diagram into an arbitrary CGContext.
+    /// Used by both CatalogPDFGenerator and WristbandPDFGenerator to produce
+    /// vector diagram content inside PDFPage subclasses.
+    ///
+    /// - Parameters:
+    ///   - context: The CGContext to draw into (from PDFKit's draw(with:to:) callback).
+    ///   - playCall: The play call to render (must be the post-motion state).
+    ///   - config: A DiagramConfig scaled for the specific card diagram zone.
+    ///   - rect: The bounding rect in the context's coordinate system to draw within.
+    func draw(into context: CGContext, playCall: PlayCall, config: DiagramConfig, in rect: CGRect)
+}
+```
 
-4. Play persistence (saving a play to a database or file for later recall) is explicitly out of scope for Epic 3.1. The export pipeline never writes to the app's persistent storage. The `PlayCall` struct is used only as the data source for PDF rendering; its fields are read but never modified.
+The method uses `DiagramRenderer`'s existing geometry methods (`receiverPositions`, `routePath`, `motionPath`, `yWheelArcPath`) for all coordinate computation, then issues Core Graphics draw calls (`CGContext.addPath`, `CGContext.strokePath`, `CGContext.fillEllipse`, etc.).
 
-5. Cancellation: if the coach taps Cancel in the `confirmationDialog`, `exportCurrentPlay()` is never called — no `Task` is dispatched, no state changes beyond `showExportActionSheet = false`. If the coach cancels the share sheet after PDF generation, the completion handler fires and deletes the temp file. `isExporting` is already `false` at this point (set before `UIActivityViewController` is presented).
+### 6.2 Card-scale `DiagramConfig` factories
 
-**Fire-and-forget semantics:** `exportCurrentPlay()` is `async` and is called from the View with `Task { await viewModel.exportCurrentPlay() }`. The Task is not retained or cancelled by the View. If the coach navigates away (impossible in V1 as the app is single-view) or the app backgrounded during the 13-40ms generation window, the Task completes normally — there is no meaningful race condition at this time scale.
+**Location:** `SpartansPlaycaller/Models/DiagramConfig+CardScale.swift`
+
+Two factory methods — one per export mode:
+
+```swift
+extension DiagramConfig {
+    /// DiagramConfig for wristband cards (diagram zone ~240pt × 72pt).
+    static func wristbandCardScale(for diagramZoneSize: CGSize) -> DiagramConfig
+
+    /// DiagramConfig for catalog cards (diagram zone ~224pt × 89pt).
+    static func catalogCardScale(for diagramZoneSize: CGSize) -> DiagramConfig
+}
+```
+
+**Wristband parameters** (preserved from original spec, Section 2.1):
+- `lineOfScrimmageY: height * 0.50`
+- `routeLength: height * 0.35`
+- `breakLength: height * 0.25`
+- `receiverRadius: 4.0`
+- `footballSize: 6.0`
+- `receiverSpacing: width * 0.14`
+- `sideMargin: width * 0.06`
+
+**Catalog parameters** (new — diagram zone is wider/taller than wristband zone proportionally):
+- `lineOfScrimmageY: height * 0.50`
+- `routeLength: height * 0.38`   (slightly more vertical room in the taller catalog zone)
+- `breakLength: height * 0.28`
+- `receiverRadius: 4.0`           (same minimum — lamination risk does not apply to plain paper, but 4pt is still a legibility floor)
+- `footballSize: 6.0`
+- `receiverSpacing: width * 0.13`  (catalog zone is wider relative to card; tighter spacing keeps receivers within frame)
+- `sideMargin: width * 0.05`
+
+Both parameter sets require Ken's visual sign-off during Story 3.3 (field validation). They are calibrated estimates based on zone dimensions, not pixel-tested values.
+
+### 6.3 Coordinate system handling
+
+**Preserved from original spec.** Both `CatalogPDFPage` and `WristbandPDFPage` flip the coordinate system at the start of their `draw(with:to:)` override:
+
+```swift
+context.translateBy(x: 0, y: mediaBox.height)
+context.scaleBy(x: 1, y: -1)
+```
+
+This converts the PDF coordinate system (origin bottom-left, Y upward) to screen-style coordinates (origin top-left, Y downward), so all subsequent draw calls and `DiagramRenderer` geometry use consistent coordinates.
 
 ---
 
-## 7. Security Requirements (from consultation)
+## 7. Export Flow (Dual Path)
 
-These four requirements are non-negotiable implementation constraints for the software-engineer. Each maps to a verification step in the security consultation (Section 6 of the security doc).
+Two export entry points coexist in V1. They converge on the same PDF generators.
 
-### REQ-SEC-1: Strip PDF document metadata
+### Path A — Quick Export (single play, no library)
 
-When creating the `PDFDocument`, set `documentAttributes` to include only the title attribute. Set title to the play's display name for usability in Files app and email subject lines. Do not set author, creator, subject, or keywords attributes.
+1. Coach has a valid play call showing in `PlayCallerView` (formation + digits parsed, result section visible).
+2. Coach taps the share icon in the nav bar trailing area.
+3. The export action sheet appears. **If the current play has not been saved to the library:** the action sheet presents two primary options — "Export Current Play" (without saving) and "Save Play First" — plus Cancel. **If the current play is already in the library:** the action sheet presents "Export Current Play" directly.
+4. On "Export Current Play": coach chooses mode (Catalog or Wristband).
+5. `ExportCard.from(playCall:motion:playNumber:)` is called with `currentPlayCallWithMotion ?? currentPlayCall` and the ViewModel's `yMotion` state.
+6. The appropriate generator is called (`CatalogPDFGenerator.generate(cards: [card])` or `WristbandPDFGenerator.generate(cards: [card])`).
+7. `UIActivityViewController` is presented.
+
+**NQ-6 resolution (export from PlayCallerView with unsaved play):** Path A allows exporting the current play without saving it to the library first. The action sheet communicates this clearly so the coach understands the play will not persist. This is the more permissive choice over "prompt to save first" — it respects a coach who wants a one-off quick export without accumulating library entries. The spec's recommended default was "prompt," but allowing export without saving is architecturally simpler and removes friction for the quick-export use case Ken confirmed is needed.
+
+### Path B — Library Export (multi-play)
+
+1. Coach taps "Save Play" in `PlayCallerView` (or builds multiple plays during the week, saving each).
+2. Coach opens `PlayLibraryView` (accessible via a "Library" toolbar button in `PlayCallerView` — modal sheet presentation, per NQ-3 default).
+3. Library view shows saved plays in a SwiftUI `List` with multi-select. "Select" toolbar button enables multi-select mode.
+4. Coach selects plays (checkboxes, Select All button). Export button shows selection count ("Export 4 Plays").
+5. Coach taps Export → format action sheet appears: "Play Catalog", "Wristband Cards", "Cancel".
+6. On format selection:
+   - For each selected `SavedPlay`, `ExportCard.from(savedPlay:playNumber:interpreter:)` is called in order.
+   - The appropriate generator receives the `[ExportCard]` array.
+   - PDF is generated on a background `Task`.
+7. `UIActivityViewController` is presented.
+
+**Selection ordering:** Plays are numbered in the order they are selected, not the order they appear in the list. If "Select All" is used, the order follows the list order (which is insertion order — newest last in V1).
+
+**NQ-3 resolution (library entry point):** Modal sheet from a "Library" toolbar button in `PlayCallerView`. This avoids structural navigation changes in V1 (no `TabView`). The library is an accessory view, not a primary destination; the play-builder remains the main screen.
+
+---
+
+## 8. New View: PlayLibraryView
+
+**Location:** `SpartansPlaycaller/Views/PlayLibraryView.swift`
+
+**Navigation:** Presented as a modal sheet from `PlayCallerView`.
+
+**Content:**
+- SwiftUI `List` over `PlayLibraryStore.plays`, ordered by `savedAt` ascending (oldest first, newest last — coach builds the week's plays in order).
+- Each row: formation name + route digits + concept name (if present) + motion label (if present). A compact one-line layout.
+- **Empty state:** When `plays` is empty, a centered message: "No plays saved yet.\nBuild a play and tap Save Play."
+- **Swipe-to-delete:** `.onDelete` modifier on the `ForEach` within the `List`; calls `store.delete(at:)`.
+- **Multi-select mode:** Triggered by a "Select" `ToolbarItem`. When active, each row shows a checkmark or checkbox. The toolbar item label changes to "Done" to exit multi-select.
+- **Export toolbar button:** In the toolbar when multi-select is active. Disabled when no plays are selected. Label: "Export \(selectedCount) Play\(selectedCount == 1 ? "" : "s")".
+- **Export action sheet:** On Export button tap — "Play Catalog", "Wristband Cards", "Cancel".
+- **Format selection → PDF generation spinner:** After format is chosen, button becomes non-interactive; a `ProgressView` replaces or overlays the Export label during generation.
+- **Error handling:** On nil PDF result, dismiss spinner and present an alert: "Could not generate PDF. Please try again."
+
+**UX note (NQ-5 resolved — catalog notes field omitted):** The catalog card layout does not include a notes rule. Space is tight at 9-up density; the notes line is a wristband-specific feature for player annotation on a physical card. Coaches reference catalog sheets but do not annotate individual cards.
+
+---
+
+## 9. ViewModel Changes
+
+### 9.1 `PlayCallerViewModel` additions
+
+```swift
+// Already injected at init — add this dependency
+private let libraryStore: PlayLibraryStore   // injected via environment or init parameter
+
+// New computed property
+var canSave: Bool {
+    currentPlayCall != nil || currentPlayCallWithMotion != nil
+}
+
+// New method
+func saveCurrentPlay() {
+    guard let playCall = currentPlayCallWithMotion ?? currentPlayCall else { return }
+    libraryStore.save(playCall, motion: yMotion, yWheelEnabled: yWheelEnabled)
+    // Optional: brief UI confirmation (see SaveConfirmationState below)
+}
+
+// Export state additions (carried over from original spec)
+@Published var isExporting: Bool = false
+var canExport: Bool {
+    currentPlayCallWithMotion != nil || currentPlayCall != nil
+}
+func exportCurrentPlay(mode: ExportMode) async
+```
+
+**`ExportMode` enum:**
+```swift
+enum ExportMode {
+    case catalog
+    case wristband
+}
+```
+
+**`saveCurrentPlay()` confirmation:** The spec requires "brief visual confirmation (checkmark or brief 'Saved' label)." Implementation pattern: add a transient `@Published var saveConfirmed: Bool = false` property; set to `true` in `saveCurrentPlay()`, then reset to `false` after 1.5 seconds using a `Task.sleep`. The View shows a checkmark overlay or button label change while `saveConfirmed` is true.
+
+**`PlayLibraryStore` injection:** The store is constructed once in the `@main` App struct and injected as an `@EnvironmentObject`. `PlayCallerViewModel` accesses it via `@EnvironmentObject` or as an init parameter. The architect recommends init-parameter injection for testability — the ViewModel can be constructed with a mock store in unit tests without environment setup.
+
+### 9.2 `PlayLibraryViewModel` (selection state)
+
+**Location:** Embedded as a private `@State` or a separate `@StateObject` class within `PlayLibraryView`, not a top-level ViewModel file.
+
+Manages:
+- `selectedIDs: Set<UUID>` — selected `SavedPlay` IDs in multi-select mode.
+- `isInMultiSelectMode: Bool`
+- `selectedPlays: [SavedPlay]` — computed from `selectedIDs` in `store.plays` order.
+- `exportButtonEnabled: Bool` — `!selectedIDs.isEmpty`.
+
+Because selection state is local to `PlayLibraryView` and never needs to outlive the sheet, embedding it as `@State` (or a simple `@StateObject`) in the view is appropriate. A top-level ViewModel class is not warranted.
+
+---
+
+## 10. Security Requirements
+
+### Original requirements (carried forward unchanged)
+
+#### REQ-SEC-1: Strip PDF document metadata
+
+When creating any `PDFDocument` (catalog or wristband), set `documentAttributes` to include only the title attribute.
 
 ```swift
 pdfDocument.documentAttributes = [
-    PDFDocumentAttribute.titleAttribute: playCall.displayName   // e.g., "Twins 6794"
+    PDFDocumentAttribute.titleAttribute: "\(formationName) \(routeDigits)"
 ]
 ```
 
-**Placement:** Set immediately after `PDFDocument` is instantiated, before adding the page. `documentAttributes` must be set before calling `dataRepresentation()`.
+For multi-play PDFs, the title can be: `"\(cards.count) Plays — \(DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none))"`. Do not set author, creator, subject, or keyword attributes.
 
-**Verification:** Open generated PDF with `mdls` on macOS and confirm Author/Creator/Subject fields are absent. Title should match the play's display name.
+**Verification:** `mdls` or `exiftool` on generated PDF confirms Author/Creator fields are absent. Title matches expected string.
 
-### REQ-SEC-2: Write temp file to `temporaryDirectory`
+#### REQ-SEC-2: Write temp file to `temporaryDirectory`
 
 ```swift
 let tempDir = FileManager.default.temporaryDirectory
-let filename = "\(UUID().uuidString)-\(sanitizedFormation)-\(digits)-wristband.pdf"
+let filename = "\(UUID().uuidString)-\(sanitizedName)-\(mode).pdf"
 let tempURL = tempDir.appendingPathComponent(filename)
 ```
 
-Use a `UUID` prefix to avoid collisions between concurrent exports (unlikely in V1 but correct practice). The filename after the UUID prefix uses the human-readable formation+digits string for share sheet display.
+For multi-play exports, `sanitizedName` can be `"\(cards.count)-plays"`. UUID prefix prevents collisions.
 
-**Sanitization of formation name:** Replace spaces with hyphens; strip characters outside `[A-Za-z0-9\-]`. Example: "Trips Right" → "Trips-Right".
+**Verification:** Assert temp URL begins with `NSTemporaryDirectory()` in development.
 
-### REQ-SEC-3: Apply file protection to temp file write
+#### REQ-SEC-3: Apply file protection to temp file write
 
 ```swift
 try data.write(to: tempURL, options: .completeFileProtection)
 ```
 
-Do not use `.atomic` alone or bare `write(to:)` without options. `.completeFileProtection` encrypts the file when the device is locked; since the file exists only during an active user session, this protection is always satisfiable and costs nothing.
+**Verification:** `FileManager.default.attributesOfItem(atPath:)[.protectionKey]` confirms `.complete` in a debug build.
 
-### REQ-SEC-4: Delete temp file in share sheet completion handler
+#### REQ-SEC-4: Delete temp file in share sheet completion handler
 
 ```swift
-let activityVC = UIActivityViewController(activityItems: [tempURL], applicationActivities: nil)
 activityVC.completionWithItemsHandler = { _, _, _, _ in
     try? FileManager.default.removeItem(at: tempURL)
 }
 ```
 
-Additionally, if `data.write(to:options:)` succeeds but the share sheet is never presented (error in UIKit bridge), delete the temp file in the error path:
+Error path: if share sheet is never presented, delete temp file via `defer` block (see original spec Section 7 for the `shareSheetPresented` defer pattern — carry forward unchanged).
+
+**Verification:** Confirm file does not exist at `tempURL` after share sheet dismissal.
+
+### New requirement
+
+#### REQ-SEC-5: Apply file protection to library JSON write
 
 ```swift
-guard let windowScene = ... else {
-    try? FileManager.default.removeItem(at: tempURL)
-    errorMessage = "Could not present share sheet. Please try again."
-    return
-}
+try encoder.encode(plays).write(to: fileURL, options: .completeFileProtection)
 ```
 
-A `defer` block in `exportCurrentPlay()` keyed on whether `UIActivityViewController` was successfully presented is an acceptable implementation pattern:
+The library JSON file lives in the Documents directory (user-visible). File protection ensures it is encrypted at rest when the device is locked. This is consistent with the temp file protection and costs nothing.
 
-```swift
-var shareSheetPresented = false
-defer {
-    if !shareSheetPresented {
-        try? FileManager.default.removeItem(at: tempURL)
-    }
-}
-// ... present share sheet ...
-shareSheetPresented = true
+**Verification:** `FileManager.default.attributesOfItem(atPath: fileURL.path)[.protectionKey]` confirms `.complete` in a debug build.
+
+---
+
+## 11. Performance Constraints
+
+Carried forward from the original performance assessment, with additions for catalog and multi-play scenarios.
+
+| Constraint | Value | Notes |
+|-----------|-------|-------|
+| Single diagram render | 13–40ms on iPhone 12+ | Per performance assessment |
+| Catalog: 9 diagrams per page | 117–360ms | Within 500ms budget |
+| Wristband: 1 play (4 diagram draws) | 52–160ms | 4 vector draw calls, no bitmap allocation |
+| N-play wristband (N pages) | N × 13–40ms per diagram | Scales linearly; budget applies per page |
+| Library read at init | <10ms for 200 entries | JSON decode of ~40KB is negligible |
+| Library write per save/delete | <5ms | JSON encode + file write of ~40KB |
+| Background dispatch | Required — `Task.detached(priority: .userInitiated)` | Both generators called from background Task |
+| Main actor return | Automatic via `@MainActor` ViewModel | No explicit `MainActor.run` needed |
+| Peak memory (catalog, 9 plays) | <5MB | Vector paths, no bitmap allocation |
+| Peak memory (wristband, N plays) | <2MB per page rendered | Page-at-a-time generation; no full-document in-memory |
+| Pre-generation / speculative generation | Prohibited | Generate only when coach confirms format |
+
+**Large library consideration:** For libraries of 20–50 plays, `ExportCard` construction (parsing digit strings via `RouteInterpreter`) takes 100–750ms total. This is within the observable-but-acceptable range (less than 1 second for a 50-play selection). For V1, this is acceptable given the expected library size (10–20 plays per game plan). The implementing engineer should dispatch the entire export pipeline (card construction + generation) to the background Task — not just the PDF generation step — to keep the main thread free during card reconstruction.
+
+---
+
+## 12. State Isolation Strategy
+
+This section documents how the three store/state domains interact without corrupting each other.
+
+**Three state domains:**
+1. `PlayCallerViewModel` — play builder state (formation, digits, parsed PlayCall, motion state).
+2. `PlayLibraryStore` — persisted play library (array of `SavedPlay`).
+3. Export pipeline — transient, in-flight PDF generation state.
+
+**Isolation rules:**
+
+- `PlayLibraryStore` is read-only from the export pipeline. Export reads `plays` but never modifies the store.
+- `PlayCallerViewModel` is read-only from the save flow. `saveCurrentPlay()` reads ViewModel state and writes to the store; the store does not write back to the ViewModel.
+- Export is a pure function: `CatalogPDFGenerator.generate(cards:)` and `WristbandPDFGenerator.generate(cards:)` take value types and return `Data?`. No shared mutable state. No `@Published` side effects.
+- The only export-related state mutation in the ViewModel is `isExporting: Bool` — used only to show/hide the spinner and disable the button during generation. It does not affect `currentPlayCall`, `currentPlayCallWithMotion`, or any library state.
+- Temp file lifecycle: created in background Task, passed to `UIActivityViewController`, deleted in completion handler regardless of action/cancel. No PDF file persists beyond the share sheet session.
+- Library file lifecycle: written on every save/delete, read only at app init. No in-flight reads during export (the `plays` array is already in memory).
+- `PlayCallerViewModel.reset()` clears play-builder state only; it does not touch the library store.
+
+**Concurrency:** `PlayLibraryStore` is `@MainActor`. All mutations (`save`, `delete`, `deleteAll`, `persist`) run on the main actor, so no concurrent write conflicts are possible. The export pipeline reads `store.plays` once on the main actor (to build the `[SavedPlay]` array for export), then runs entirely in a detached background Task with value-type copies.
+
+---
+
+## 13. Data Flow
+
+```
+PATH A (Quick Export — no library):
+
+1. [PlayCallerView] Coach taps share icon
+        |
+        v
+2. [PlayCallerView] Export action sheet: "Export Current Play" / "Save Play First" / Cancel
+        |
+        v (coach taps "Export Current Play")
+3. [PlayCallerView] Format action sheet: "Play Catalog" / "Wristband Cards" / Cancel
+        |
+        v (coach selects format)
+4. [PlayCallerViewModel] Captures postMotionPlay = currentPlayCallWithMotion ?? currentPlayCall
+   isExporting = true
+        |
+        v (detached background Task)
+5. ExportCard.from(playCall: postMotionPlay, motion: yMotion, playNumber: 1)
+        |
+        v
+6. CatalogPDFGenerator.generate(cards: [card]) OR WristbandPDFGenerator.generate(cards: [card])
+   → Data?
+        |
+        v (return to @MainActor)
+7. [PlayCallerViewModel] isExporting = false
+   Write temp file with .completeFileProtection (REQ-SEC-2, REQ-SEC-3)
+   Present UIActivityViewController
+   completionHandler: delete temp file (REQ-SEC-4)
+
+---
+
+PATH B (Library Export — multi-play):
+
+1. [PlayLibraryView] Coach selects plays, taps Export
+        |
+        v
+2. [PlayLibraryView] Format action sheet: "Play Catalog" / "Wristband Cards" / Cancel
+        |
+        v (coach selects format)
+3. [PlayLibraryView/ViewModel] isExporting = true
+        |
+        v (detached background Task)
+4. For each selectedPlay (in selection order):
+   ExportCard.from(savedPlay: play, playNumber: i, interpreter: RouteInterpreter())
+   → [ExportCard]
+        |
+        v
+5. CatalogPDFGenerator.generate(cards: exportCards) OR WristbandPDFGenerator.generate(cards: exportCards)
+   → Data?
+        |
+        v (return to @MainActor)
+6. isExporting = false
+   Write temp file (REQ-SEC-2, REQ-SEC-3)
+   Present UIActivityViewController
+   completionHandler: delete temp file (REQ-SEC-4)
 ```
 
 ---
 
-## 8. Performance Constraints (from assessment)
+## 14. Open Questions
 
-These are binding implementation constraints, not guidelines.
+The following open questions from the product spec are now resolved. No blocking items remain for implementation planning.
 
-| Constraint | Value | Source |
-|-----------|-------|--------|
-| Total PDF generation latency (hard gate) | < 500ms on iPhone 13 or newer | Spec § 8 success metric 7; Story 3.1.3 AC |
-| Expected actual latency | 13–40ms on iPhone 12+ | Performance assessment Section 2 |
-| Background queue | Required — dispatch via `Task.detached(priority: .userInitiated)` | Performance assessment Section 5.1 |
-| Diagram render scale | 2.0 (explicit, not `UIScreen.main.scale`) | Performance assessment Section 5.3 |
-| Diagram render count | Once per unique PlayCall; embed result N times | Performance assessment Section 7 (risk item 3) |
-| Peak memory per export | < 2MB expected; < 5MB hard ceiling | Performance assessment Section 4, 6.4 |
-| Pre-generation / speculative generation | Prohibited — generate only on "Export as PDF" tap | Performance assessment Section 5.5 |
+| Question | Resolution | Source |
+|----------|-----------|--------|
+| NQ-1: Catalog density 6-up or 9-up? | **9-up (3×3)** | Ken confirmed |
+| NQ-2: Catalog orientation landscape or portrait? | **Landscape** | Ken confirmed |
+| NQ-3: Library entry point (modal sheet / tab / push)? | **Modal sheet** from "Library" toolbar button in `PlayCallerView` | Spec default; avoids TabView structural change |
+| NQ-4: Duplicate play save handling? | **Save as new entry** — timestamps differentiate | Spec default |
+| NQ-5: Catalog notes field? | **Omitted** — space is tight; catalog is a reference artifact | Spec default |
+| NQ-6: Export from PlayCallerView with unsaved play? | **Allow export without saving** — action sheet communicates play won't persist | Architecture decision (less friction than forcing save) |
+| OQ-1 (original): Post-motion vs pre-motion diagram? | **Post-motion** | Resolved in original spec; carried forward |
+| OQ-2 (original): 4-up grid or single-card page? | **4-up 2×2 grid** | Resolved in original spec; carried forward |
+| OQ-3 (original): Motion label format? | **"Y Stop" / "Y After" / "Y Go"** (ReceiverMotion.rawValue) | Resolved — raw values match display labels exactly |
 
-**Thread model:**
-
-```swift
-// In PlayCallerViewModel.exportCurrentPlay()
-isExporting = true
-let data: Data? = await Task.detached(priority: .userInitiated) {
-    WristbandPDFGenerator.generate(playCalls: [playCall])
-}.value
-isExporting = false
-```
-
-The `@MainActor` isolation of `PlayCallerViewModel` means the `await` returns to the main actor automatically. No explicit `MainActor.run` wrapper is needed.
-
-**Scale factor clarification for Option B (vector path):** Because Option B draws directly into the PDFKit `CGContext` (vector paths, no bitmap), the "render at 2x scale" directive from the performance assessment does not apply to the diagram rendering itself — vector paths are resolution-independent. The 2x scale recommendation was specific to Option A's `UIGraphicsImageRenderer` bitmap. If Option A is ever revisited, the 2x constraint applies.
-
-**Performance test:** `WristbandPDFGeneratorPerformanceTests.swift` must include an XCTest `measure {}` block as specified in the performance assessment (Section 6.2). The baseline must be committed as an `.xcbaseline` file alongside the test. The acceptance gate (physical device, Release configuration) must be run by the SDET before the epic is declared complete.
+**`PlayLibraryStore` injection pattern** is the only remaining design-level decision left to the implementing engineer: init parameter injection (recommended for testability) vs. `@EnvironmentObject` access (simpler wiring). Either is correct; the engineer should decide based on existing test patterns.
 
 ---
 
-## 9. Open Questions Resolved
+## 15. Risks and Mitigations
 
-The following open questions from the product spec (Section 9) and consultations are resolved with recommended defaults. Questions that require Ken's explicit confirmation before Story 3.1.3 begins are marked **BLOCKING — CONFIRM WITH KEN**.
+### Risk 1: Diagram legibility at catalog card scale (HIGH probability, MEDIUM impact)
 
-### OQ-1: Post-motion vs pre-motion diagram (BLOCKING — CONFIRM WITH KEN)
+Catalog cards are 234pt × 174pt — smaller than wristband cards — with a diagram zone of ~224pt × 89pt. Receiver dots at 4pt radius, route lines at 1pt stroke weight, and compressed vertical space may produce a diagram that is hard to read on a printed catalog sheet.
 
-**Recommended default:** Post-motion (use `currentPlayCallWithMotion ?? currentPlayCall`).
+**Mitigation:** `DiagramConfig.catalogCardScale()` parameters are tunable independently of the wristband config. The implementing engineer should produce a one-page test PDF with real plays before implementing the full catalog generator. Ken's visual sign-off during Story 3.3 is the definitive legibility gate for catalog density. If the 9-up layout proves unreadable, the cell dimensions can shift to 6-up (3×2) without changing the generator's architecture — only `CatalogCardConfig` constants change.
 
-**Rationale:** A player running a play needs to know where they line up and route from after motion completes, not where they started. The post-motion state is already available in the ViewModel as `currentPlayCallWithMotion`. The UX consultation (Section 2.1) confirms this recommendation. The diagram on the card must match what the player will execute.
+**Validation (cheap):** Write a test that renders a `CatalogPDFPage` with 9 hardcoded `ExportCard` values, writes the PDF to the simulator's Documents directory, and opens it in Preview at 100% zoom. Confirm receiver dots and route breaks are visually distinct.
 
-**Impact if confirmed:** `WristbandPDFGenerator` receives `currentPlayCallWithMotion ?? currentPlayCall`. `WristbandPDFYWheelTests` and `DiagramRendererOffScreenTests` are written against the post-motion `PlayCall`.
+### Risk 2: `ExportCard` construction failure for corrupted `SavedPlay` entries (LOW probability, LOW impact)
 
-**Impact if reversed (pre-motion chosen):** `WristbandPDFGenerator` receives `currentPlayCall` only. Test fixtures change. Architecture does not change — the same pipeline handles either input.
+If a saved `formationName` or `routeDigits` value does not parse (e.g., due to a future code change that removes a formation), `ExportCard.from(savedPlay:...)` returns nil. The export flow must handle this gracefully.
 
-**Architectural note:** The generator accepts a `PlayCall` value type. The motion state (whether Y motion was applied) is already embedded in the `PlayCall`'s `assignments` array by `applyMotion()`. The generator does not need to know which ViewModel property was used — it processes whatever `PlayCall` is passed.
+**Mitigation:** In the export pipeline, filter out nil `ExportCard` values before passing the array to the generator. If any cards failed to construct, log the failure and show a warning in the action sheet message: "X plays could not be loaded and will be skipped." Do not crash.
 
-### OQ-2: 4-up 2x2 grid vs single-card page (BLOCKING — CONFIRM WITH KEN)
+### Risk 3: Large library export latency (LOW probability, MEDIUM impact)
 
-**Recommended default:** 4-up 2x2 grid.
+For 50 selected plays, card construction + diagram rendering may take 750ms–2s total — above the 500ms target. This is unlikely in practice (typical game-plan scripts are 10–20 plays) but possible.
 
-**Rationale:** Coaches need multiple copies of a card (one per player at the position, one for the coaching staff binder). Four identical cards per sheet with two cuts is a significantly better coaching workflow than printing four separate sheets. The spec recommends the grid; the UX consultation endorses it.
+**Mitigation:** The 500ms budget applies per page, not per export. For multi-page catalog exports, the constraint is "each page renders in <500ms" — which is satisfied at 9 plays/page. For the total generation time, a 2-second wait with a spinner is acceptable UX for a deliberate "export my game plan" action. No architectural change is needed; the background Task dispatch ensures the UI stays responsive during long generation.
 
-**This spec is written for the 4-up grid.** If Ken selects single-card, the page layout in Section 5 changes entirely (one card centered on the page, no grid math needed), and `WristbandCardLayoutTests` must be rewritten. The generator and card model are unaffected.
+### Risk 4: Toolbar crowding and `PlayCallerView` modifications (MEDIUM probability, LOW impact)
 
-### OQ-3: Motion label format
+Adding a "Save Play" button and a "Library" button to the `PlayCallerView` toolbar alongside the existing "Share" and "Reset" buttons may cause layout crowding on iPhone SE (375pt width).
 
-**Resolved:** `"Y Stop"` and `"Y Go"`.
+**Mitigation:** Use icon-only buttons throughout the toolbar trailing area. Recommended icons: `square.and.arrow.up` (share/export), `bookmark.fill` (save play), `books.vertical` (library), `arrow.counterclockwise` (reset). Four icon-only buttons in the trailing area fit within 375pt. Verify on SE simulator before merge.
 
-**Rationale:** Short labels fit the card's text zone at 11pt. `ReceiverMotion.stop` maps to `"Y Stop"`; `ReceiverMotion.after` (the "Go" motion) maps to `"Y Go"`. No other motion states exist in V1. `WristbandMotionLabelTests` asserts these exact strings.
+### Risk 5: `PDFPage.string` returning nil in content tests (KNOWN — mitigated by test strategy)
 
-**Action sheet message with concept name (UX consultation OQ-3):** The action sheet message will display `playCall.displayName` (formation + digits only, e.g. `"Twins 6794"`) without appending the concept name. This is the simpler implementation and matches the spec exactly. If Ken wants concept name in the confirmation, it is a one-line change — no architectural impact. Treat this as a V2 copy refinement.
+Preserved from original spec. Text drawn via Core Graphics does not appear in `PDFPage.string` extraction. Both `CatalogPDFContentTests` and `WristbandPDFContentTests` must use geometry-based assertions (page count, media box dimensions, data validity). String extraction is not a valid test approach for vector-rendered PDFs.
 
-### OQ-4: Play number value
+### Risk 6: `applyMotion` logic duplication (LOW probability, LOW impact)
 
-**Resolved:** Always `1` in V1.
+The motion application logic currently lives in `PlayCallerViewModel.applyMotion()`. `ExportCard.from(savedPlay:...)` needs to replicate this to reconstruct the post-motion `PlayCall`. If the two implementations diverge, catalog/wristband cards may render differently from the on-screen diagram.
 
-**Rationale:** There is no play history; a fixed number is better than a blank field because it shows the coach what play number rendering looks like (useful for V2 multi-select) and avoids a nil-rendering code path. The spec notes coaches may hand-annotate. `WristbandPlayNumberTests` asserts the value is `1`.
-
-### OQ-5: Team branding / team name on card
-
-**Resolved:** Not included in V1.
-
-**Rationale:** The spec lists this as "not required for V1 game-day use; flag as V2 enhancement unless Ken requests it." No branding field appears in `WristbandCard`. If Ken requests it before Story 3.1.3, add a `teamName: String?` field to `WristbandCard` and a top-center label to the card layout — no architectural change required.
-
-### OQ-6: Page size (US Letter vs A4)
-
-**Resolved:** US Letter (8.5"x11" = 612pt x 792pt).
-
-**Rationale:** The spec assumes a US school/coaching context. US Letter is the target. If the app is adopted internationally, a `pageSize` parameter can be added to `WristbandCardConfig` in V2. The card dimensions (3.5"x2.5") fit within both US Letter and A4 in a 2x2 grid, so the card content is unaffected — only the page margins shift.
+**Mitigation:** Extract motion application to a static method on `PlayCall` (recommended in Section 3) during Story 3.0 implementation. Both the ViewModel and `ExportCard` construction then call the same code path. This is a low-complexity refactor that eliminates the divergence risk permanently.
 
 ---
 
-## 10. Out of Scope (V1)
+## 16. Roles
 
-The following items must not be implemented in Epic 3.1. Any request to add these during implementation should be redirected to the backlog.
-
-| Item | Reason / Expected Home |
-|------|----------------------|
-| Multi-select export of multiple plays | Requires play persistence (separate epic). V2 of export. |
-| Play persistence / play history | Distinct feature; no data model exists. |
-| Per-card single-page PDF layout | V2 density option. 4-up grid is V1. |
-| Cloud sync of plays or PDFs | No backend; explicitly excluded from project non-goals. |
-| PDF password protection | No compliance requirement; adds friction. |
-| Batch export of 8+ plays | Requires multi-select; V2. |
-| Watch / iPad layout optimization | iPhone target only for V1. |
-| Team branding / logo | V2 UX enhancement. |
-| In-app print preview | V2 feature; the share sheet's AirPrint preview serves this need. |
-| Accessible (tagged) PDF for screen readers | V2 concern; print-destined artifact. |
-| Concept name in action sheet confirmation message | V2 copy refinement (OQ-3 above). |
-| Custom share sheet activities | V2; standard system activities cover all stated needs. |
-
----
-
-## 11. Risks and Mitigations
-
-### Risk 1: Diagram legibility at card scale (HIGH probability, MEDIUM impact)
-
-`DiagramRenderer` was designed for a 320pt tall canvas. At card scale the diagram zone is ~240pt x 58pt. Receiver dots, route arrow heads, and the Y Wheel arc path may be too small to read after lamination.
-
-**Mitigation:** The card-scale `DiagramConfig` factory (Section 2.1) establishes explicit parameters calibrated for the card zone. The notes line is the first element to cut if space is needed. The UX consultation establishes 4pt as the minimum dot radius. Story 3.1.5 requires Ken's physical sign-off on a laminated printed card — this is the definitive legibility gate. If Ken identifies illegibility, the parameters in `WristbandCardConfig` and `DiagramConfig+CardScale` are the only things that need adjustment; the architecture does not change.
-
-**Validation (cheap):** Before Story 3.1.5 field test, render one card to PDF and open in Preview at 100% zoom. Confirm dot radius and route paths are visually distinct.
-
-### Risk 2: Toolbar crowding on iPhone SE (LOW probability, LOW impact)
-
-On the 375pt-wide iPhone SE, two trailing toolbar items (share icon + "Reset" text) may be tight. The share button uses icon only (`Image(systemName:)`), which minimizes width.
-
-**Mitigation:** Engineer verifies on SE simulator during Story 3.1.4. If buttons overlap, convert "Reset" to an icon (`arrow.counterclockwise`) with an accessibility label. This is a one-line change.
-
-### Risk 3: `UIActivityViewController` UIKit bridge pattern (MEDIUM probability, LOW impact)
-
-SwiftUI has no native wrapper for `UIActivityViewController`. The UIKit bridge (finding `UIWindowScene` → `rootViewController` → `present`) is standard iOS boilerplate but fragile to scene lifecycle edge cases (e.g., app in background during rare race).
-
-**Mitigation:** The engineer should find the `keyWindow` from `UIApplication.shared.connectedScenes` using the established pattern from Apple's developer documentation. This is a V1 single-scene app with no multi-window support, so scene lifecycle complexity is minimal. If the scene lookup fails (returns nil), the error path cleans up the temp file (REQ-SEC-4 error branch) and shows an error alert.
-
-### Risk 4: `PDFPage.string` returning nil in content tests (KNOWN — mitigated by test strategy)
-
-The SDET identified that text drawn via Core Graphics (Option B) does not appear in `PDFPage.string` extraction. `WristbandPDFContentTests` must use geometry-based assertions (page count, media box size, data validity) rather than string extraction for text field verification. Formation and digits presence is verified via the manual smoke test.
-
-**This is a test strategy constraint, not an architectural risk.** The engineer writing `WristbandPDFContentTests` must follow the SDET test strategy Section 5.5 guidance.
-
-### Risk 5: Async/await and `@MainActor` test isolation (LOW probability, LOW impact)
-
-The SDET test strategy (Section 5.2) notes that the shallow `@MainActor` test pattern in existing ViewModel tests is brittle. New export state tests (`PlayCallerViewModelExportStateTests`) must follow the same `nonisolated(unsafe) var viewModel` + `MainActor.assumeIsolated` pattern.
-
-**Mitigation:** The implementing engineer must read the existing `PlayCallerViewModelTests.swift` test pattern before writing new export state tests. Deviation from the existing pattern will produce runtime assertions, not compile errors.
-
----
-
-## 12. Roles
-
-| Role | Contribution to this design | Phase |
-|------|----------------------------|-------|
-| Product Owner | Problem definition, card content specification (Section 3 of spec), acceptance criteria, open question ownership | Step 1 |
-| UX Designer | Card layout hierarchy, font size floors, toolbar placement, button states, accessibility requirements, action sheet content | Step 2 consultation |
-| Security Engineer | Threat surface analysis, REQ-SEC-1 through REQ-SEC-4, temp file handling patterns, share sheet behavior assessment, involvement assessment | Step 2 consultation |
-| SDET | Regression risk identification, test pyramid, DiagramRenderer off-screen rendering seam, PDFPage.string limitation, test file list, manual smoke test charter | Step 2 consultation, Step 4 |
-| Performance Engineer | Critical path latency analysis, thread model requirements, scale factor constraint, memory impact assessment, performance test plan | Step 2 consultation, Step 4 |
-| Architecture & System Design | Component design, Option A/B trade-off resolution, data flow pipeline, coordinate system handling, page layout algorithm, state isolation, open question resolution, this document | Step 3 |
-| Software Engineer | `WristbandPDFGenerator`, `WristbandCard`, `WristbandCardConfig`, `DiagramConfig+CardScale`, `WristbandPDFPage`, `DiagramRenderer` extension, ViewModel additions, View toolbar and action sheet wiring | Step 6 |
+| Role | Contribution | Phase |
+|------|-------------|-------|
+| Product Owner | Problem definition, acceptance criteria, Ken confirmation of NQ-1 and NQ-2 (9-up landscape), Story 3.3 field validation sign-off, backlog update | Steps 1, 13 |
+| UX Designer | Library list view layout, Save Play button placement, multi-select flow, Export action sheet wording, accessibility on all new controls, modal sheet navigation | Step 2 consultation, Step 6 review |
+| Security Engineer | REQ-SEC-1 through REQ-SEC-5, involvement assessment, post-implementation verification (metadata audit, file protection confirmation, temp file cleanup) | Steps 2, 10 |
+| SDET | Test strategy update for library persistence, multi-select state, catalog layout geometry assertions, wristband layout geometry assertions, export E2E flow, share sheet cancel path, error path | Steps 4, 8 |
+| Performance Engineer | Library read/write latency assessment, catalog PDF generation latency, wristband multi-page latency, ExportCard construction latency for large selections | Steps 4, 9 |
+| Architecture & System Design | This document — component boundaries, `SavedPlay` DTO decision, `ExportCard` construction paths, dual export flow, state isolation, risk identification | Step 3 |
+| Software Engineer | `SavedPlay`, `PlayLibraryStore`, `ExportCard`, `CatalogCardConfig`, `CatalogPDFGenerator`, `CatalogPDFPage`, updated `WristbandPDFGenerator`, `DiagramConfig+CardScale` additions, `PlayLibraryView`, `PlayCallerViewModel` additions, toolbar wiring | Step 6 |
+| Auditor | Conformance review: spec AC vs shipped artifact, security requirements verified, test results reviewed | Step 11 |
 
 ---
 
 ## Self-Review Notes
 
-The following were checked before finalizing this spec:
-
-**TBD/TODO placeholders:** None. All sections that were marked "[TBD until architecture decision]" in the test strategy (specifically `DiagramRendererOffScreenTests` assertions) are now resolved by the Option B decision. The test file must assert: non-crashing output from `DiagramRenderer.draw(into:playCall:config:in:)` called with a `UIGraphicsImageRenderer`-backed context. No pixel assertions needed.
+**TBD/TODO check:** None. All sections that were open in the product spec (NQ-1 through NQ-6) are resolved. No placeholder text or deferred decisions remain.
 
 **Internal contradictions checked:**
-- "Render once, embed four times" (performance assessment) vs "draw four times via vector paths" (Option B): these are consistent. Vector paths are drawn four times (one draw call per cell) but each is a fast CGContext path stroke — no bitmap allocation or compression. "Render once, embed four times" was a directive for Option A's bitmap; under Option B the equivalent guidance is "compute geometry once and call `draw(into:)` per cell." The implementation engineer should note this distinction.
-- "Diagram zone is 40% of card height": 40% of 180pt = 72pt. Section 2.1 states `diagramZoneHeight = 72.0pt`. The vertical layout in Section 5 places the divider at y=90pt and diagram zone below. 180-90=90pt for the diagram zone, but 6pt bottom inset reduces usable height to 84pt. This is ~47% of card height, not 40%. Resolution: the divider y position should be `cardHeight * 0.50 = 90pt` (50%), with the diagram zone being the lower 50% minus insets. The UX consultation says "lower 40%" which is a target from the content density analysis, not a hard layout rule. The diagram zone rect should be maximized below the text content rows. The implementing engineer should finalize the divider y position based on actual text row heights and ensure the diagram zone is at least 60pt tall (the minimum for readable route paths at card scale). The "40%" figure in the spec is a minimum floor, not an exact split. **This is an implementation detail the engineer resolves during Story 3.1.3 — the architecture does not prescribe it to the point.**
-- `WristbandCard.receiverLabels` is always `["X", "Y", "Z", "A", "H"]` (5 elements). The H receiver only appears in 5-digit routes. For 4-digit routes (4 receivers), the H label still prints but corresponds to a receiver with no route assignment. The visual treatment (subdued/grayed H when no H assignment exists) is an implementation detail for the engineer — it does not affect the data model. The data model always carries all 5 labels; the render layer decides how to present unused ones.
 
-**Ambiguous requirements resolved:**
-- The spec says "play number at minimum 14pt bold" (Section 3.1b) but the UX consultation says "18pt bold" (Section 1.3). This spec adopts **18pt** as the implementation target — the UX consultation provides the higher-resolution guidance for readability after lamination, and 18pt is the stricter floor.
-- The spec says "0.25" bleed margins" in Section 3.1b. In standard print terminology, "bleed" refers to content that extends to the edge of the cut line. The spec's intent is a 0.25" page margin (distance from paper edge to nearest card edge), not a print bleed in the typographic sense. This spec uses 0.25" page margin throughout.
+1. **`ReceiverMotion` cases:** The original spec referenced only `.stop` and `.after` (mapping to "Y Stop" and "Y Go"). The actual `ReceiverMotion.swift` defines three cases: `.stop` (rawValue "Y Stop"), `.after` (rawValue "Y After"), `.go` (rawValue "Y Go"). This spec stores `motion?.rawValue` directly in `SavedPlay.motionLabel`, so the three possible values are "Y Stop", "Y After", and "Y Go" — consistent with the source. The product spec's card content table shows "Y Stop" and "Y Go" as examples; "Y After" is also a valid label and will appear on cards when applicable.
 
-**Hardest trade-off driven by which requirement:** The Option B decision (vector PDFPage over raster bitmap) is driven by the spec's print quality requirement ("300 dpi minimum equivalent" in Section 3.1b). A 2x-scale raster embed produces ~144 effective dpi in the PDF, below the 300 dpi floor. Vector paths are DPI-independent and satisfy the requirement unconditionally. This trade-off forces a new `DiagramRenderer` CGContext draw method — additional implementation work relative to Option A, but unavoidable if the print quality requirement is taken literally.
+2. **Catalog page dimensions:** 9-up landscape. The spec's NQ-1/NQ-2 are resolved as "9-up, landscape." The layout math in Section 4.1 produces 234pt × 174pt cells — smaller than wristband cards (252pt × 180pt) but with less whitespace overhead (tighter gutter and inset). The font sizes (8–10pt) are below the wristband minimums (9–18pt) — this is appropriate because catalog sheets are read at normal viewing distance, not arm's length.
+
+3. **`WristbandPDFGenerator` signature change:** The original spec's generator accepted `[PlayCall]`. This spec updates it to accept `[ExportCard]`. This is a breaking change to the interface but no other code currently calls this generator (it is new). The implementing engineer should define `WristbandPDFGenerator.generate(cards:)` from the start — not implement the original `generate(playCalls:)` and then update it.
+
+4. **Temp file naming for multi-play exports:** The original REQ-SEC-2 specified a human-readable filename including formation and digits. For multi-play exports, there is no single formation/digits pair. Resolution (in Section 10): use `"\(cards.count)-plays"` as the human-readable segment. Example: `"A1B2C3D4-9-plays-catalog.pdf"`.
+
+5. **`applyMotion` in `ExportCard.from(savedPlay:...)`:** The pseudocode in Section 3 calls `applyMotion(motion, to: playCall)` as a free function. This function does not exist yet. The implementing engineer must either (a) extract the motion logic from `PlayCallerViewModel` into a static `PlayCall` method (recommended), or (b) duplicate the logic inline in `ExportCard` with a backlog comment. The spec recommends (a) — document the decision explicitly in the implementation plan.
+
+**Hardest trade-off driven by which requirement:** The `SavedPlay` DTO decision (Section 2.1) is driven by the boundary integrity requirement: keeping persistence concerns out of the `PlayCall` model. Making `PlayCall` Codable is technically feasible but blends concerns — the model layer gains a persistence responsibility that belongs to the service layer. The DTO approach is stricter but requires re-parsing at export time. The extra 5–15ms per play at export time is the price, and the performance budget comfortably absorbs it.
 
 **What would invalidate this design:**
-- If PDFKit's `PDFPage` override mechanism is unavailable or broken on a specific iOS 17.x point release (unlikely but possible with Apple framework regressions). Mitigation: fall back to `UIGraphicsImageRenderer` + embedded image (Option A) with an explicit 4x scale factor to meet 300 dpi.
-- If `DiagramRenderer.draw(into:playCall:config:in:)` produces visually incorrect output in the PDF coordinate system (despite the coordinate flip) for a specific formation or motion combination. Mitigation: validate all formations and Y Wheel in `DiagramRendererOffScreenTests` before merge.
 
-**Cheap validation:** Before Story 3.1.3 implementation begins, write a standalone Swift playground or CLI tool that instantiates `WristbandPDFPage` with hardcoded test data, calls `PDFDocument.dataRepresentation()`, and writes the PDF to disk. Open in Preview. Confirm the coordinate system flip is correct and the 4-up grid positions are visually accurate. This 30-minute exercise catches 90% of layout bugs before any integration with the ViewModel or View.
+- If `RouteInterpreter.interpret()` is not deterministic (same digits + formation always produce the same assignments), then `ExportCard` reconstruction from `SavedPlay` would be unreliable. Confidence: HIGH that it is deterministic — it is a pure function over digit strings and enum inputs.
+- If Apple's PDFKit `PDFPage` subclass draw mechanism produces different results between iOS 17 point releases (unlikely but possible with framework regressions). Fallback: `UIGraphicsImageRenderer` + embedded bitmap at 4x scale (Option A from original spec). Flag this only if PDFKit regression is observed.
+- If Ken's legibility review of the 9-up catalog layout determines the font sizes (8–10pt) are too small for sideline use. In that case, fall back to 6-up (3×2) — changes only `CatalogCardConfig` constants and the page count formula; the generator architecture is unaffected.
+
+**Cheap validation for catalog layout:** Before implementing the full generator, write a test that constructs a `CatalogPDFPage` with 9 hardcoded `ExportCard` values (all fields populated, including Y Wheel), writes the PDF to the simulator Documents directory, and visually inspects in Preview at 100% zoom. This 30–60 minute exercise catches the majority of coordinate-flip, cell-positioning, and font-size bugs before integration with the ViewModel and library.
