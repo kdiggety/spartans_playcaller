@@ -23,6 +23,22 @@ final class PlayCallerViewModel: ObservableObject {
     @Published var leftSideConcept: RouteConcept?
     @Published var rightSideConcept: RouteConcept?
 
+    // MARK: - Save Play State
+
+    @Published var saveConfirmed: Bool = false
+
+    var canSave: Bool {
+        currentPlayCallWithMotion != nil || currentPlayCall != nil
+    }
+
+    // MARK: - Export State
+
+    @Published var isExporting: Bool = false
+
+    var canExport: Bool {
+        currentPlayCallWithMotion != nil || currentPlayCall != nil
+    }
+
     // MARK: - Services
 
     private let interpreter = RouteInterpreter()
@@ -127,6 +143,17 @@ final class PlayCallerViewModel: ObservableObject {
         // Clear concept selection if it's not available in new formation
         if let current = selectedConcept, !availableConcepts.contains(current) {
             selectedConcept = nil
+        }
+    }
+
+    /// Called by PlayCallerView when the coach taps "Save Play".
+    /// The view passes the store to keep ViewModel dependency-free from PlayLibraryStore.
+    func confirmSave() {
+        guard canSave else { return }
+        saveConfirmed = true
+        Task {
+            try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
+            saveConfirmed = false
         }
     }
 
