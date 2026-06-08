@@ -1,9 +1,11 @@
-# Product Spec: Epic 3.1 — Wristband Export & Game-Day Deployment
+# Product Spec: Epic 3.1 — Play Library, Play Catalog & Wristband Export
 
-**Date:** 2026-06-07
+**Date:** 2026-06-07 (revised)
 **Author:** Product Owner
-**Status:** READY FOR DESIGN CONSULTATION
+**Status:** READY FOR DESIGN CONSULTATION UPDATE
 **Epic Priority:** CRITICAL — blocks production deployment and coaching adoption
+
+**Revision summary:** Scope expanded from single-play wristband-only export to full play library + two export modes (Play Catalog primary, Wristband secondary) with multi-play selection. This revision supersedes the original 2026-06-07 wristband-only spec in its entirety.
 
 ---
 
@@ -11,25 +13,33 @@
 
 ### Problem
 
-Spartans Playcaller can build plays, parse route digits, and render route diagrams — but a coach cannot take any of that output onto the sideline. There is no way to export a play in a physical format usable during a game. The app is currently practice-room software: useful for building a playbook, useless at kickoff.
+Spartans Playcaller can build plays, parse route digits, and render route diagrams — but a coach cannot take any of that output onto the sideline. Two gaps block game-day deployment:
 
-Football coaches communicate plays from the sideline using **wristband cards** — laminated 3"×2" cards worn on the forearm or held on a clipboard, containing a compact grid of play calls. The coach calls a number; the player reads the corresponding card entry and runs the play. Wristbands are the last-mile delivery mechanism between the digital playbook and the field.
+**Gap 1: No play persistence.** The app shows one play at a time. When the coach changes formation or digits, the previous play is gone. There is no library, no history, and no way to collect the week's game-plan plays before exporting them. Multi-play export — which both export modes require — is impossible without a place to save plays.
 
-Without wristband export, the Spartans Playcaller cannot replace (or even supplement) a paper playbook. Every practice where the app is used requires a parallel manual wristband process. That manual process is the adoption blocker: coaches will not commit to the app if they still have to maintain a paper system in parallel.
+**Gap 2: No export.** Even for a single play, there is no way to produce a printable physical artifact. The app is currently practice-room software: useful for building a playbook, useless at kickoff.
+
+Football coaches communicate plays from the sideline using one of two physical formats:
+
+- **Play catalog sheets:** Dense game-plan reference sheets (6–9 plays per 8.5"×11" page) used by coaches in the booth or on the sideline clipboard. Coaches build the week's script, export one page, and reference it during the game.
+- **Wristband cards:** Laminated 3.5"×2.5" cards worn on the forearm or held on a clipboard, containing a compact set of play calls. The coach calls a number; the player reads the corresponding card and runs the play.
+
+Without play persistence and export, the Spartans Playcaller requires a parallel manual process for both formats. That parallel process is the adoption blocker: coaches will not commit to the app if they still have to maintain a paper system.
 
 ### Value
 
-Wristband export converts the app from a design tool into a **game-day system**:
+Adding a play library and two export modes converts the app from a design tool into a **game-day system**:
 
-- Coaches build plays in the app, export wristband PDFs, print and laminate — one workflow, no parallel process.
-- Each exported card carries exactly the information a player needs: formation, concept, digit sequence, and a miniature route diagram.
-- The share sheet integration (AirDrop, email, Files) means cards can be distributed digitally before printing — useful for coaching staff coordination.
+- Coaches build plays during the week, save them to the in-app library, and accumulate the game-plan script without losing work between sessions.
+- On the eve of game day, the coach selects the relevant plays, chooses an export mode, and prints in one action.
+- **Play catalog** produces a dense reference sheet the coaching staff reads from. **Wristband** produces cut-ready lamination cards the players wear.
+- The share sheet (AirPrint, Files, email, AirDrop) distributes either format digitally before printing.
 
-This is the single highest-leverage feature for moving from "interesting prototype" to "deployed coaching tool."
+This is the single highest-leverage feature set for moving from "interesting prototype" to "deployed coaching tool."
 
-### Why It Is Critical-Path
+### Why Both Modes Are Critical-Path
 
-Without this epic, every other feature improvement (Empty formation, Concept Discovery, Motion Diagram Clarity) ships into a dead end. Coaches evaluate the app by whether it helps them on game day. Until wristband export exists, the honest answer is: it does not. Adoption cannot happen without it.
+Play catalog is the primary mode: coaches reference it throughout the game. Wristband is secondary: it serves players who need physical cards. Both are in scope for V1 because coaches need both formats to replace their paper system. A coaching staff that can only export one format still maintains a parallel paper process for the other — which means partial adoption, not full adoption.
 
 ---
 
@@ -37,292 +47,392 @@ Without this epic, every other feature improvement (Empty formation, Concept Dis
 
 ### Primary User: Ken (Head Coach / Coordinator)
 
-Ken builds the play call system, enters route digits, and needs to produce wristbands for players and assistant coaches before games. His workflow:
+Ken builds the play call system, enters route digits, and needs to produce both reference sheets and wristbands before games. His weekly workflow:
 
-1. Opens app during the week, builds the week's play calls.
-2. Before game day, selects the current play, exports a wristband PDF.
-3. Prints on a standard printer (8.5"×11" sheet), cuts cards to size, laminates.
-4. Distributes to players; cards are worn on the forearm or tucked into a wristband sleeve.
+1. Opens app during the week, builds the week's play calls one at a time.
+2. Saves each play to the in-app library using a "Save Play" button.
+3. Before game day, opens the library, selects the plays for the game plan (multi-select).
+4. Exports in Catalog mode for sideline reference sheets (coaches read this).
+5. Exports in Wristband mode for player cards (players wear these).
+6. Prints both PDFs on a standard printer, cuts/laminates as appropriate, distributes.
 
 ### Secondary Users: Players and Assistant Coaches
 
-They receive physical wristband cards. They do not use the app. Their requirements flow through card legibility and information completeness — they need to read a card in under 2 seconds under sideline conditions (glare, adrenaline, limited time).
+They receive physical artifacts (wristband cards or catalog printouts). They do not use the app. Their requirements flow through legibility and information completeness — they need to read a card in under 2 seconds under sideline conditions (glare, adrenaline, limited time).
 
 ### Physical Context of Use
 
-- **Printing:** Standard inkjet or laser printer; 8.5"×11" output; cards are cut from the sheet.
-- **Lamination:** Consumer lamination pouches (common in coaching contexts). The laminate adds a thin gloss layer — line weights and font sizes that look fine on screen may become illegible after lamination at small sizes.
-- **Field conditions:** Cards are read in sunlight, held at arm's length, often while moving. High contrast and large font are prioritized over information density.
-- **Card dimensions:** Target 3.5"×2.5" (standard card size, fits standard wristband sleeve). Minimum legible font on a laminated card at arm's length: 10pt printed equivalent.
+- **Printing:** Standard inkjet or laser printer; 8.5"×11" output.
+- **Catalog sheets:** Printed on plain paper; no lamination. Used by coaches on clipboard or in booth binder.
+- **Wristband cards:** Cut from sheet and laminated. Consumer lamination pouches are standard. Font sizes and line weights must survive lamination.
+- **Field conditions:** Cards read in sunlight at arm's length, often while moving. High contrast and adequate font size are prioritized.
+- **Wristband card dimensions:** Target 3.5"×2.5" (standard wristband sleeve fit). Minimum legible font on a laminated card at arm's length: 10pt printed equivalent.
+- **Catalog card dimensions:** Smaller — target 6–9 plays per 8.5"×11" page; exact size driven by the layout algorithm.
 
 ---
 
-## 3. Wristband Card Format (Story 3.1.1 Resolution)
+## 3. Story 3.0: Play Library / Persistence (Enabler)
 
-### 3.1a Content Fields
+This story is a prerequisite for both export modes. Without it, multi-play selection has nothing to select from.
 
-Each card contains exactly the following fields, in priority order:
+### 3.0 Goal
+
+Coaches can save the play currently displayed in PlayCallerView to an in-app library with a single tap. The library persists across app launches. Coaches can view saved plays and delete individual entries.
+
+### 3.0 Acceptance Criteria
+
+**Save a play:**
+- Given a valid play call is displayed in PlayCallerView (formation + digits parsed, result shown), when the coach taps "Save Play", then the play is added to the library and the button provides brief visual confirmation (checkmark or brief "Saved" label).
+- Given the coach taps "Save Play" for a play that is already in the library (same formation + same route digits), then the app either de-duplicates silently or prompts the coach — behavior must be consistent and predictable (recommend: save as a new entry with a timestamp, allowing duplicates; coach decides what to keep).
+- Given no valid play call is displayed, when the coach looks at the PlayCallerView toolbar, then the Save Play button is disabled or absent.
+
+**View and delete saved plays:**
+- Given the coach has saved at least one play, when they navigate to the Library view (accessible from PlayCallerView or a tab), then they see a list of saved plays, each showing: formation name, route digits, concept name (if matched), and motion state (if not None).
+- Given a list of saved plays, when the coach swipes left on an entry or taps a delete control, then that play is removed from the library and the list updates immediately.
+- Given the library has no saved plays, when the coach views the Library, then a clear empty state is displayed (e.g., "No plays saved yet. Build a play and tap Save Play.").
+
+**Persistence across launches:**
+- Given the coach saves three plays and force-quits the app, when they relaunch the app, then all three plays are present in the Library with their formation, digits, concept, and motion state intact.
+- Given the persistence mechanism is UserDefaults or a flat JSON file in the app sandbox, then no network access, CoreData, or iCloud sync is required or used.
+
+**Domain annotations:**
+- Persistence model (encode/decode PlayCall to JSON) → software-engineer
+- Library list view, delete flow, empty state, Save Play button in PlayCallerView → software-engineer, ux-designer review
+- Persistence correctness (encode/decode round-trip, launch survival) → sdet
+- Performance: library write/read under 50ms for up to 200 saved plays → performance-engineer assessment
+- Security: no PII stored; file written to app sandbox only, not shared container → security-engineer
+
+---
+
+## 4. Card Content Fields (Both Modes)
+
+Each card in either export mode contains a common set of fields. The layout, font size, and card dimensions differ by mode, but the information content is the same.
+
+### 4.1 Common Content Fields
 
 | Field | Content | Required? |
 |-------|---------|-----------|
-| Play number | Sequential integer assigned by coach at print time (1, 2, 3…) | Yes |
+| Play number | Sequential integer assigned in selection order (1, 2, 3…) | Yes |
 | Formation | Formation name (e.g., "Twins", "Trips Right") | Yes |
 | Route digits | Digit sequence (e.g., "6794") with X Y Z A H labels | Yes |
 | Concept name | Named concept if one matches (e.g., "Smash"); omitted if no match | Conditional |
 | Y Motion | Motion state if not None (e.g., "Y Stop", "Y Go"); omitted if None | Conditional |
-| Mini diagram | Miniature route diagram rendered from DiagramRenderer output | Yes |
-| Notes field | One blank line for handwritten annotation | Optional (print-time) |
+| Mini diagram | Miniature route diagram rendered from DiagramRenderer | Yes |
+| Notes field | One blank rule for handwritten annotation | Yes (wristband only; optional for catalog) |
 
-**Rationale for field decisions:**
+**Resolved: Post-motion diagram (OQ-1 from prior spec)**
 
-- Play number is the sideline communication primitive — the coach calls "seven," the player looks at card 7. Without a number, the card has no call-side identity.
-- Formation + digits together constitute the complete play call. Neither alone is sufficient.
-- Concept name is a coaching shorthand that aids player recognition and recall. It appears when matched; the card is still complete without it.
-- Y Motion is critical when present — running a play without knowing Y's motion instruction is a football error, not just a display gap.
-- Mini diagram gives the player spatial confirmation of their route. Text alone is insufficient for new or complex plays.
-- Notes field allows coaches to hand-annotate printed cards with game-specific reads or opponent-specific instructions. It requires only a blank space.
+The mini diagram renders the **post-motion** receiver layout — the state after Y motion has been applied, if any. This is the state the player executes. The post-motion PlayCall (currentPlayCallWithMotion ?? currentPlayCall) drives both the diagram and the motion label field.
 
-### 3.1b Physical Constraints
+Rationale: A player reading a card needs to know where they line up after motion completes, not where they started. The pre-motion state is a coaching-internal detail; the card is a player-execution artifact.
 
-- **Card dimensions:** 3.5"×2.5" per card (targeting standard wristband sleeve fit)
-- **Grid layout (default):** 4 cards per 8.5"×11" page in a 2×2 grid, with 0.25" bleed margins and 0.125" gutter between cards. This yields four complete cards per printed sheet, requiring a single cut down the center of each axis.
-- **Font size floor:** Formation name and route digits at minimum 12pt; play number at minimum 14pt bold; receiver labels at minimum 8pt. Mini diagram occupies the lower 40% of the card area.
-- **Legibility standard:** Card content must be readable by a person with average vision at 18" distance without magnification, after printing at standard printer DPI (300 dpi minimum equivalent).
+**Y Motion label mapping (resolved):**
+- ReceiverMotion.stop → "Y Stop"
+- ReceiverMotion.after (Go) → "Y Go"
+- nil → no field rendered (no blank label, no dash)
 
-### 3.1c Format Decision: PDF via PDFKit
-
-**Decision:** PDF output rendered via iOS PDFKit. No third-party dependencies.
-
-**Rationale:**
-
-- PDFKit is available natively on iOS 11+ (well within iOS 17+ target); no additional dependencies, no App Store review concerns about third-party frameworks.
-- PDF is the correct format for print-destined output: resolution-independent vector rendering, standard print dialog support via AirPrint, universally openable via Files app, email, and iCloud.
-- Images (PNG/JPEG) are an alternative but lose resolution independence — a photo shared to a print shop renders at screen resolution, which is insufficient for clean small-text output.
-- App-specific formats (playbook files) are a v2 concern for playbook persistence; they do not address the immediate print-and-laminate need.
-
-**Rejected alternatives:**
-
-- PNG/JPEG: lossy, resolution-bound, inappropriate for print with fine text.
-- App-specific format: does not solve the physical card problem; adds a custom serialization layer with no near-term payoff.
-
-### 3.1d Card Density
-
-**V1 scope: 4-up grid (2×2) on a single 8.5"×11" page.**
-
-The grid produces a single PDF page per export action. The coach prints the sheet, makes two cuts, and has four cards. This is the simplest workflow: one tap, one print, four cards.
-
-**V2 (out of scope for this spec):** Per-card single-page PDF for coaches who want full-bleed cards at larger sizes, or multi-sheet grid exports of 8+ plays.
+**Play number assignment:**
+- Play numbers are assigned sequentially based on the coach's selection order in the export flow (1 for the first selected play, 2 for the second, etc.).
+- This requires multi-select to be in place before play numbers can be assigned — which is why Story 3.0 (library) is a prerequisite.
 
 ---
 
-## 4. Export Flow (Story 3.1.2 Resolution)
+## 5. Story 3.1: Play Catalog Export (Primary Mode)
 
-### 4.1 V1 Scope: Export Current Play Only
+### 5.1 Goal
 
-V1 exports the single play currently displayed in `PlayCallerView`. Multi-select from a play history list is a v2 concern and is explicitly out of scope (see Section 6). The current play is always defined and immediately available — this keeps the export path zero-friction.
+Produce a dense, game-plan reference sheet PDF with multiple plays per page. Coaches print this on plain paper and reference it from the sideline or booth. This is the primary export mode.
 
-**Rationale for single-play-first:** There is no persistent play history in the app today. Multi-select requires a play list, which requires play persistence, which is a distinct feature. Attempting to scope multi-select into this epic conflates two separate problems. Shipping single-play export unblocks the coaching workflow; play history is a separate backlog item.
+### 5.2 Catalog Format
 
-### 4.2 Export Entry Point
+- **Page:** US Letter 8.5"×11", landscape orientation (wider than tall, giving more horizontal real estate for a row of cards).
+- **Density target:** 6–9 plays per page. The layout algorithm must achieve at least 6 plays per page on a single landscape sheet.
+- **Recommended layout:** 3 columns × 2 rows = 6 plays per page (conservative, readable). An alternate 3×3 grid (9 plays per page) is the stretch target — Ken confirms which density to ship based on legibility review.
+- **Card approximate size at 6-up (3×2):** The 8.5"×11" landscape sheet in points is 792pt wide × 612pt tall. With 18pt margins and 9pt gutters: card width ≈ (792 - 36 - 18) / 3 ≈ 246pt (3.4"); card height ≈ (612 - 36 - 9) / 2 ≈ 283pt (3.9"). These are larger than wristband cards — more space per play, smaller font than wristband is unnecessary; font stays legible.
+- **Card approximate size at 9-up (3×3):** card width ≈ 246pt; card height ≈ (612 - 36 - 18) / 3 ≈ 186pt (2.6"). Comparable to wristband card height. Legibility must be validated by Ken.
+- **Font sizes (catalog, 6-up as baseline):** Play number 16pt bold; formation 13pt semibold; digits 13pt medium; receiver labels 9pt; concept 11pt semibold; motion 10pt; diagram occupies lower 40% of card.
+- **Printing intent:** Plain paper, no lamination required. Coaches do not cut the sheet — they reference it whole.
+- **No cut guides needed** (catalog is read whole, not cut into individual cards).
 
-A share icon button (`square.and.arrow.up`) is added to the navigation bar trailing area in `PlayCallerView`, adjacent to the existing "Reset" button.
+### 5.3 Story 3.1 Acceptance Criteria
 
-- The button is **disabled** when no valid play call is currently displayed (i.e., `currentPlayCall == nil`).
-- The button is **enabled** whenever a play call result is showing — formation, digits, and diagram are all available.
-- Tapping the button opens the export action sheet (see 4.3).
+**PDF structure:**
+- Given a selection of N plays, when Catalog export is triggered, then the generated PDF contains ceil(N/6) pages (for 6-up layout), each page being US Letter landscape.
+- Given a generated catalog PDF, when opened in any PDF viewer, then it renders without errors or missing content.
 
-**Why toolbar, not inline:** The export action is a document-level action (export this play), not a field-level action. Toolbar placement signals document-level scope, consistent with iOS convention. It also avoids cluttering the result section, which coaches scan visually.
+**Card content:**
+- Given a play with formation "Twins" and digits "6794", when the catalog PDF is generated, then the card displays: play number (sequential), "Twins", "6 7 9 4" with X Y Z A labels, the mini route diagram, and (if matched) the concept name.
+- Given a play with concept nil, when the PDF is generated, then no concept field appears — no blank label.
+- Given a play with Y Motion = .stop, when the PDF is generated, then "Y Stop" appears on the card.
+- Given a play with Y Motion = nil, when the PDF is generated, then no Y Motion field appears.
+- Given Y Wheel is enabled for a play, when the PDF is generated, then the mini diagram renders Y's route as the wheel arc.
 
-### 4.3 Export Action Sheet
+**Density and layout:**
+- Given 6 plays selected, when Catalog export generates a PDF, then all 6 plays appear on a single landscape page with no overflow to a second page.
+- Given 7 plays selected, when Catalog export generates a PDF, then 6 plays appear on page 1 and 1 play appears on page 2.
+- Given Ken reviews the physical printout at the chosen density (6-up or 9-up), then Ken confirms the information is legible without magnification and the format is usable on the sideline. (Sign-off AC — blocks Story 3.3.)
 
-On tap of the export button, the app presents a standard iOS action sheet with the following options:
-
-1. **Export as PDF** — generates the wristband card PDF and presents the system share sheet (`UIActivityViewController`). This covers: AirPrint (print directly to a compatible printer), save to Files, send via email, AirDrop to another device.
-2. **Cancel** — dismisses the sheet.
-
-The action sheet is presented with a title: "Export Wristband Card" and a message: "[Formation] [Digits]" (the current play's display name), so the coach confirms they are exporting the intended play.
-
-**Why share sheet instead of a custom save flow:** `UIActivityViewController` gives the coach every standard output option (print, Files, email, AirDrop, Messages) without the app implementing any of them. It is the correct iOS primitive for document sharing and requires no additional infrastructure.
-
-### 4.4 Play Number Assignment
-
-Because V1 has no persistent play history, the play number on the card is assigned automatically as "1" for single-play exports. The coach can annotate with a handwritten number in the notes field, or the V2 multi-select feature will assign sequential numbers. This is documented as a known limitation of V1 scope.
-
-### 4.5 State at Export Time
-
-The exported card captures the current state including Y Motion and Y Wheel state. If the play has Y After/Go applied, the card reflects that. The mini diagram renders the post-motion receiver positions. This ensures the card matches exactly what the coach sees on screen.
-
----
-
-## 5. Stories with Acceptance Criteria
-
-### Story 3.1.1: Define Wristband Card Format
-
-**Goal:** Establish and document the canonical card layout so implementation has a precise target.
-
-This spec serves as the format definition. The coach survey requirement (original story) is satisfied by Ken as primary coach and product owner — the format above is the approved output of that consultation.
-
-**Acceptance Criteria:**
-
-- Given this spec exists and is committed, when implementation begins, then the card layout (fields, order, physical dimensions) matches Section 3 of this document without interpretation ambiguity.
-- Given a printed card at 3.5"×2.5", when viewed at 18" by a person with average vision, then all text fields (formation name, route digits, play number, concept name if present, Y Motion if present) are legible without magnification.
-- Given any play call with a matched concept (e.g., Smash on Twins), when the card is rendered, then the concept name appears on the card and is visually distinct from the formation name and digits.
-- Given a play call with Y Motion set to None, when the card is rendered, then no Y Motion field appears (no empty label, no dash).
-- Given a play call with Y Motion set to After/Go, when the card is rendered, then "Y Go" (or equivalent short label) appears on the card.
-- Given Ken reviews a printed card from a real export, then Ken confirms the format matches coaching intent and the card would be usable on game day. (Sign-off AC — blocks Story 3.1.5.)
+**Domain annotations:**
+- PDF generation, catalog layout algorithm → software-engineer
+- Density and legibility validation (printed artifact) → product owner (Ken sign-off)
+- Automated layout geometry assertions (card count, page count, media box) → sdet
+- PDF generation latency (<500ms for 9 plays on iPhone 13) → performance-engineer
 
 ---
 
-### Story 3.1.2: Design Export Flow
+## 6. Story 3.2: Wristband Export (Secondary Mode)
 
-**Goal:** Specify and validate the UX before implementation so no rework occurs at the UI layer.
+### 6.1 Goal
 
-**Acceptance Criteria:**
+Produce cut-ready lamination cards for players. Each page contains 4 copies of the same play (2×2 grid) at wristband card size (3.5"×2.5"), so the coach makes two cuts and has four identical cards — one for each player at the position, plus staff copies.
 
-- Given `PlayCallerView` has a valid play call displayed, when the coach looks at the navigation bar, then an export button (share icon) is visible and tappable.
-- Given no play call is displayed (app just opened, or after reset), when the coach looks at the navigation bar, then the export button is visible but disabled (grayed out, non-interactive).
-- Given the coach taps the export button, when the action sheet appears, then it displays the title "Export Wristband Card" and the current play's display name (formation + digits).
-- Given the coach selects "Export as PDF" in the action sheet, when the PDF is generated, then the iOS share sheet appears with print, Files, email, and AirDrop as available activities.
-- Given the coach selects "Cancel" in the action sheet, when the sheet dismisses, then the app state is unchanged (play call still displayed, no file generated).
-- Given a UX designer reviews the flow (or Ken reviews wireframes/prototype), then the entry point and action sheet are confirmed as intuitive and non-disruptive to the play-building workflow.
+When multiple plays are selected in wristband mode, the PDF contains one page per play (each page has 4 copies of that single play). The coach prints the set of pages and cuts each sheet separately.
 
----
+### 6.2 Wristband Format
 
-### Story 3.1.3: Implement PDF Generation
+- **Page:** US Letter 8.5"×11", portrait orientation.
+- **Grid:** 4-up 2×2 grid — 4 identical copies of the same play per page.
+- **Card size:** 3.5"×2.5" (252pt×180pt at 72pt/inch).
+- **Page margins:** 0.25" (18pt); gutter between cards: 0.125" (9pt).
+- **Cut guides:** Thin hairline rule (0.25pt) at vertical and horizontal gutter centers — print aids for cutting.
+- **Font sizes:** Play number 18pt bold; formation 14pt semibold; digits 14pt medium; receiver labels 9pt; concept 12pt semibold; motion 11pt; diagram occupies lower 40% of card area; notes rule at 8pt label.
+- **Notes field:** One blank rule with "Notes:" label — for handwritten annotations. Present on wristband cards; optional on catalog cards.
+- **Printing intent:** Plain paper, then consumer lamination pouches. Font sizes and line weights must survive lamination gloss.
 
-**Goal:** Produce a correctly formatted, printable PDF using PDFKit.
+### 6.3 Multi-Play Wristband Behavior
 
-**Acceptance Criteria:**
+- 1 play selected → 1 PDF page (4 copies of that play).
+- 3 plays selected → 3 PDF pages (4 copies of play 1 on page 1; 4 copies of play 2 on page 2; 4 copies of play 3 on page 3).
+- Play numbers on each page are sequential from the coach's selection order.
 
-- Given any valid `PlayCall` object, when `WristbandPDFGenerator.generate(playCall:)` is called, then it returns a non-nil `Data` value representing a valid PDF.
-- Given a generated PDF, when opened in any PDF viewer (Files app, Preview on macOS), then the document renders without errors or missing content.
-- Given a play call with formation "Twins" and digits "6794", when the PDF is generated, then the card displays: play number "1", formation "Twins", digits "6 7 9 4" (with X Y Z A labels), the mini route diagram, and (if matched) the concept name.
-- Given a play call where concept is nil (no match), when the PDF is generated, then no concept name field appears on the card — no blank label, no dash.
-- Given a play call with Y Motion = `.stop`, when the PDF is generated, then "Y Stop" appears on the card in the motion field.
-- Given a play call with Y Wheel enabled, when the PDF is generated, then the mini diagram renders Y's route as the wheel arc, not a numbered route path.
-- Given a generated PDF, when printed at 300 dpi on an 8.5"×11" sheet, then the 2×2 card grid fits within the printable area with 0.25" margins, and all four cards are identical (V1 single-play export repeats the card four times to fill the sheet).
-- Given the PDF generation call, when it completes, then no third-party frameworks are imported — only `PDFKit`, `SwiftUI`, `UIKit`, and `Foundation`.
-- Given a call to `WristbandPDFGenerator.generate(playCall:)`, when execution completes, then it returns synchronously on the main actor (or is properly async-annotated) without blocking the UI for more than 500ms on an iPhone 13 or later.
+### 6.4 Story 3.2 Acceptance Criteria
 
-**Domain:** PDF/rendering → software-engineer. Print layout validation → sdet.
+**PDF structure:**
+- Given N plays selected in Wristband mode, when the PDF is generated, then the PDF contains exactly N pages.
+- Given any single page of the wristband PDF, when opened in a PDF viewer, then it displays 4 identical cards in a 2×2 grid on a US Letter portrait page.
+- Given the PDF is printed at 300 dpi on an 8.5"×11" sheet, then the 2×2 card grid fits within the printable area with 0.25" margins, and two cuts along the gutter hairlines produce four cards of the correct 3.5"×2.5" size.
 
----
+**Card content:** (same as Catalog — see Section 5.3 card content criteria; they apply equally.)
 
-### Story 3.1.4: Add Export UI to PlayCallerView
+**Physical validation:**
+- Given Ken prints a generated wristband PDF on a standard inkjet printer, cuts along the hairlines, and laminates the cards, then all text is legible at 18" by a person with average vision.
+- Given Ken reviews the complete wristband card layout, when comparing it to his existing manual wristband format, then Ken confirms the information is complete and the format is usable without modification. (Sign-off AC — blocks Story 3.3.)
 
-**Goal:** Wire the export button and action sheet into `PlayCallerView` with correct enable/disable behavior.
-
-**Acceptance Criteria:**
-
-- Given `PlayCallerView` is loaded, when the navigation bar renders, then a share icon button appears at the trailing position, adjacent to "Reset".
-- Given `viewModel.currentPlayCall == nil` and `viewModel.currentPlayCallWithMotion == nil`, when the toolbar renders, then the export button has `isEnabled == false` (visually disabled).
-- Given a valid play call is present, when the export button is tapped, then an action sheet is presented (not a navigation push, not a modal sheet) with options "Export as PDF" and "Cancel".
-- Given "Export as PDF" is selected, when `WristbandPDFGenerator.generate(playCall:)` completes, then `UIActivityViewController` is presented with the PDF data and a default filename of `"[FormationName]-[Digits]-wristband.pdf"`.
-- Given the share sheet is presented, when the coach selects Print, then AirPrint dialog appears with the wristband PDF loaded.
-- Given the share sheet is presented, when the coach selects Save to Files, then the PDF is saved to the user's selected Files location.
-- Given the coach dismisses the share sheet (cancel), when the view returns to `PlayCallerView`, then the play call state is unchanged.
-- Given an error occurs during PDF generation, when the error is caught, then an alert is presented with a user-readable message ("Could not generate wristband. Please try again.") — the app does not crash.
-
-**Domain:** UI wiring → software-engineer. Accessibility (button label, disabled state VoiceOver) → ux-designer review. End-to-end share sheet flow → sdet.
+**Domain annotations:**
+- PDF generation, wristband layout (4-up per-play pages) → software-engineer
+- E2E: button → action sheet → mode selection → PDF → share sheet → print → physical card → legibility → sdet (automated) + product owner (physical validation)
+- PDF generation latency for N-page wristband (<500ms per page on iPhone 13) → performance-engineer
+- File protection, temp file cleanup, metadata stripping → security-engineer
 
 ---
 
-### Story 3.1.5: Test with Coaches
+## 7. Story 3.3: Coach Field Validation (was 3.1.5)
 
-**Goal:** Validate the exported card in real-world use conditions (print, laminate, sideline) before declaring the epic complete.
+### 7.1 Goal
 
-**Acceptance Criteria:**
+Validate both exported formats in real-world use conditions before declaring the epic complete.
 
-- Given a PDF generated from a real play call, when Ken prints it on a standard inkjet printer (or sends to a print shop), then the physical cards are cut-ready with correct dimensions and bleed.
-- Given a printed and laminated card, when Ken reads it under typical outdoor lighting conditions, then all text fields are legible without magnification.
-- Given Ken reviews the complete card layout, when comparing it to his existing manual wristband format, then Ken confirms the information is complete and the format is usable without modification.
-- Given the exported card, when Ken uses it in a practice session, then play calls are executed correctly using the card — no confusion from missing or ambiguous information.
-- Given post-practice feedback, when Ken identifies any critical legibility or format issues, then those issues are either fixed before the epic is closed or documented in the backlog with clear priority and a trigger condition.
-- Given Ken signs off on the format, when this AC is confirmed, then the epic is declared complete and "Completed" status is recorded in the backlog.
+### 7.2 Acceptance Criteria
 
-**Domain:** Coach field validation → product owner (Ken). Any format iteration → software-engineer. Backlog updates → product owner.
+- Given catalog PDFs generated from a real game-plan set (6–9 plays), when Ken prints on a standard inkjet printer, then the reference sheet is legible and usable as a sideline reference without modification.
+- Given wristband PDFs generated from the same play set, when Ken prints, cuts, and laminates, then the physical cards are cut-ready, correctly dimensioned, and legible in outdoor lighting without magnification.
+- Given Ken reviews both exported formats against his existing manual workflows, then Ken confirms: (a) catalog replaces or improves on his paper reference sheet, (b) wristband replaces or improves on his manual laminate cards.
+- Given Ken uses both formats in a practice session, then play calls are executed correctly using the cards — no confusion from missing or ambiguous information.
+- Given any critical legibility or format issues identified by Ken, then those issues are either fixed before the epic is closed or documented in the backlog with clear priority and a trigger condition.
+- Given Ken signs off on both formats, when this AC is confirmed, then the epic is declared complete and "Completed" status is recorded in the backlog.
+
+**Domain:** Coach field validation → product owner (Ken). Format iterations → software-engineer. Backlog updates → product owner.
 
 ---
 
-## 6. Out of Scope
+## 8. Export Flow (Multi-Select)
 
-The following are explicitly excluded from Epic 3.1. Anything below that appears in conversations during implementation should be added to the backlog, not to this epic.
+The export flow applies to both Catalog and Wristband modes. The mode choice happens at the end, after play selection.
+
+### 8.1 Step-by-Step Flow
+
+1. **Save plays to library (during prep):** Coach builds plays in PlayCallerView during the week. Each play is saved to the library via the "Save Play" button before moving to the next play.
+
+2. **Enter export flow:** Coach taps the Export button in PlayCallerView or from the Library view. Both entry points are acceptable; the Library view entry is preferred because it shows the coach all available plays before selection.
+
+3. **Multi-select plays:** Coach sees a list of saved plays with multi-select enabled. Options:
+   - "Select All" toggle
+   - Individual play checkboxes
+   - Selection count shown in the export button label (e.g., "Export 4 Plays")
+
+4. **Choose export mode:** After selection is confirmed, the coach chooses Catalog or Wristband via an action sheet or segmented control:
+   - "Play Catalog — dense reference sheet"
+   - "Wristband Cards — lamination-ready 3.5"×2.5" cards"
+   - "Cancel"
+
+5. **PDF generated and share sheet presented:** The app generates the PDF for the chosen mode and presents UIActivityViewController (AirPrint, Save to Files, email, AirDrop).
+
+### 8.2 Export Entry Points
+
+**From PlayCallerView (quick export):** A share icon button in the navigation bar trailing area. Tapping opens the export flow directly. The current play is pre-selected if it has been saved to the library; if it has not been saved, the app prompts: "Save this play to the library first, or export the library directly." This prevents exporting unsaved work accidentally.
+
+**From Library view:** A toolbar Export button opens the same multi-select flow against the full library.
+
+### 8.3 Export Button States
+
+- Export button is **disabled** when the library is empty (no plays saved yet).
+- Export button shows selection count once the coach begins selecting plays.
+- Export button changes to a spinner during PDF generation.
+- PDF generation is dispatched off the main thread; UI remains responsive.
+
+### 8.4 Story 3.1 and 3.2 UI Acceptance Criteria (Export Flow)
+
+- Given the library has at least one saved play, when the coach taps Export, then a multi-select play list is presented.
+- Given the coach selects 0 plays and taps the export button, then the button is disabled (cannot trigger generation with zero selection).
+- Given the coach taps "Select All", then all plays in the library are selected and the count updates.
+- Given the coach taps a selected play, then it is deselected and the count decrements.
+- Given the coach confirms selection and is presented with mode options, when they choose "Play Catalog", then the catalog PDF is generated and the share sheet is presented.
+- Given the coach chooses "Wristband Cards", then the wristband PDF (one page per selected play) is generated and the share sheet is presented.
+- Given the coach taps Cancel at the mode selection step, then no PDF is generated and the app returns to the selection screen.
+- Given an error occurs during PDF generation, then an alert is presented with a user-readable message ("Could not generate PDF. Please try again.") — the app does not crash.
+- Given the share sheet is dismissed by the coach (Cancel), then any temporary file is cleaned up and app state is unchanged.
+
+**Domain annotations:**
+- Multi-select list view, Select All, mode action sheet, button states → software-engineer, ux-designer review
+- Accessibility: selection state announced via VoiceOver, button disabled states, action sheet accessibility → ux-designer
+- E2E export flow (select → mode → generate → share sheet → cancel → state unchanged) → sdet
+- Share sheet error path and temp file cleanup → security-engineer
+
+---
+
+## 9. Out of Scope (V1)
+
+The following are explicitly excluded from this epic. Scope creep toward these items should be redirected to the backlog.
 
 | Out-of-Scope Item | Reason / Expected Home |
 |-------------------|----------------------|
-| Multi-select from a play history list | Requires persistent play storage (separate epic). V2 of export. |
-| Play history / playbook persistence | Distinct feature; no data model exists today. |
-| Per-card single-page PDF layout | V2 density option. 2×2 grid covers the V1 use case. |
-| Cloud sync of plays or PDFs | Explicitly excluded from project non-goals (no backend). |
-| Android or web export | Not in scope for iOS-only project. |
-| QR code on card linking to digital play | Requires backend; out of scope. |
-| Play number managed by the app | Requires play history. V1 defaults to "1". |
+| iCloud sync of play library | No backend; explicitly excluded from project non-goals. |
+| Cloud storage of PDFs | No backend. |
+| Android or web export | iOS-only project. |
+| QR code on card linking to digital play | Requires backend. |
 | Custom card branding / team logo | Future UX enhancement; not blocking game-day use. |
-| PDF password protection | No compliance requirement; adds friction for coaches. |
-| Batch export of 8+ plays in one action | Requires multi-select; V2. |
-| Watch / iPad optimization | iOS iPhone target only for V1. |
+| PDF password protection | No compliance requirement; adds friction. |
+| Concept name in action sheet confirmation | V2 copy refinement. |
+| Watch / iPad layout optimization | iPhone target only for V1. |
+| Per-card single-page PDF layout | V2 density option; both grid formats cover V1 needs. |
+| Accessible (tagged) PDF for screen readers | V2; print-destined artifact. |
+| In-app print preview | V2; AirPrint preview in share sheet satisfies the need. |
+| Custom share sheet activities | V2; system activities cover all stated needs. |
+| Play editing in library | V2; saves are immutable in V1. Edit = delete + rebuild. |
+| Play ordering / drag-reorder in library | V2; export order follows save order or selection order. |
+| Team branding header on cards | V2 UX enhancement. |
+| Play number persistence across exports | V2; numbers are assigned at export time. |
 
 ---
 
-## 7. Roles
+## 10. Stories Summary
+
+| Story | Title | Priority | Prerequisite |
+|-------|-------|----------|-------------|
+| 3.0 | Play Library / Persistence | Required enabler | None |
+| 3.1 | Play Catalog Export | Primary export | 3.0 |
+| 3.2 | Wristband Export | Secondary export | 3.0 |
+| 3.3 | Coach Field Validation | Sign-off gate | 3.1, 3.2 |
+
+**Note on numbering:** The original backlog's "Epic 3.2: Concept Discovery" is a separate epic and is not affected by this numbering. These stories are sub-stories within Epic 3.1 (the wristband/export epic), not a new top-level epic.
+
+---
+
+## 11. Roles
 
 | Role | Involvement | Phase |
 |------|-------------|-------|
-| Product Owner | Spec, acceptance sign-off, coach validation (Story 3.1.5), backlog update | Steps 1, 13 |
-| UX Designer | Export flow review, accessibility check on toolbar button and action sheet | Step 2 consultation, Step 6 review |
-| Software Engineer | PDF generation (`WristbandPDFGenerator`), `PlayCallerView` toolbar and action sheet, `UIActivityViewController` wiring | Step 6 implementation |
-| SDET | Test strategy, test plan, E2E validation of export flow (button enabled/disabled, action sheet, share sheet), PDF content validation, test results report | Steps 4, 8 |
-| Performance Engineer | PDF generation latency assessment (<500ms target on iPhone 13), memory impact of PDFKit rendering with Canvas-based diagram | Steps 4, 9 |
-| Security Engineer | Involvement assessment: PDFKit is on-device only, no credentials, no network; lightweight review. Confirm no PII leakage in PDF metadata. | Steps 2, 10 |
-| Architecture / System Design | Review `WristbandPDFGenerator` placement in project structure (Services/ vs new layer); confirm DiagramRenderer reuse or adaptation strategy for PDF context | Step 3 |
+| Product Owner | Spec, acceptance sign-off, coach validation (Story 3.3), backlog update | Steps 1, 13 |
+| UX Designer | Library list view, multi-select flow, mode selection, Save Play button placement, accessibility on all new controls | Step 2 consultation, Step 6 review |
+| Software Engineer | PlayLibrary persistence model, Save Play button, Library view, multi-select export flow, CatalogPDFGenerator, WristbandPDFGenerator, PlayCallerView wiring, UIActivityViewController | Step 6 implementation |
+| SDET | Test strategy update, test plan covering: library encode/decode round-trip, launch persistence, multi-select state, catalog layout geometry, wristband layout geometry, export E2E flow, share sheet cancel, error path | Steps 4, 8 |
+| Performance Engineer | Library read/write latency (up to 200 plays), catalog PDF generation latency (<500ms for 9 plays), wristband PDF generation latency (<500ms per page), memory impact of multi-page PDF | Steps 4, 9 |
+| Security Engineer | Involvement assessment: on-device only, no network, no credentials; sandbox file write; PDF metadata stripping; temp file cleanup; library file protection | Steps 2, 10 |
+| Architecture / System Design | Review PlayLibrary persistence layer placement; CatalogPDFGenerator vs WristbandPDFGenerator decomposition; shared PDFCard model; multi-page layout algorithm; DiagramRenderer reuse for both generators | Step 3 |
 | Auditor | Conformance review: spec AC vs shipped artifact | Step 11 |
 
 ---
 
-## 8. Success Metrics
+## 12. Success Metrics
 
 The epic is complete when all of the following are observable:
 
 1. **Build gate:** Project compiles without errors or warnings introduced by this epic; all existing tests continue to pass.
-2. **Export reachable:** The export button appears in `PlayCallerView` when a play call is displayed; it is disabled when no play call is present.
-3. **PDF correctness:** A generated PDF contains all required card fields (play number, formation, route digits, concept name when matched, Y Motion when not None, mini diagram). Verified by SDET automated content check and manual visual inspection.
-4. **Print fidelity:** A card printed at 300 dpi on 8.5"×11" produces four legible wristband cards after two cuts, with text readable at 18" by a person with average vision.
-5. **Coach sign-off:** Ken confirms in Story 3.1.5 that the exported card is usable on game day — not just technically correct, but coaching-workflow correct.
-6. **Share sheet coverage:** At minimum AirPrint, Save to Files, and email are available and functional via the system share sheet.
-7. **Performance floor:** PDF generation completes in under 500ms on an iPhone 13 or later (measured by performance-engineer assessment or automated benchmark).
-8. **No regressions:** All pre-existing SDET test results remain passing after this epic lands.
+2. **Library reachable:** Save Play button appears in PlayCallerView when a valid play call is displayed; Library view is accessible and lists saved plays.
+3. **Persistence confirmed:** Plays saved in one session are present after force-quit and relaunch.
+4. **Catalog export reachable:** Export flow is accessible from PlayCallerView and/or Library view; Catalog mode produces a landscape PDF with 6–9 plays per page.
+5. **Wristband export reachable:** Wristband mode produces a portrait PDF with 4 copies of each selected play on separate pages.
+6. **PDF correctness (both modes):** All required fields present on each card (play number, formation, route digits, concept when matched, Y Motion when not None, mini diagram). Verified by SDET automated geometry assertions and manual visual inspection.
+7. **Print fidelity (catalog):** Catalog sheet printed on plain paper is legible and usable as a sideline reference — confirmed by Ken.
+8. **Print fidelity (wristband):** Wristband PDF printed at 300 dpi, cut along hairlines, and laminated produces 3.5"×2.5" cards with text readable at 18" — confirmed by Ken.
+9. **Coach sign-off:** Ken confirms in Story 3.3 that both exported formats are usable on game day — coaching-workflow correct, not just technically correct.
+10. **Share sheet coverage:** AirPrint, Save to Files, and email available via system share sheet for both modes.
+11. **Performance floor:** Catalog PDF generation (<500ms for 9 plays on iPhone 13); wristband PDF generation (<500ms per page); library read/write (<50ms for up to 200 plays).
+12. **No regressions:** All pre-existing SDET test results remain passing after this epic lands.
 
 ---
 
-## 9. Open Questions
+## 13. Open Questions (New)
 
-These require Ken's input before or during implementation. Items marked **BLOCKING** must be resolved before Story 3.1.3 begins.
+The following open questions arise from the revised scope. Prior blocking questions OQ-1 and OQ-2 from the original spec are resolved below.
 
-| # | Question | Impact | Status |
-|---|----------|--------|--------|
-| 1 | **BLOCKING:** Should the mini diagram on the card render the post-motion receiver layout (with Y in its final position) or the pre-motion base formation? | Determines which `PlayCall` object (base vs `currentPlayCallWithMotion`) drives the diagram. | Open — recommend post-motion as default; confirm with Ken. |
-| 2 | **BLOCKING:** Should the card repeat four times to fill the 2×2 grid (simplest V1), or should V1 produce a single-card page (one card centered on the sheet) and the grid be V2? | Single-card is easier to implement; grid is more useful for printing. This spec recommends grid (4 copies of the same card), but Ken should confirm. | Open — spec recommends 4-up grid; confirm with Ken. |
-| 3 | What label should the motion field use? Options: "Y Stop", "Y Go", "Y After/Go", or the full `ReceiverMotion.rawValue`. Short labels are better for card space. | Affects PDF rendering text. | Open — recommend "Y Stop" / "Y Go"; confirm with Ken. |
-| 4 | Should the play number on V1 cards be "1" (fixed default), blank (coach writes in), or omitted entirely? | Determines whether the number field appears on V1 cards. | Open — recommend blank/omitted for V1 since no play history exists; confirm with Ken. |
-| 5 | Is there a team name, season, or branding element that should appear on cards (e.g., "Spartans" header)? | Optional but affects card layout space allocation. | Open — not required for V1 game-day use; flag as V2 enhancement unless Ken requests it. |
-| 6 | What is the target printer? If a specific printer model is known (e.g., a school printer with known DPI), the PDF page size and margin assumptions can be confirmed. | Affects whether 8.5"×11" US Letter is the right page size (vs A4 for international use). | Open — assuming US Letter; confirm with Ken. |
+**Previously-blocking questions — now resolved:**
+
+| # | Question | Resolution |
+|---|----------|-----------|
+| OQ-1 | Post-motion vs pre-motion diagram | **Post-motion.** Both catalog and wristband cards render the post-motion receiver layout. See Section 4.1. |
+| OQ-2 | 4-up 2×2 grid vs single-card page for wristband | **4-up 2×2 grid per play, one page per play.** Multi-play wristband = multiple pages, one grid per play. See Section 6.3. |
+
+**New open questions:**
+
+| # | Question | Impact | Status | Recommended Default |
+|---|----------|--------|--------|-------------------|
+| NQ-1 | **Catalog density: 6-up (3×2) or 9-up (3×3)?** Confirm which density to ship. 6-up is more legible; 9-up fits more plays per page. | Determines font sizes, card dimensions, and page algorithm for catalog generator. | Open — recommend 6-up for V1 with 9-up as a V2 option; confirm with Ken. | 6-up |
+| NQ-2 | **Catalog orientation: landscape or portrait?** Landscape (11"×8.5") gives wider cards in a 3-column layout; portrait (8.5"×11") gives taller cards. | Determines page dimensions for catalog PDF. | Open — recommend landscape for 3-column density; confirm with Ken. | Landscape |
+| NQ-3 | **Library entry point in app navigation:** Should the Library be a modal sheet (accessed from a toolbar button in PlayCallerView), a second tab in a TabView, or a navigation push? | Determines structural change to app navigation. Architecture consultation must weigh in. | Open — recommend modal sheet accessed from a "Library" toolbar button to avoid TabView structural change in V1; confirm with Ken and UX designer. | Modal sheet |
+| NQ-4 | **Save Play duplicate handling:** If the coach saves the same formation + digits combination twice, should the app (a) save as a new entry, (b) silently de-duplicate, or (c) prompt the coach? | Affects library data model and save logic. | Open — recommend save as new entry (timestamps differentiate; coach curates); confirm with Ken. | New entry |
+| NQ-5 | **Catalog notes field:** Should catalog cards include a notes rule (like wristband), or omit it to maximize diagram and text space? | Affects catalog card layout and diagram zone height. | Open — recommend omit for catalog (space is tight; catalog is a read-only reference), include for wristband only; confirm with Ken. | Omit for catalog |
+| NQ-6 | **Export from PlayCallerView with unsaved play:** If the coach taps Export in PlayCallerView but the current play has not been saved to the library, should the app (a) prompt to save first, (b) auto-save and include in selection, or (c) allow exporting the current play without saving? | Affects export entry point behavior. | Open — recommend (a) prompt to save or navigate to Library; confirm with Ken. | Prompt |
+
+**NQ-1 and NQ-2 are BLOCKING for architecture and catalog PDF generation design. All others can be resolved during Step 3 architecture consultation.**
 
 ---
 
 ## Appendix A: Key Code Touchpoints
 
-Implementation will interact with these existing files:
+Implementation will interact with or create these files:
 
-- `/SpartansPlaycaller/Views/PlayCallerView.swift` — toolbar button addition, action sheet presentation, share sheet presentation
-- `/SpartansPlaycaller/ViewModels/PlayCallerViewModel.swift` — read `currentPlayCall` and `currentPlayCallWithMotion` for export state
-- `/SpartansPlaycaller/Models/PlayCall.swift` — primary data model passed to PDF generator
-- `/SpartansPlaycaller/Services/DiagramRenderer.swift` — reuse or adapt for off-screen Canvas rendering in PDF context
-- New: `/SpartansPlaycaller/Services/WristbandPDFGenerator.swift` — PDF generation service (new file, placed in Services/)
+**Existing (read/modified):**
+- `SpartansPlaycaller/Views/PlayCallerView.swift` — Save Play button, Export button, library entry point
+- `SpartansPlaycaller/ViewModels/PlayCallerViewModel.swift` — canSave, saveCurrentPlay(), canExport, exportCurrentPlay()
+- `SpartansPlaycaller/Models/PlayCall.swift` — must be Codable for library persistence; current struct is not Codable
+- `SpartansPlaycaller/Services/DiagramRenderer.swift` — reuse for PDF context rendering (both generators)
 
-`DiagramRenderer` uses SwiftUI Canvas for on-screen rendering. PDF context rendering with PDFKit will require either: (a) rendering the Canvas to an off-screen `UIGraphicsImageRenderer` and embedding the resulting image in the PDF, or (b) re-implementing the draw calls using `CGContext` directly in a `PDFPage` subclass. Architecture consultation (Step 3) should resolve this before implementation.
+**New (created):**
+- `SpartansPlaycaller/Models/PlayLibraryEntry.swift` — Codable wrapper around PlayCall with save timestamp
+- `SpartansPlaycaller/Services/PlayLibrary.swift` — persistence service (JSON encode/decode to app sandbox)
+- `SpartansPlaycaller/Views/PlayLibraryView.swift` — library list view with multi-select and delete
+- `SpartansPlaycaller/Models/ExportCard.swift` — shared value type for both generators (replaces WristbandCard)
+- `SpartansPlaycaller/Models/ExportCardConfig.swift` — layout constants per mode (catalog variant and wristband variant)
+- `SpartansPlaycaller/Services/CatalogPDFGenerator.swift` — catalog mode PDF generation
+- `SpartansPlaycaller/Services/WristbandPDFGenerator.swift` — wristband mode PDF generation (updated from V1 single-play assumption)
+- `SpartansPlaycaller/Models/DiagramConfig+CardScale.swift` — card-scale DiagramConfig factory (shared by both generators)
+
+**Architectural note:** The existing architecture design doc (`2026-06-07-wristband-export-design.md`) specifies the wristband PDF pipeline in detail. Its core decisions (PDFKit, vector CGContext rendering via Option B, security requirements REQ-SEC-1 through REQ-SEC-4, coordinate system flip, WristbandCardConfig layout math) remain valid for the wristband mode and should be preserved. The architecture doc must be updated to cover: (a) PlayLibrary persistence layer, (b) CatalogPDFGenerator decomposition, (c) shared ExportCard model replacing WristbandCard, (d) catalog page layout algorithm, and (e) Library navigation entry point.
 
 ---
 
-## Appendix B: Non-Goal Restatement
+## Appendix B: Constraint Restatement
 
-This epic does not implement play persistence, play history, a playbook management screen, cloud storage, or any backend. It takes the currently-displayed play, wraps it in a printable card, and hands it to the iOS share sheet. Scope creep toward "playbook management" should be redirected to a future epic.
+- **PDF:** PDFKit only. No third-party PDF dependencies.
+- **Persistence:** UserDefaults or flat JSON file in app sandbox. No CoreData. No iCloud sync in V1.
+- **Network:** None. All functionality is on-device.
+- **iOS target:** iOS 17+.
+- **Page size:** US Letter (8.5"×11"). Catalog: landscape. Wristband: portrait.
+- **PlayCall Codable requirement:** PlayCall and all its dependent types (Formation, RouteAssignment, RouteNumber, RouteConcept, ReceiverMotion, etc.) must be made Codable to support JSON library persistence. This is a new requirement relative to the original spec and is the primary new technical risk. Architecture consultation must assess scope of Codable conformance work.
+
+---
+
+## Appendix C: Architecture Design Doc Status
+
+The existing architecture design doc at `docs/superpowers/specs/2026-06-07-wristband-export-design.md` was written for the original single-play wristband-only scope. It remains valid as the wristband mode design and should not be discarded. The architecture agent must produce an **updated or supplemental design spec** covering the new scope additions (library, catalog mode, multi-select flow). The existing doc's wristband pipeline, security requirements, and coordinate system design carry forward unchanged.
