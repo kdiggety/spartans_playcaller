@@ -1,6 +1,6 @@
 # Spartans Playcaller — Comprehensive Improvement Backlog
 
-**Last Updated:** 2026-05-29  
+**Last Updated:** 2026-06-07  
 **Audit Status:** Complete (architecture, software-engineer, sdet, ux-designer, technical-researcher)
 
 ---
@@ -405,7 +405,7 @@ Pro Left/Right formations were recently added to the codebase (Pro Left, Pro Rig
 #### Epic 3.1: Wristband Export & Game-Day Deployment
 **Priority:** CRITICAL (blocking adoption)  
 **Estimated Effort:** 20–24 hours  
-**Status:** Pending  
+**Status:** COMPLETED — 2026-06-07 (PR #4, commit 1f8ccb4, squash-merged from feat/play-library-and-export)  
 **Trigger:** Now (prerequisite for production deployment)
 
 **Problem Statement:**
@@ -457,6 +457,14 @@ Coaches need to export plays in a wristband-ready format (laminated cards worn o
     - Coaches successfully use wristbands in practice setting
     - Card format is approved by coaches
     - Feedback indicates feature is game-ready
+
+**Shipped (2026-06-07):**
+- Story 3.0: Play library persistence — SavedPlay DTO + PlayLibraryStore
+- Story 3.1: Wristband export — 4-up portrait PDF via UIActivityViewController
+- Story 3.2: Play catalog export — 9-up landscape PDF via UIActivityViewController
+- Quick-export path from PlayCallerView toolbar (single play, wristband or catalog)
+- Library export path from PlayLibraryView (multi-select from saved library)
+- Save play, view library, and share toolbar buttons
 
 **Success Metrics:**
 - Coaches can generate and print wristbands from app
@@ -713,7 +721,7 @@ Twins formation now allows independent concept selection for left and right side
 | 2.2: Route Modifiers | Coverage | MEDIUM | 12–16h | Pending | On coach request |
 | 2.3: Y Wheel Research & Planning | Coverage | MEDIUM | 16–24h | Pending | After Empty ships |
 | 2.4: Pro Concepts | Coverage | MEDIUM | 6–8h | Pending | Now |
-| 3.1: Wristband Export | Productivity | **CRITICAL** | 20–24h | Pending | Now |
+| 3.1: Wristband Export | Productivity | **CRITICAL** | 20–24h | **COMPLETED 2026-06-07** | — |
 | 3.2: Concept Discovery & Learning | Productivity | HIGH | 12–16h | Pending | Before adoption |
 | 3.3: Motion Diagram Clarity | Productivity | HIGH | 8–10h | Pending | Before Y motion ships |
 | 3.4: Receiver Table UX | Productivity | MEDIUM | 6–8h | Pending | Post-wristband |
@@ -725,7 +733,7 @@ Twins formation now allows independent concept selection for left and right side
 ## Recommended Roadmap (Priority Order)
 
 ### Immediate (Next 2 Weeks)
-1. **3.1: Wristband Export** — Unblocks production deployment; critical for adoption
+1. ~~**3.1: Wristband Export**~~ — SHIPPED 2026-06-07
 2. **2.1: Empty Formation** — Highest ROI formation; enables modern offense plays
 3. **3.6: Twins Chips UI** — Feature design is done; implement and validate
 
@@ -749,7 +757,7 @@ Twins formation now allows independent concept selection for left and right side
 
 ## Success Criteria (Overall Backlog)
 
-- [ ] Wristband export enables game-day deployment (coaches can print/share plays)
+- [x] Wristband export enables game-day deployment (coaches can print/share plays) — SHIPPED 2026-06-07
 - [ ] Empty formation is available and feature-complete (all concepts, Y motion works)
 - [ ] Twins chips UI is validated with coaches and shipped
 - [ ] Route interpretation is extensible (custom routes can be added without major refactoring)
@@ -762,7 +770,7 @@ Twins formation now allows independent concept selection for left and right side
 
 ## Notes
 
-- **Wristband Export is CRITICAL.** Without it, the app is a practice tool, not a game-day system. This should be your first priority after current feature work.
+- **Wristband Export is CRITICAL.** SHIPPED 2026-06-07. The app is now a game-day system — coaches can generate, save, and share wristband PDFs from within the app.
 - **Empty Formation is the next high-ROI feature.** Low complexity, high coaching value, enables modern offense plays.
 - **Refactoring (1.1, 1.2) unblocks future growth.** Invest in architecture early to reduce friction when adding custom routes and formations.
 - **Coach feedback is essential.** Validate Twins chips UI, concept discovery, and wristband format with real coaches before shipping.
