@@ -34,8 +34,8 @@ struct WristbandCardConfig {
     let notesFontSize: CGFloat = 8.0
 
     // Diagram zone (relative to card top-left)
-    // Starts at y=92pt within card (after header rows), ends 10pt from card bottom
-    let diagramZoneTopY: CGFloat = 92.0
+    // Starts at y≈62pt within card (one combined header row + optional concept/motion + divider)
+    let diagramZoneTopY: CGFloat = 62.0
 
     var diagramZoneSize: CGSize {
         let height = cardHeight - diagramZoneTopY - cardInset - 14.0 // -14 for notes line

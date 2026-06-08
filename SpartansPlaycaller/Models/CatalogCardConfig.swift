@@ -21,7 +21,8 @@ struct CatalogCardConfig {
     let motionFontSize: CGFloat = 8.0
 
     // Diagram zone (relative to card top-left)
-    let diagramZoneTopY: CGFloat = 70.0
+    // Starts at y≈45pt within card (one combined header row + optional concept/motion + divider)
+    let diagramZoneTopY: CGFloat = 45.0
 
     var diagramZoneSize: CGSize {
         let height = cardHeight - diagramZoneTopY - cardInset
