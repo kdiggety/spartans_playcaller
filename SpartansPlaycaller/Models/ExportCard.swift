@@ -11,6 +11,10 @@ struct ExportCard {
     let motionLabel: String?
     let yWheelEnabled: Bool
     let playCall: PlayCall   // post-motion, drives diagram rendering
+
+    var combinedHeaderString: String {
+        "\(playNumber). \(formationName) \(routeDigits)"
+    }
 }
 
 extension ExportCard {
