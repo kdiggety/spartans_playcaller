@@ -1,6 +1,6 @@
 # Spartans Playcaller — Comprehensive Improvement Backlog
 
-**Last Updated:** 2026-06-07  
+**Last Updated:** 2026-06-08  
 **Audit Status:** Complete (architecture, software-engineer, sdet, ux-designer, technical-researcher)
 
 ---
@@ -466,6 +466,12 @@ Coaches need to export plays in a wristband-ready format (laminated cards worn o
 - Library export path from PlayLibraryView (multi-select from saved library)
 - Save play, view library, and share toolbar buttons
 
+**Shipped (2026-06-08) — PDF Card Display Improvements (PR #5, commit e4dc5a9):**
+- Combined `"N. Formation Digits"` header row in wristband and catalog PDFs (replaces 3-row split format)
+- Receiver letter labels (X/Y/Z/A/H) drawn inside receiver dots on route diagram
+- Larger diagram zone (wristband +45% height, catalog +25% height)
+- **Awaiting visual sign-off:** Ken must confirm play call header is readable, receiver letters are visible on dots, and cards are print-legible before this item is fully accepted.
+
 **Success Metrics:**
 - Coaches can generate and print wristbands from app
 - Wristband cards are legible and contain necessary information
@@ -722,6 +728,7 @@ Twins formation now allows independent concept selection for left and right side
 | 2.3: Y Wheel Research & Planning | Coverage | MEDIUM | 16–24h | Pending | After Empty ships |
 | 2.4: Pro Concepts | Coverage | MEDIUM | 6–8h | Pending | Now |
 | 3.1: Wristband Export | Productivity | **CRITICAL** | 20–24h | **COMPLETED 2026-06-07** | — |
+| 3.1a: PDF Card Display Improvements | Productivity | HIGH | 4–6h | **SHIPPED 2026-06-08 (PR #5, e4dc5a9) — awaiting visual sign-off** | — |
 | 3.2: Concept Discovery & Learning | Productivity | HIGH | 12–16h | Pending | Before adoption |
 | 3.3: Motion Diagram Clarity | Productivity | HIGH | 8–10h | Pending | Before Y motion ships |
 | 3.4: Receiver Table UX | Productivity | MEDIUM | 6–8h | Pending | Post-wristband |
@@ -758,6 +765,7 @@ Twins formation now allows independent concept selection for left and right side
 ## Success Criteria (Overall Backlog)
 
 - [x] Wristband export enables game-day deployment (coaches can print/share plays) — SHIPPED 2026-06-07
+- [~] PDF card display improvements (combined header, receiver labels, larger diagrams) — SHIPPED 2026-06-08; awaiting Ken visual sign-off
 - [ ] Empty formation is available and feature-complete (all concepts, Y motion works)
 - [ ] Twins chips UI is validated with coaches and shipped
 - [ ] Route interpretation is extensible (custom routes can be added without major refactoring)
@@ -771,6 +779,7 @@ Twins formation now allows independent concept selection for left and right side
 ## Notes
 
 - **Wristband Export is CRITICAL.** SHIPPED 2026-06-07. The app is now a game-day system — coaches can generate, save, and share wristband PDFs from within the app.
+- **PDF card display improvements SHIPPED 2026-06-08** (PR #5, commit e4dc5a9). Combined header row, receiver letter labels, and larger diagram zones are live. Visual sign-off from Ken is pending — confirms feature fully accepted once legibility is confirmed in print.
 - **Empty Formation is the next high-ROI feature.** Low complexity, high coaching value, enables modern offense plays.
 - **Refactoring (1.1, 1.2) unblocks future growth.** Invest in architecture early to reduce friction when adding custom routes and formations.
 - **Coach feedback is essential.** Validate Twins chips UI, concept discovery, and wristband format with real coaches before shipping.

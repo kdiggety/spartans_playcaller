@@ -118,3 +118,29 @@ final class PlayLibraryStoreTests: XCTestCase {
 ```
 
 **Why it matters:** Without `@MainActor`, Swift concurrency produces compile-time isolation errors when calling actor-isolated methods. Discovered during Epic 3.1 — two generated test files required `@MainActor` annotation that the software-engineer agent omitted. The SDET agent should verify this pattern when reviewing generated test files for any new `ObservableObject` service or ViewModel.
+
+---
+
+## Xcode project.pbxproj Registration Rule
+
+**Rule:** When a software-engineer agent creates any new Swift source or test file, it must also register that file in `SpartansPlaycaller.xcodeproj/project.pbxproj`. Writing a file to disk is not sufficient — Xcode requires explicit `PBXBuildFile`, `PBXFileReference`, `PBXGroup`, and `PBXSourcesBuildPhase` entries for the file to be compiled and executed.
+
+**A task is not complete until `xcodebuild test` compiles without errors attributable to the new file.** The "Run tests" step in every implementation task serves as the verification gate.
+
+**SDET role:** If SDET discovers unregistered files during verification, flag this as an implementing-agent gap (not a silent corrective action) and add the entries before proceeding. Document the gap in the test results report.
+
+**Why it matters:** Discovered in both Epic 3.1 (source files) and the pdf-card-labels feature (test files). In both cases, files existed on disk but were absent from the project build phase, causing the tests to be silently excluded from the test run.
+
+---
+
+## Disk Space Pre-flight Check
+
+**Rule:** Before executing `git push` or triggering a large Xcode build, verify available disk space is sufficient. If disk usage exceeds ~90% (`df -h .` shows less than ~10% free), halt and surface a warning before proceeding. Do not attempt to push or build through near-full disk conditions.
+
+**Periodic cleanup commands** to keep disk healthy:
+```bash
+xcrun simctl delete unavailable          # removes old simulator runtimes
+rm -rf ~/Library/Developer/Xcode/DerivedData  # frees several GB of build artifacts
+```
+
+**Why it matters:** Discovered during pdf-card-labels feature — disk at 97% caused `git push` to fail mid-delivery, requiring Ken to manually free space. DerivedData and simulator runtimes accumulate silently and the condition is invisible until a write fails.
