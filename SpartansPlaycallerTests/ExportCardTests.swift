@@ -91,4 +91,32 @@ final class ExportCardTests: XCTestCase {
         let card = ExportCard.from(savedPlay: saved, playNumber: 1, interpreter: interpreter)
         XCTAssertEqual(card?.conceptName, "Smash")
     }
+
+    @MainActor
+    func testExportCard_reflectsEditedValues() throws {
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("export-edit-\(UUID()).json")
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+
+        let store = PlayLibraryStore(fileURL: tempURL)
+        let interpreter = RouteInterpreter()
+        guard case .success(let pc) = interpreter.interpret(digits: "6794", formation: .twins) else {
+            XCTFail(); return
+        }
+        store.save(pc, motion: nil, yWheelEnabled: false)
+        let original = store.plays[0]
+
+        let edited = SavedPlay(
+            id: original.id, savedAt: original.savedAt,
+            formationName: "Twins", routeDigits: "6794",
+            conceptName: nil, motionLabel: "Y Stop", yWheelEnabled: false
+        )
+        let result = store.update(edited)
+        if case .failure(let err) = result { XCTFail("update failed: \(err)") }
+
+        let card = ExportCard.from(savedPlay: store.plays[0], playNumber: 1, interpreter: interpreter)
+        XCTAssertNotNil(card)
+        XCTAssertEqual(card?.routeDigits, "6794")
+        XCTAssertEqual(card?.motionLabel, "Y Stop")
+    }
 }
