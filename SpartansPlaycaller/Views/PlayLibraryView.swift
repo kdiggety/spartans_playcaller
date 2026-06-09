@@ -11,6 +11,10 @@ struct PlayLibraryView: View {
     @State private var exportMode: ExportMode? = nil
     @State private var isExporting = false
     @State private var exportError: String? = nil
+    @State private var playBeingEdited: SavedPlay? = nil
+    @State private var playPendingDelete: SavedPlay? = nil
+    @State private var showMultiDeleteConfirmation = false
+    @State private var showDeleteAllConfirmation = false
 
     private var selectedPlays: [SavedPlay] {
         store.plays.filter { selectedIDs.contains($0.id) }
@@ -32,16 +36,30 @@ struct PlayLibraryView: View {
                     Button("Done") { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    if isSelectMode {
-                        Button("Cancel") {
-                            isSelectMode = false
-                            selectedIDs = []
+                    HStack(spacing: 4) {
+                        if !isSelectMode && !store.plays.isEmpty {
+                            Menu {
+                                Button(role: .destructive) {
+                                    showDeleteAllConfirmation = true
+                                } label: {
+                                    Label("Delete All Plays", systemImage: "trash")
+                                }
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .accessibilityLabel("More options")
+                            }
                         }
-                    } else {
-                        Button("Select") {
-                            isSelectMode = true
+                        if isSelectMode {
+                            Button("Cancel") {
+                                isSelectMode = false
+                                selectedIDs = []
+                            }
+                        } else {
+                            Button("Select") {
+                                isSelectMode = true
+                            }
+                            .disabled(store.plays.isEmpty)
                         }
-                        .disabled(store.plays.isEmpty)
                     }
                 }
                 if isSelectMode {
@@ -50,6 +68,13 @@ struct PlayLibraryView: View {
                             Button("Select All") {
                                 selectedIDs = Set(store.plays.map { $0.id })
                             }
+                            Spacer()
+                            Button(role: .destructive) {
+                                showMultiDeleteConfirmation = true
+                            } label: {
+                                Label("Delete \(selectedIDs.count)", systemImage: "trash")
+                            }
+                            .disabled(selectedIDs.isEmpty)
                             Spacer()
                             exportButton
                         }
@@ -67,6 +92,41 @@ struct PlayLibraryView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(exportError ?? "Could not generate PDF. Please try again.")
+        }
+        .sheet(item: $playBeingEdited) { play in
+            EditPlayView(play: play)
+                .environmentObject(store)
+        }
+        .alert(item: $playPendingDelete) { play in
+            Alert(
+                title: Text("Delete Play?"),
+                message: Text("\(play.formationName) \(play.routeDigits)"),
+                primaryButton: .destructive(Text("Delete")) {
+                    if let index = store.plays.firstIndex(where: { $0.id == play.id }) {
+                        store.delete(at: IndexSet([index]))
+                    }
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .alert("Delete \(selectedIDs.count) Play\(selectedIDs.count == 1 ? "" : "s")?",
+               isPresented: $showMultiDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                let indices = IndexSet(store.plays.indices.filter { selectedIDs.contains(store.plays[$0].id) })
+                store.delete(at: indices)
+                selectedIDs = []
+                isSelectMode = false
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .alert("Delete All \(store.plays.count) Play\(store.plays.count == 1 ? "" : "s")?",
+               isPresented: $showDeleteAllConfirmation) {
+            Button("Delete All", role: .destructive) {
+                store.deleteAll()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This cannot be undone.")
         }
     }
 
@@ -97,9 +157,19 @@ struct PlayLibraryView: View {
                         }
                     }
                 }
-            }
-            .onDelete { offsets in
-                store.delete(at: offsets)
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button(role: .destructive) {
+                        playPendingDelete = play
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    Button {
+                        playBeingEdited = play
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                    .tint(.blue)
+                }
             }
         }
         .listStyle(.plain)
