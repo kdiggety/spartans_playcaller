@@ -10,13 +10,13 @@ final class EditPlayViewModel: ObservableObject {
     @Published var persistError: String?
     @Published var didSave = false
 
-    private let _original: SavedPlay
+    private let original: SavedPlay
 
     var isDirty: Bool {
-        selectedFormation.rawValue != _original.formationName
-            || routeDigitInput != _original.routeDigits
-            || selectedMotion?.rawValue != _original.motionLabel
-            || yWheelEnabled != _original.yWheelEnabled
+        selectedFormation.rawValue != original.formationName
+            || routeDigitInput != original.routeDigits
+            || selectedMotion?.rawValue != original.motionLabel
+            || yWheelEnabled != original.yWheelEnabled
     }
 
     init(play: SavedPlay) {
@@ -24,7 +24,7 @@ final class EditPlayViewModel: ObservableObject {
         self.routeDigitInput = play.routeDigits
         self.selectedMotion = play.motionLabel.flatMap(ReceiverMotion.init(rawValue:))
         self.yWheelEnabled = play.yWheelEnabled
-        self._original = play
+        self.original = play
     }
 
     func validateInput() {
@@ -43,13 +43,14 @@ final class EditPlayViewModel: ObservableObject {
 
     func save(to store: PlayLibraryStore) {
         let trimmed = routeDigitInput.trimmingCharacters(in: .whitespaces)
+        let effectiveMotion: ReceiverMotion? = selectedFormation.canApplyMotion() ? selectedMotion : nil
         let candidate = SavedPlay(
-            id: _original.id,
+            id: original.id,
             savedAt: Date(),
             formationName: selectedFormation.rawValue,
             routeDigits: trimmed,
-            conceptName: _original.conceptName,
-            motionLabel: selectedMotion?.rawValue,
+            conceptName: original.conceptName,
+            motionLabel: effectiveMotion?.rawValue,
             yWheelEnabled: yWheelEnabled
         )
         switch store.update(candidate) {

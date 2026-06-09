@@ -158,17 +158,19 @@ struct PlayLibraryView: View {
                     }
                 }
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button(role: .destructive) {
-                        playPendingDelete = play
-                    } label: {
-                        Label("Delete", systemImage: "trash")
+                    if !isSelectMode {
+                        Button(role: .destructive) {
+                            playPendingDelete = play
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                        Button {
+                            playBeingEdited = play
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        .tint(.blue)
                     }
-                    Button {
-                        playBeingEdited = play
-                    } label: {
-                        Label("Edit", systemImage: "pencil")
-                    }
-                    .tint(.blue)
                 }
             }
         }

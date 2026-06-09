@@ -85,14 +85,28 @@ final class EditPlayViewModelTests: XCTestCase {
         vm.selectedMotion = .stop
         vm.routeDigitInput = "6794"
         vm.save(to: store)
-        XCTAssertEqual(store.plays[0].motionLabel, "Y Stop")
+        XCTAssertEqual(store.plays[0].motionLabel, ReceiverMotion.stop.rawValue)
     }
 
-    func testSave_digitValidatedAgainstNewFormation() {
+    func testValidateInput_usesCurrentFormation() {
         let vm = EditPlayViewModel(play: store.plays[0])
         vm.selectedFormation = .tripsLeft
         vm.routeDigitInput = ""
         vm.validateInput()
         XCTAssertNotNil(vm.validationError, "Validation must run against the selected formation")
+    }
+
+    func testSave_playNotFound_setsPersistError() {
+        // Use a play that was never saved to the store
+        let phantom = SavedPlay(
+            id: UUID(), savedAt: Date(),
+            formationName: "Twins", routeDigits: "6794",
+            conceptName: nil, motionLabel: nil, yWheelEnabled: false
+        )
+        let vm = EditPlayViewModel(play: phantom)
+        vm.routeDigitInput = "6794"
+        vm.save(to: store)
+        XCTAssertNotNil(vm.persistError, "persistError must be set when play no longer exists")
+        XCTAssertFalse(vm.didSave)
     }
 }

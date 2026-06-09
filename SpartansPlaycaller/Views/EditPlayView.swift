@@ -26,6 +26,9 @@ struct EditPlayView: View {
                             } else {
                                 viewModel.selectedFormation = family.formation(side: .left)
                             }
+                            if !viewModel.selectedFormation.canApplyMotion() {
+                                viewModel.selectedMotion = nil
+                            }
                             viewModel.validateInput()
                         }
                     )) {
