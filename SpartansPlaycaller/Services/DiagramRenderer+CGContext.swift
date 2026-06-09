@@ -178,25 +178,26 @@ extension DiagramRenderer {
             let rect = CGRect(x: pos.x - r, y: pos.y - r, width: r * 2, height: r * 2)
             let color = UIColor(cgColor: receiverCGColor(for: assignment.receiver))
 
-            // Fill (alpha raised to 0.3 for legibility with letter overlay)
-            context.setFillColor(color.withAlphaComponent(0.3).cgColor)
+            // Fill
+            context.setFillColor(color.withAlphaComponent(0.2).cgColor)
             context.fillEllipse(in: rect)
             // Stroke
             context.setStrokeColor(color.cgColor)
             context.setLineWidth(1.0)
             context.strokeEllipse(in: rect)
-            // Letter label — drawn on top of the dot
+            // Letter label — drawn below the dot (matching app canvas behavior)
+            let labelH = fontSize + 2
+            let labelRect = CGRect(x: pos.x - 6, y: pos.y + r + 2, width: 12, height: labelH)
             let labelAttrs: [NSAttributedString.Key: Any] = [
                 .font: labelFont,
                 .foregroundColor: color,
                 .paragraphStyle: labelStyle
             ]
-            // Y-down re-flip: same technique as WristbandPDFPage.drawText
             context.saveGState()
-            context.translateBy(x: rect.minX, y: rect.maxY)
+            context.translateBy(x: labelRect.minX, y: labelRect.maxY)
             context.scaleBy(x: 1, y: -1)
             (assignment.receiver.rawValue as NSString).draw(
-                in: CGRect(x: 0, y: 0, width: rect.width, height: rect.height),
+                in: CGRect(x: 0, y: 0, width: labelRect.width, height: labelRect.height),
                 withAttributes: labelAttrs
             )
             context.restoreGState()

@@ -61,8 +61,8 @@ final class CatalogPDFPage: PDFPage {
         }
 
         // Divider
-        context.setStrokeColor(UIColor.black.withAlphaComponent(0.12).cgColor)
-        context.setLineWidth(0.35)
+        context.setStrokeColor(UIColor.black.withAlphaComponent(0.4).cgColor)
+        context.setLineWidth(0.5)
         context.move(to: CGPoint(x: origin.x + inset, y: y + 2))
         context.addLine(to: CGPoint(x: origin.x + w - inset, y: y + 2))
         context.strokePath()
