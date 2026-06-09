@@ -234,10 +234,10 @@ git commit -m "feat: PlayLibraryStore move/commitReorder/cancelReorder with TDD 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
 
-- [ ] Tests written (Step 1.1)
-- [ ] Store methods implemented (Step 1.2)
-- [ ] Build passes, all tests green (Step 1.2)
-- [ ] Committed (Step 1.3)
+- [x] Tests written (Step 1.1)
+- [x] Store methods implemented (Step 1.2)
+- [x] Build passes, all tests green (Step 1.2)
+- [x] Committed (Step 1.3)
 
 ---
 
@@ -360,9 +360,9 @@ git commit -m "test: reorder persistence integration tests (commit, cancel, dele
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
 
-- [ ] Three integration tests written and passing
-- [ ] All pre-existing tests green
-- [ ] Committed
+- [x] Three integration tests written and passing
+- [x] All pre-existing tests green
+- [x] Committed
 
 ---
 
@@ -723,13 +723,13 @@ git commit -m "feat: PlayLibraryView Edit mode with drag handles, snapshot, and 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
 
-- [ ] State properties added (Step 3.1)
-- [ ] Mode transition helpers added (Step 3.2)
-- [ ] `playList` updated with `.onMove` and `.environment(\.editMode, $editMode)` (Step 3.3)
-- [ ] Toolbar restructured: Cancel leading / Done trailing in Edit mode; "Select" → "Edit" (Step 3.4)
-- [ ] `PlayLibraryRow` updated with `dragHandleEnabled` parameter and drag handle icon (Step 3.5)
-- [ ] Build passes (Step 3.6)
-- [ ] Committed (Step 3.7)
+- [x] State properties added (Step 3.1)
+- [x] Mode transition helpers added (Step 3.2)
+- [x] `playList` updated with `.onMove` and `.environment(\.editMode, $editMode)` (Step 3.3)
+- [x] Toolbar restructured: Cancel leading / Done trailing in Edit mode; "Select" → "Edit" (Step 3.4)
+- [x] `PlayLibraryRow` updated with `dragHandleEnabled` parameter and drag handle icon (Step 3.5)
+- [x] Build passes (Step 3.6)
+- [x] Committed (Step 3.7)
 
 ---
 
@@ -789,11 +789,11 @@ Write the test results to `docs/test-plans/library-reorder-test-results.md`. The
 
 The 10 manual checks are defined in the Manual Verification Checklist below. SDET must execute all 10 before the results file is considered complete. An incomplete results file is not acceptable — each check must have a documented outcome.
 
-- [ ] Disk space verified (Step 4.1)
-- [ ] Full test suite passes (Step 4.2)
-- [ ] Branch pushed (Step 4.3)
-- [ ] Plan checkboxes updated and committed (Step 4.4)
-- [ ] Test results written to `docs/test-plans/library-reorder-test-results.md` (Step 4.5)
+- [x] Disk space verified (Step 4.1)
+- [x] Full test suite passes (Step 4.2)
+- [x] Branch pushed (Step 4.3)
+- [x] Plan checkboxes updated and committed (Step 4.4)
+- [x] Test results written to `docs/test-plans/library-reorder-test-results.md` (Step 4.5)
 
 ---
 
