@@ -122,12 +122,8 @@ final class WristbandPDFPage: PDFPage {
         drawText(text, in: rect, alignment: .center, font: font, into: context)
     }
 
-    /// Core text drawing: temporarily re-flip to Y-up so UIKit renders text correctly.
+    /// Core text drawing: context is already Y-down (screen coordinates); draw at rect directly.
     private func drawText(_ text: String, in rect: CGRect, alignment: NSTextAlignment, font: UIFont, into context: CGContext) {
-        context.saveGState()
-        context.translateBy(x: rect.minX, y: rect.maxY)
-        context.scaleBy(x: 1, y: -1)
-
         let style = NSMutableParagraphStyle()
         style.alignment = alignment
         let attrs: [NSAttributedString.Key: Any] = [
@@ -135,8 +131,9 @@ final class WristbandPDFPage: PDFPage {
             .foregroundColor: UIColor.black,
             .paragraphStyle: style
         ]
-        (text as NSString).draw(in: CGRect(x: 0, y: 0, width: rect.width, height: rect.height), withAttributes: attrs)
-        context.restoreGState()
+        UIGraphicsPushContext(context)
+        (text as NSString).draw(in: rect, withAttributes: attrs)
+        UIGraphicsPopContext()
     }
 }
 

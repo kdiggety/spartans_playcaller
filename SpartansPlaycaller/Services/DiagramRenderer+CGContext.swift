@@ -186,21 +186,21 @@ extension DiagramRenderer {
             context.setLineWidth(1.0)
             context.strokeEllipse(in: rect)
             // Letter label — drawn below the dot (matching app canvas behavior)
+            // Use black text for legibility on white background; colored dot already
+            // identifies the receiver.
             let labelH = fontSize + 2
             let labelRect = CGRect(x: pos.x - 6, y: pos.y + r + 2, width: 12, height: labelH)
             let labelAttrs: [NSAttributedString.Key: Any] = [
                 .font: labelFont,
-                .foregroundColor: color,
+                .foregroundColor: UIColor.black,
                 .paragraphStyle: labelStyle
             ]
-            context.saveGState()
-            context.translateBy(x: labelRect.minX, y: labelRect.maxY)
-            context.scaleBy(x: 1, y: -1)
+            UIGraphicsPushContext(context)
             (assignment.receiver.rawValue as NSString).draw(
-                in: CGRect(x: 0, y: 0, width: labelRect.width, height: labelRect.height),
+                in: labelRect,
                 withAttributes: labelAttrs
             )
-            context.restoreGState()
+            UIGraphicsPopContext()
         }
     }
 
