@@ -1,6 +1,34 @@
 import Foundation
 import Combine
 
+enum UpdateError: LocalizedError {
+    case playNotFound(UUID)
+    case invalidRouteDigits(String)
+    case persistenceFailed(Error)
+
+    var errorDescription: String? {
+        switch self {
+        case .playNotFound:
+            return "Play no longer exists. It may have been deleted."
+        case .invalidRouteDigits(let msg):
+            return msg
+        case .persistenceFailed:
+            return "Could not save. Your edit was not written to disk."
+        }
+    }
+}
+
+extension UpdateError: Equatable {
+    static func == (lhs: UpdateError, rhs: UpdateError) -> Bool {
+        switch (lhs, rhs) {
+        case (.playNotFound(let a), .playNotFound(let b)): return a == b
+        case (.invalidRouteDigits(let a), .invalidRouteDigits(let b)): return a == b
+        case (.persistenceFailed, .persistenceFailed): return true
+        default: return false
+        }
+    }
+}
+
 @MainActor
 final class PlayLibraryStore: ObservableObject {
     @Published private(set) var plays: [SavedPlay] = []
@@ -19,17 +47,52 @@ final class PlayLibraryStore: ObservableObject {
 
     func save(_ playCall: PlayCall, motion: ReceiverMotion?, yWheelEnabled: Bool) {
         plays.append(SavedPlay.from(playCall: playCall, motion: motion, yWheelEnabled: yWheelEnabled))
-        persist()
+        do { try persist() } catch { print("[PlayLibraryStore] persist failed: \(error)") }
     }
 
     func delete(at offsets: IndexSet) {
         plays.remove(atOffsets: offsets)
-        persist()
+        do { try persist() } catch { print("[PlayLibraryStore] persist failed: \(error)") }
     }
 
     func deleteAll() {
         plays = []
-        persist()
+        do { try persist() } catch { print("[PlayLibraryStore] persist failed: \(error)") }
+    }
+
+    @discardableResult
+    func update(_ play: SavedPlay) -> Result<Void, UpdateError> {
+        guard let index = plays.firstIndex(where: { $0.id == play.id }) else {
+            return .failure(.playNotFound(play.id))
+        }
+        guard let formation = Formation(rawValue: play.formationName) else {
+            return .failure(.invalidRouteDigits("Unknown formation: \(play.formationName)"))
+        }
+        let playCall: PlayCall
+        switch RouteInterpreter().interpret(digits: play.routeDigits, formation: formation) {
+        case .failure(let e):
+            return .failure(.invalidRouteDigits(e.localizedDescription))
+        case .success(let pc):
+            playCall = pc
+        }
+        let original = plays[index]
+        let updated = SavedPlay(
+            id: play.id,
+            savedAt: Date(),
+            formationName: play.formationName,
+            routeDigits: play.routeDigits,
+            conceptName: playCall.concept?.rawValue,
+            motionLabel: play.motionLabel,
+            yWheelEnabled: play.yWheelEnabled
+        )
+        plays[index] = updated
+        do {
+            try persist()
+            return .success(())
+        } catch {
+            plays[index] = original
+            return .failure(.persistenceFailed(error))
+        }
     }
 
     private func load() {
@@ -43,12 +106,8 @@ final class PlayLibraryStore: ObservableObject {
         }
     }
 
-    private func persist() {
-        do {
-            let data = try JSONEncoder().encode(plays)
-            try data.write(to: fileURL, options: .completeFileProtection)
-        } catch {
-            print("[PlayLibraryStore] persist failed: \(error)")
-        }
+    private func persist() throws {
+        let data = try JSONEncoder().encode(plays)
+        try data.write(to: fileURL, options: .completeFileProtection)
     }
 }
