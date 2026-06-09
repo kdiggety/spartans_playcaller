@@ -821,16 +821,16 @@ The 10 manual checks are defined in the Manual Verification Checklist below. SDE
 
 These checks must be performed on a simulator or device running the built app. Document each outcome in `docs/test-plans/library-reorder-test-results.md`.
 
-- [ ] **UI-1 (AC-1.1):** Enter Edit mode — drag handles (`≡` icon, trailing edge) appear at the trailing edge of each row. Both checkboxes (leading) and drag handles (trailing) are visible simultaneously without layout overlap.
-- [ ] **UI-2 (AC-1.2):** Drag a play to a new position — row lifts visually, adjacent rows shift to show the insertion point. Standard SwiftUI `.onMove` animation fires.
-- [ ] **UI-5 (AC-2.3 Done):** Tap Done — reordered order persists after app restart. Toolbar returns to Normal mode (Cancel/Done replace Edit/Done; "Edit" button reappears).
-- [ ] **UI-6 (AC-2.3 Cancel):** Tap Cancel — order reverts to pre-session state in real time (animated revert visible, no restart needed). No disk write occurred.
-- [ ] **UI-3 (AC-2.1):** There is no separate "Reorder" button anywhere in the library UI. "Edit" is the single entry point.
-- [ ] **UI-4 (AC-2.2):** With an empty library, the "Edit" button is disabled (grayed out or not tappable).
-- [ ] **UI-7 (AC-2.4):** With exactly 1 play in the library, enter Edit mode. Drag handle is visible at 30% opacity and does not initiate a drag when long-pressed.
-- [ ] **UI-8 (AC-2.5):** While in Edit mode, swipe a row — no Delete or Edit swipe actions appear. Tapping a row toggles its checkbox; it does not open the play editor.
-- [ ] **UI-9 (AC-1.3 live):** After dragging a play to a new position but before tapping Done, background-kill the app and relaunch. The library displays the pre-session order, not the in-session drag order (in-memory buffer not incidentally persisted).
-- [ ] **UI-10 (TQ-1):** In Edit mode with multiple plays checked (checkboxes active), drag a different row. After the drag: (a) the previously-checked plays remain checked, and (b) the drag handle is still functional for further drags. Selection and drag do not clobber each other.
+- [~] **UI-1 (AC-1.1):** Enter Edit mode — drag handles (`≡` icon, trailing edge) appear at the trailing edge of each row. Both checkboxes (leading) and drag handles (trailing) are visible simultaneously without layout overlap. *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-2 (AC-1.2):** Drag a play to a new position — row lifts visually, adjacent rows shift to show the insertion point. Standard SwiftUI `.onMove` animation fires. *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-5 (AC-2.3 Done):** Tap Done — reordered order persists after app restart. Toolbar returns to Normal mode (Cancel/Done replace Edit/Done; "Edit" button reappears). *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-6 (AC-2.3 Cancel):** Tap Cancel — order reverts to pre-session state in real time (animated revert visible, no restart needed). No disk write occurred. *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-3 (AC-2.1):** There is no separate "Reorder" button anywhere in the library UI. "Edit" is the single entry point. *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-4 (AC-2.2):** With an empty library, the "Edit" button is disabled (grayed out or not tappable). *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-7 (AC-2.4):** With exactly 1 play in the library, enter Edit mode. Drag handle is visible at 30% opacity and does not initiate a drag when long-pressed. *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-8 (AC-2.5):** While in Edit mode, swipe a row — no Delete or Edit swipe actions appear. Tapping a row toggles its checkbox; it does not open the play editor. *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-9 (AC-1.3 live):** After dragging a play to a new position but before tapping Done, background-kill the app and relaunch. The library displays the pre-session order, not the in-session drag order (in-memory buffer not incidentally persisted). *(deferred — see docs/backlog/feature-backlog.md)*
+- [~] **UI-10 (TQ-1):** In Edit mode with multiple plays checked (checkboxes active), drag a different row. After the drag: (a) the previously-checked plays remain checked, and (b) the drag handle is still functional for further drags. Selection and drag do not clobber each other. *(deferred — see docs/backlog/feature-backlog.md)*
 
 ---
 
