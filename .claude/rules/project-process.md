@@ -144,3 +144,17 @@ rm -rf ~/Library/Developer/Xcode/DerivedData  # frees several GB of build artifa
 ```
 
 **Why it matters:** Discovered during pdf-card-labels feature — disk at 97% caused `git push` to fail mid-delivery, requiring Ken to manually free space. DerivedData and simulator runtimes accumulate silently and the condition is invisible until a write fails.
+
+---
+
+## SourceKit Diagnostics Are Not Authoritative
+
+SourceKit (the IDE-level Swift analyzer) fires false-positive diagnostics in this project after every agent file edit. These must NOT be treated as compilation errors or used to justify code changes.
+
+**Policy:**
+- SourceKit output is informational only. Do not fix, suppress, or document SourceKit-only warnings unless confirmed by `xcodebuild`.
+- The authoritative gate for Swift compilation and test correctness is `xcodebuild build` / `xcodebuild test`.
+- If a SourceKit diagnostic and `xcodebuild` disagree, `xcodebuild` is correct.
+- Treat SourceKit false positives as "confirmed via xcodebuild (clean)" — not as open issues.
+
+**Why it matters:** Documented across multiple features (most acute in library-edit-delete). SourceKit noise causes repeated re-evaluation of the same known-false pattern, consuming session attention without producing signal.
