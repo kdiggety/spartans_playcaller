@@ -56,6 +56,7 @@
 		A10000047 /* PDFCardHeaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000047 /* PDFCardHeaderTests.swift */; };
 		A10000048 /* DiagramRendererReceiverLabelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000048 /* DiagramRendererReceiverLabelTests.swift */; };
 		A10000049 /* EditPlayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000049 /* EditPlayViewModel.swift */; };
+		A10000050 /* EditPlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050 /* EditPlayView.swift */; };
 		A10000051 /* EditPlayViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000051 /* EditPlayViewModelTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -119,6 +120,7 @@
 		A20000047 /* PDFCardHeaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFCardHeaderTests.swift; sourceTree = "<group>"; };
 		A20000048 /* DiagramRendererReceiverLabelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagramRendererReceiverLabelTests.swift; sourceTree = "<group>"; };
 		A20000049 /* EditPlayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPlayViewModel.swift; sourceTree = "<group>"; };
+		A20000050 /* EditPlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPlayView.swift; sourceTree = "<group>"; };
 		A20000051 /* EditPlayViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPlayViewModelTests.swift; sourceTree = "<group>"; };
 		A30000001 /* SpartansPlaycaller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpartansPlaycaller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A30000002 /* SpartansPlaycallerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpartansPlaycallerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -220,6 +222,7 @@
 				A20000004 /* ReceiverAssignmentView.swift */,
 				A20000022 /* ConceptBadgeRow.swift */,
 				A20000039 /* PlayLibraryView.swift */,
+				A20000050 /* EditPlayView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -379,6 +382,7 @@
 				A10000038 /* CatalogPDFGenerator.swift in Sources */,
 				A10000039 /* PlayLibraryView.swift in Sources */,
 				A10000049 /* EditPlayViewModel.swift in Sources */,
+				A10000050 /* EditPlayView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
