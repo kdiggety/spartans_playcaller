@@ -95,6 +95,26 @@ final class PlayLibraryStore: ObservableObject {
         }
     }
 
+    // MARK: - Reorder
+
+    func move(fromOffsets offsets: IndexSet, toOffset destination: Int) {
+        plays.move(fromOffsets: offsets, toOffset: destination)
+        // NOTE: No persist() call here — deferred to commitReorder().
+    }
+
+    func commitReorder() {
+        do { try persist() } catch { print("[PlayLibraryStore] commitReorder persist failed: \(error)") }
+    }
+
+    func cancelReorder(snapshot: [SavedPlay]) {
+        guard !snapshot.isEmpty || plays.isEmpty else {
+            assertionFailure("[PlayLibraryStore] cancelReorder called with empty snapshot but plays is non-empty")
+            return
+        }
+        plays = snapshot
+        // NOTE: No persist() call here — snapshot restore must never write to disk (AC-2.3).
+    }
+
     private func load() {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
         do {

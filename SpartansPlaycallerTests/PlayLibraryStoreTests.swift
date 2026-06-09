@@ -315,4 +315,114 @@ final class PlayLibraryStoreTests: XCTestCase {
         XCTAssertEqual(reloaded.plays[0].id, original.id)
         XCTAssertEqual(reloaded.plays[0].motionLabel, "Y Stop")
     }
+
+    // MARK: - move() tests
+
+    func testMove_updatesOrderInMemory() {
+        let interpreter = RouteInterpreter()
+        guard case .success(let pcA) = interpreter.interpret(digits: "6794", formation: .twins),
+              case .success(let pcB) = interpreter.interpret(digits: "2943", formation: .tripsLeft),
+              case .success(let pcC) = interpreter.interpret(digits: "8761", formation: .proRight) else {
+            XCTFail(); return
+        }
+        store.save(pcA, motion: nil, yWheelEnabled: false)
+        store.save(pcB, motion: nil, yWheelEnabled: false)
+        store.save(pcC, motion: nil, yWheelEnabled: false)
+        store.move(fromOffsets: IndexSet([0]), toOffset: 3)
+        XCTAssertEqual(store.plays[0].routeDigits, "2943", "B must be at index 0")
+        XCTAssertEqual(store.plays[1].routeDigits, "8761", "C must be at index 1")
+        XCTAssertEqual(store.plays[2].routeDigits, "6794", "A must be at index 2")
+    }
+
+    func testMove_doesNotPersistImmediately() throws {
+        let interpreter = RouteInterpreter()
+        guard case .success(let pcA) = interpreter.interpret(digits: "6794", formation: .twins),
+              case .success(let pcB) = interpreter.interpret(digits: "2943", formation: .tripsLeft),
+              case .success(let pcC) = interpreter.interpret(digits: "8761", formation: .proRight) else {
+            XCTFail(); return
+        }
+        store.save(pcA, motion: nil, yWheelEnabled: false)
+        store.save(pcB, motion: nil, yWheelEnabled: false)
+        store.save(pcC, motion: nil, yWheelEnabled: false)
+        let dataBefore = try Data(contentsOf: tempURL)
+        let playsBefore = try JSONDecoder().decode([SavedPlay].self, from: dataBefore)
+        let orderBefore = playsBefore.map { $0.routeDigits }
+        store.move(fromOffsets: IndexSet([0]), toOffset: 3)
+        let dataAfter = try Data(contentsOf: tempURL)
+        let playsAfter = try JSONDecoder().decode([SavedPlay].self, from: dataAfter)
+        let orderAfter = playsAfter.map { $0.routeDigits }
+        XCTAssertEqual(orderBefore, orderAfter, "move() must not write to disk")
+        XCTAssertNotEqual(store.plays.map { $0.routeDigits }, orderBefore, "move() must update in-memory plays")
+    }
+
+    func testCommitReorder_persistsNewOrder() throws {
+        let interpreter = RouteInterpreter()
+        guard case .success(let pcA) = interpreter.interpret(digits: "6794", formation: .twins),
+              case .success(let pcB) = interpreter.interpret(digits: "2943", formation: .tripsLeft),
+              case .success(let pcC) = interpreter.interpret(digits: "8761", formation: .proRight) else {
+            XCTFail(); return
+        }
+        store.save(pcA, motion: nil, yWheelEnabled: false)
+        store.save(pcB, motion: nil, yWheelEnabled: false)
+        store.save(pcC, motion: nil, yWheelEnabled: false)
+        store.move(fromOffsets: IndexSet([0]), toOffset: 3)
+        store.commitReorder()
+        let data = try Data(contentsOf: tempURL)
+        let playsOnDisk = try JSONDecoder().decode([SavedPlay].self, from: data)
+        XCTAssertEqual(playsOnDisk[0].routeDigits, "2943", "B must be first on disk")
+        XCTAssertEqual(playsOnDisk[1].routeDigits, "8761", "C must be second on disk")
+        XCTAssertEqual(playsOnDisk[2].routeDigits, "6794", "A must be last on disk")
+    }
+
+    func testCancelReorder_restoresSnapshot() {
+        let interpreter = RouteInterpreter()
+        guard case .success(let pcA) = interpreter.interpret(digits: "6794", formation: .twins),
+              case .success(let pcB) = interpreter.interpret(digits: "2943", formation: .tripsLeft),
+              case .success(let pcC) = interpreter.interpret(digits: "8761", formation: .proRight) else {
+            XCTFail(); return
+        }
+        store.save(pcA, motion: nil, yWheelEnabled: false)
+        store.save(pcB, motion: nil, yWheelEnabled: false)
+        store.save(pcC, motion: nil, yWheelEnabled: false)
+        let snapshot = store.plays
+        store.move(fromOffsets: IndexSet([0]), toOffset: 3)
+        XCTAssertEqual(store.plays[0].routeDigits, "2943", "Precondition: A moved")
+        store.cancelReorder(snapshot: snapshot)
+        XCTAssertEqual(store.plays[0].routeDigits, "6794", "A must be restored to index 0")
+        XCTAssertEqual(store.plays[1].routeDigits, "2943", "B must be at index 1")
+        XCTAssertEqual(store.plays[2].routeDigits, "8761", "C must be at index 2")
+    }
+
+    func testCancelReorder_doesNotWriteToDisk() throws {
+        let interpreter = RouteInterpreter()
+        guard case .success(let pcA) = interpreter.interpret(digits: "6794", formation: .twins),
+              case .success(let pcB) = interpreter.interpret(digits: "2943", formation: .tripsLeft),
+              case .success(let pcC) = interpreter.interpret(digits: "8761", formation: .proRight) else {
+            XCTFail(); return
+        }
+        store.save(pcA, motion: nil, yWheelEnabled: false)
+        store.save(pcB, motion: nil, yWheelEnabled: false)
+        store.save(pcC, motion: nil, yWheelEnabled: false)
+        let dataBefore = try Data(contentsOf: tempURL)
+        let snapshot = store.plays
+        store.move(fromOffsets: IndexSet([0]), toOffset: 3)
+        store.cancelReorder(snapshot: snapshot)
+        let dataAfter = try Data(contentsOf: tempURL)
+        XCTAssertEqual(dataBefore, dataAfter, "cancelReorder must not write to disk")
+    }
+
+    func testMove_toSamePosition_isNoOp() {
+        let interpreter = RouteInterpreter()
+        guard case .success(let pcA) = interpreter.interpret(digits: "6794", formation: .twins),
+              case .success(let pcB) = interpreter.interpret(digits: "2943", formation: .tripsLeft),
+              case .success(let pcC) = interpreter.interpret(digits: "8761", formation: .proRight) else {
+            XCTFail(); return
+        }
+        store.save(pcA, motion: nil, yWheelEnabled: false)
+        store.save(pcB, motion: nil, yWheelEnabled: false)
+        store.save(pcC, motion: nil, yWheelEnabled: false)
+        let idsBefore = store.plays.map { $0.id }
+        store.move(fromOffsets: IndexSet([1]), toOffset: 1)
+        XCTAssertEqual(store.plays.map { $0.id }, idsBefore, "Same-position move must not alter array")
+    }
 }
