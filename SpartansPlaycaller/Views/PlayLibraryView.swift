@@ -117,6 +117,8 @@ struct PlayLibraryView: View {
                 store.delete(at: indices)
                 selectedIDs = []
                 isSelectMode = false
+                editMode = .inactive
+                preSessionOrder = []
             }
             Button("Cancel", role: .cancel) {}
         }
