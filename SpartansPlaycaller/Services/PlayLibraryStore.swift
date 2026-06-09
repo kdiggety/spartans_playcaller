@@ -107,9 +107,8 @@ final class PlayLibraryStore: ObservableObject {
     }
 
     func cancelReorder(snapshot: [SavedPlay]) {
-        guard !snapshot.isEmpty || plays.isEmpty else {
-            assertionFailure("[PlayLibraryStore] cancelReorder called with empty snapshot but plays is non-empty")
-            return
+        if snapshot.isEmpty && !plays.isEmpty {
+            assertionFailure("[PlayLibraryStore] cancelReorder called with empty snapshot but plays is non-empty — snapshot not initialized on mode entry")
         }
         plays = snapshot
         // NOTE: No persist() call here — snapshot restore must never write to disk (AC-2.3).
