@@ -6,6 +6,8 @@ struct PlayLibraryView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var isSelectMode = false
+    @State private var editMode: EditMode = .inactive
+    @State private var preSessionOrder: [SavedPlay] = []
     @State private var selectedIDs: Set<UUID> = []
     @State private var showExportSheet = false
     @State private var exportMode: ExportMode? = nil
@@ -33,7 +35,11 @@ struct PlayLibraryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Done") { dismiss() }
+                    if isSelectMode {
+                        Button("Cancel") { cancelEdit() }
+                    } else {
+                        Button("Done") { dismiss() }
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 4) {
@@ -50,15 +56,10 @@ struct PlayLibraryView: View {
                             }
                         }
                         if isSelectMode {
-                            Button("Cancel") {
-                                isSelectMode = false
-                                selectedIDs = []
-                            }
+                            Button("Done") { commitEdit() }
                         } else {
-                            Button("Select") {
-                                isSelectMode = true
-                            }
-                            .disabled(store.plays.isEmpty)
+                            Button("Edit") { enterEditMode() }
+                                .disabled(store.plays.isEmpty)
                         }
                     }
                 }
@@ -148,7 +149,12 @@ struct PlayLibraryView: View {
     private var playList: some View {
         List(selection: isSelectMode ? $selectedIDs : .constant(Set<UUID>())) {
             ForEach(store.plays) { play in
-                PlayLibraryRow(play: play, isSelectMode: isSelectMode, isSelected: selectedIDs.contains(play.id)) {
+                PlayLibraryRow(
+                    play: play,
+                    isSelectMode: isSelectMode,
+                    isSelected: selectedIDs.contains(play.id),
+                    dragHandleEnabled: store.plays.count > 1
+                ) {
                     if isSelectMode {
                         if selectedIDs.contains(play.id) {
                             selectedIDs.remove(play.id)
@@ -173,8 +179,12 @@ struct PlayLibraryView: View {
                     }
                 }
             }
+            .onMove { offsets, destination in
+                store.move(fromOffsets: offsets, toOffset: destination)
+            }
         }
         .listStyle(.plain)
+        .environment(\.editMode, $editMode)
     }
 
     private var exportButton: some View {
@@ -247,6 +257,36 @@ struct PlayLibraryView: View {
             presenter.present(activityVC, animated: true)
         }
     }
+
+    // MARK: - Edit mode lifecycle
+
+    private func enterEditMode() {
+        preSessionOrder = store.plays
+        withAnimation(.easeInOut(duration: 0.15)) {
+            isSelectMode = true
+            editMode = .active
+        }
+    }
+
+    private func commitEdit() {
+        store.commitReorder()
+        preSessionOrder = []
+        withAnimation(.easeInOut(duration: 0.15)) {
+            isSelectMode = false
+            editMode = .inactive
+            selectedIDs = []
+        }
+    }
+
+    private func cancelEdit() {
+        store.cancelReorder(snapshot: preSessionOrder)
+        preSessionOrder = []
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isSelectMode = false
+            editMode = .inactive
+            selectedIDs = []
+        }
+    }
 }
 
 // MARK: - PlayLibraryRow
@@ -255,6 +295,7 @@ private struct PlayLibraryRow: View {
     let play: SavedPlay
     let isSelectMode: Bool
     let isSelected: Bool
+    let dragHandleEnabled: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -285,6 +326,16 @@ private struct PlayLibraryRow: View {
                     }
                 }
                 Spacer()
+                if isSelectMode {
+                    Image(systemName: "line.3.horizontal")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        .opacity(dragHandleEnabled ? 1.0 : 0.3)
+                        .allowsHitTesting(dragHandleEnabled)
+                        .accessibilityLabel("Reorder \(play.formationName) \(play.routeDigits)")
+                        .accessibilityHint(dragHandleEnabled ? "" : "Reordering requires at least 2 plays")
+                }
             }
             .contentShape(Rectangle())
         }
