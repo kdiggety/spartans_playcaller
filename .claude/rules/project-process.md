@@ -133,9 +133,31 @@ final class PlayLibraryStoreTests: XCTestCase {
 
 ---
 
+## SwiftUI Edit Mode: Required Pattern for List Selection + Reorder
+
+**Rule:** Any `List` that combines selection (`List(selection:)`) and drag-to-reorder (`.onMove`) must use explicit `@State` edit mode management. Do NOT use `EditButton` — it creates an uncontrolled toggle path that bypasses lifecycle hooks.
+
+**Required pattern:**
+```swift
+@State private var editMode: EditMode = .inactive
+
+// In the List:
+.environment(\.editMode, $editMode)
+
+// Activate via lifecycle helpers:
+editMode = .active    // enter
+editMode = .inactive  // exit
+```
+
+**Why it matters:** Discovered during library-reorder (TQ-1). `List(selection:)` + `.onMove` will not coexist correctly unless `editMode` is driven explicitly. `EditButton` creates a second activation path that can bypass snapshot initialization and leave `preSessionOrder` empty on cancel.
+
+**Additional constraint:** When a view uses two booleans to represent a single mode (e.g., `isSelectMode` + `editMode`), the architecture spec must name the two-boolean pattern as technical debt with a backlog entry. Both booleans must always be toggled together through dedicated lifecycle helper methods — never inline. If a future feature touches edit mode entry/exit logic in `PlayLibraryView`, resolve the dual-boolean debt first.
+
+---
+
 ## Disk Space Pre-flight Check
 
-**Rule:** Before executing `git push` or triggering a large Xcode build, verify available disk space is sufficient. If disk usage exceeds ~90% (`df -h .` shows less than ~10% free), halt and surface a warning before proceeding. Do not attempt to push or build through near-full disk conditions.
+**Rule:** Before executing `git push`, `xcodebuild build`, or `xcodebuild test`, verify available disk space is sufficient. If disk usage exceeds ~90% (`df -h .` shows less than ~10% free), halt and surface a warning before proceeding. Do not attempt to push or build through near-full disk conditions.
 
 **Periodic cleanup commands** to keep disk healthy:
 ```bash

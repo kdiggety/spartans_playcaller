@@ -27,3 +27,16 @@ The following 10 manual UI checks from the library-reorder spec could not be ver
 | UI-10 | TQ-1 | Checked plays stay checked after dragging a different row; further drags work |
 
 Document outcomes in `docs/test-plans/library-reorder-test-results.md` under the Manual Verification section.
+
+---
+
+## Library Reorder — Refactor: Eliminate `isSelectMode` Dual-Boolean
+
+**Added:** 2026-06-09
+**Trigger:** Any future feature that touches edit mode entry/exit logic in `PlayLibraryView`, or when a third boolean representing mode state is considered
+
+`PlayLibraryView` currently uses two booleans to represent a single mode: `isSelectMode: Bool` and `editMode: EditMode`. They are always toggled together via lifecycle helpers (`enterEditMode`, `commitEdit`, `cancelEdit`), but the dual-boolean pattern is a latent drift risk — if a future change sets one without the other, the UI enters an inconsistent state.
+
+**Refactor:** Consolidate to `editMode` as the single source of truth. Replace `isSelectMode` guards with `editMode == .active` checks throughout `PlayLibraryView` and `PlayLibraryRow`. Remove `isSelectMode` property entirely.
+
+**Identified by:** Final code reviewer during library-reorder feature (2026-06-09).
